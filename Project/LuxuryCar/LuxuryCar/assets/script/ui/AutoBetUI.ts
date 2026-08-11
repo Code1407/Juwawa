@@ -26,6 +26,7 @@ export default class AutoBetUI extends cc.Component {
     private lastClickTime: number = 0;
     /** Auto 最早允许执行的回合：当前局未下注时为当前局，否则为下一局。 */
     private autoBetStartRound: number = 0;
+    
 
     private setCoolDown() {
         gGameData.roundBetCount++;

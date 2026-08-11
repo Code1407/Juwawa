@@ -52,9 +52,12 @@ export default class BettingBox extends cc.Component {
             myBetNum.getComponent(cc.RichText).string = "<b><color=#ecf3ff><outline color=#0d2454 width=1>" + DecimalUnit.humanReadable(totalWheelAmount[i]) + "/</outline></color>" + "<color=#ffeb61><outline color=#0d2454 width=1>" + DecimalUnit.humanReadable(numlist[i]) + "</outline></color></b>";
             // The nodes are hidden after settlement. Rebuild their visibility
             // from the synchronized round data when entering or reconnecting.
-            if (this.myBetNum[i]) {
-                this.myBetNum[i].active = (Number(totalWheelAmount[i]) || 0) > 0
-                    || (Number(numlist[i]) || 0) > 0;
+            const shouldShowBet = (Number(totalWheelAmount[i]) || 0) > 0
+                || (Number(numlist[i]) || 0) > 0;
+            // 直接控制当前下注区域中用于写文字的节点，避免编辑器序列化数组缺项或顺序不一致。
+            myBetNum.active = shouldShowBet;
+            if (this.myBetNum[i] && this.myBetNum[i] !== myBetNum) {
+                this.myBetNum[i].active = shouldShowBet;
             }
         }
 

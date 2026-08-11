@@ -46,15 +46,13 @@ function mergeAmount(base: number[], delta: number[]): number[] {
 }
 
 export default class PlayerAccount extends ClientPlayer {
-
     toDayRevenue = 0;
     sdkState = 0;
     lastWheelChipAmount: number[][] = [];
     private currentRoundChipAmount: number[][] = [];
+    /** 当前下注数据所属的回合，用来区分“刷新恢复本局”和“真正进入新一局”。 */
+    private currentRound: number = 0;
     private wheelAmount = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0];     // 每个轮子有多少，用于计算结果。服务器确认后才会更。
-    // enterGameWheelAmount = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];    // (重新)进入游戏时从服务器返回的 每轮子有多少
-    // lastWheelAmountNotEmpty = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]; // 上一局的 每个轮子有多少
-    // notedWheel = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];              // 每轮子标识，用于防止超过6个。客户点击立刻更新。
     private static instance: PlayerAccount;
 
     private constructor(msgRouter: MessageRouter, public account: Account) {
@@ -75,8 +73,17 @@ export default class PlayerAccount extends ClientPlayer {
         return this.instance;
     }
 
-    newRound() {
+    newRound(todayRound: number) {
         gGameData.roundBetCount = 0;
+        // 刷新/重连后，enterGame 已恢复本局下注。随后收到同一回合的 bet 状态推送时
+        // 不能再次清空，否则点击 Auto 会误判为本局尚未下注并重复下注。
+        if (this.currentRound == todayRound) {
+            // RoundFinal.enterBet/reset 会先隐藏全部 myBetNum；同一回合不清空数据，
+            // 但必须在 reset 之后按服务端恢复的下注金额重新构建区域显示。
+            Game.Instance.bettingBox.updateBetAmount();
+            return;
+        }
+        this.currentRound = todayRound;
         this.currentRoundChipAmount = [];
         this.wheelAmount = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
         Game.Instance.bettingBox.updateBetAmount();
@@ -242,6 +249,7 @@ export default class PlayerAccount extends ClientPlayer {
     initPlayerAccount(enterGameResp: IEnterGameResp): IEnterGameResp {
         this.accountDiamond = enterGameResp.account.diamond;
         this.toDayRevenue = enterGameResp.todayRevenue;
+        this.currentRound = Number(enterGameResp.roundStep?.todayRound) || 0;
         // enterGame/synchronize always returns the bet amount for the current
         // round. Restore it in every round status so reconnecting during the
         // result phase does not leave the client showing its stale local value.

@@ -141,7 +141,7 @@ export default class Game extends cc.Component {
         }
         this.todayRoundLabel.string = roundStep.todayRound.toString();
 
-        this.player.newRound();
+        this.player.newRound(roundStep.todayRound);
         this.runSpeed = 4;
         await this.autoBetUI.tryAutoBetNow();
     }

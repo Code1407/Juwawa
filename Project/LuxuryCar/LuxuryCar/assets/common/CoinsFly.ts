@@ -56,6 +56,7 @@ export default class CoinsFly extends cc.Component {
         const flySprite = flyNode.addComponent(cc.Sprite);
         flySprite.spriteFrame = this.coinIocn.spriteFrame;
         flyNode.setParent(this.node);
+        flyNode.setContentSize(this.coinIocn.node.getContentSize());
         
         return flyNode;
     }

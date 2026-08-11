@@ -5,9 +5,6 @@
 // Learn life-cycle callbacks:
 //  - https://docs.cocos.com/creator/manual/en/scripting/life-cycle-callbacks.html
 
-import Bottombar from "./Bottombar";
-import { gBetAmounts, gGameData } from "./GameData";
-import { bigWinMultiple, EBetAmountIndex } from "./interface/IFruitSlots";
 import BigWinView from "./view/BigWinView";
 import FreeGameView from "./view/FreeGameView";
 import FreeGameWinView from "./view/FreeGameWinView";

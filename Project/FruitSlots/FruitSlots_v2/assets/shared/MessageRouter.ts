@@ -57,9 +57,9 @@ function normalizeRoute(routeName: string): string {
     return routeList[routeList.length - 1];
 }
 
-function pickFirst(): any {
-    for (let i = 0; i < arguments.length; i++) {
-        let value = arguments[i];
+function pickFirst(...values: any[]): any {
+    for (let i = 0; i < values.length; i++) {
+        let value = values[i];
         if (value !== undefined && value !== null && value !== "") {
             return value;
         }
@@ -85,9 +85,9 @@ function toStringValue(value: any, defaultValue: string = ""): string {
     return String(value);
 }
 
-function getQueryValue(): string {
-    for (let i = 0; i < arguments.length; i++) {
-        let value = getQuery(arguments[i]);
+function getQueryValue(...names: string[]): string {
+    for (let i = 0; i < names.length; i++) {
+        let value = getQuery(names[i]);
         if (value !== "") {
             return value;
         }
@@ -629,6 +629,8 @@ class JsNetMessageRouter {
     connectConfig: IRuntimeConnectConfig;
     listenerMap: { [routeName: string]: MsgCallback[] } = {};
     listenerBound: { [routeName: string]: boolean } = {};
+    /** 鉴权请求代次；用于忽略服务器重启后旧连接迟到的成功/超时回调。 */
+    private authAttemptId: number = 0;
 
     async init(gameName: string, initOptions?: any): Promise<void> {
         let targetGameName = gameName || _gameName || (<any>window).gameName;
@@ -844,6 +846,8 @@ class JsNetMessageRouter {
 
         this.jsNet.addEvent("onDisconnect", () => {
             let wasAuthed = this.isAuthed;
+            // 当前连接上的 AuthGame 即使稍后才返回/超时，也不能再修改下一次重连状态。
+            this.authAttemptId++;
             (<any>window).__lastJsNetStage = "disconnected";
             console.warn("[JsNet] disconnected", {
                 gameName: this.gameName,
@@ -924,6 +928,8 @@ class JsNetMessageRouter {
             return;
         }
 
+        const authAttemptId = ++this.authAttemptId;
+        const authClient = this.jsNet;
         try {
             let cfg = this.connectConfig;
             let authReq = {
@@ -947,7 +953,11 @@ class JsNetMessageRouter {
             };
             logJsNet("AuthGame request", (<any>window).__lastJsNetAuthRequest);
 
-            let resp = await this.jsNet.reqMsg("AuthGame", authReq);
+            let resp = await authClient.reqMsg("AuthGame", authReq);
+            if (authAttemptId !== this.authAttemptId || authClient !== this.jsNet) {
+                logJsNet("ignore stale AuthGame response", { authAttemptId });
+                return;
+            }
             (<any>window).__lastJsNetStage = "auth_game_response";
             (<any>window).__lastJsNetAuthResponse = resp;
             logJsNet("AuthGame response", resp);
@@ -1021,6 +1031,13 @@ class JsNetMessageRouter {
             resolve();
         }
         catch (error) {
+            if (authAttemptId !== this.authAttemptId || authClient !== this.jsNet) {
+                logJsNet("ignore stale AuthGame failure", {
+                    authAttemptId,
+                    error: toErrorMessage(error)
+                });
+                return;
+            }
             this.isAuthed = false;
             (<any>window).__lastJsNetStage = "auth_game_failed";
             (<any>window).__lastJsNetError = {

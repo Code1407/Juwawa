@@ -55,6 +55,8 @@ export default class PlayerAccount extends ClientPlayer {
     sdkState = 0;
     lastWheelChipAmount: number[][] = [];
     private currentRoundChipAmount: number[][] = [];
+    /** 当前下注数据所属的回合，用来区分“刷新恢复本局”和“真正进入新一局”。 */
+    private currentRound: number = 0;
     private wheelAmount = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0];     // 每个轮子有多少，用于计算结果。服务器确认后才会更。
     // enterGameWheelAmount = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];    // (重新)进入游戏时从服务器返回的 每轮子有多少
     // lastWheelAmountNotEmpty = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]; // 上一局的 每个轮子有多少
@@ -79,8 +81,14 @@ export default class PlayerAccount extends ClientPlayer {
         return this.instance;
     }
 
-    newRound() {
+    newRound(todayRound: number) {
         gGameData.roundBetCount = 0;
+        // 刷新/重连后，enterGame 已恢复本局下注。随后收到同一回合的 bet 状态推送时
+        // 不能再次清空，否则点击 Auto 会误判为本局尚未下注并重复下注。
+        if (this.currentRound == todayRound) {
+            return;
+        }
+        this.currentRound = todayRound;
         this.currentRoundChipAmount = [];
         this.wheelAmount = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
         Game.Instance.bettingBox.updateBetAmount();
@@ -238,6 +246,7 @@ export default class PlayerAccount extends ClientPlayer {
     initPlayerAccount(enterGameResp: IEnterGameResp): IEnterGameResp {
         this.accountDiamond = enterGameResp.account.diamond;
         this.toDayRevenue = enterGameResp.todayRevenue;
+        this.currentRound = Number(enterGameResp.roundStep?.todayRound) || 0;
         this.wheelAmount = cloneAmount(enterGameResp.wheelAmount);
         const sceneChipAmount = cloneChipAmount(enterGameResp.wheelChipAmount);
         const hasOwnSceneBet = arraySum(this.wheelAmount) > 0 && chipAmountSum(sceneChipAmount) > 0;

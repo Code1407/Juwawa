@@ -1289,7 +1289,7 @@ export default class List extends cc.Component {
     }
     // 触摸时
     _onTouchStart(ev, captureListeners) {
-        if (this._scrollView['hasNestedViewGroup'](ev, captureListeners))
+        if (this._scrollView['hasNestedViewGroup']())
             return;
         this.curScrollIsTouch = true;
         let isMe = ev.eventPhase === cc.Event.AT_TARGET && ev.target === this.node;
@@ -1320,7 +1320,7 @@ export default class List extends cc.Component {
 
     _onTouchCancelled(ev, captureListeners) {
         let t = this;
-        if (t._scrollView['hasNestedViewGroup'](ev, captureListeners) || ev.simulate)
+        if (t._scrollView['hasNestedViewGroup']() || ev.simulate)
             return;
 
         t._scrollPos = null;

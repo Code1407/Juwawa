@@ -447,9 +447,9 @@ function FruitSlotsPlayer:betNormal(betAmount)
     end
 
     local data = self:getDataSafe()
-    -- Only the in-memory request from this process is an active debit lock.
-    -- Persisted unknown orders are retained for reconciliation and must not
-    -- permanently prevent the player from starting a new, uniquely keyed round.
+    -- 仅此进程的内存请求才构成有效的借记锁定。
+    -- 持久化的未知订单将保留以进行对账，且不得
+    -- 永久阻止玩家开始一个具有唯一密钥的新回合。
     if self.pendingBet ~= nil then
         self:notifyBetFailure(FRTradeCode.fail)
         return { code = FRTradeCode.fail, result = nil, roundId = 0 }

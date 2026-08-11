@@ -17,6 +17,5 @@ export default class DiamondUI extends cc.Component {
             config.setGameCoin(this.getComponent(cc.Sprite));
         }
     }
-    protected start(): void {
-    }
+ 
 }

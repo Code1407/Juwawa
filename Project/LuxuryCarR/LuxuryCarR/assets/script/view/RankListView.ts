@@ -23,17 +23,18 @@ export default class RankListView extends cc.Component {
     rankItemPrefab: cc.Prefab = null;
     
     setRankListValues(itemValues: IRankListItem[]) {
+        let rankItemNodes: cc.Node[] = [];
+        for (let i = 0; i < itemValues.length; ++i) {
+            let item = cc.instantiate(this.rankItemPrefab)
+            rankItemNodes.push(item);
+        }
         this.content.removeAllChildren(true);
         for (let i = 0; i < itemValues.length; ++i) {
             let itemValue = itemValues[i];
-            let itemNode = cc.instantiate(this.rankItemPrefab);
+            let itemNode = rankItemNodes[i];
             let itemScript = itemNode.getComponent(RankListViewItem);
-            if (itemScript) {
-                itemScript.setRankListItemValue(i + 1, itemValue.name, itemValue.revenue, itemValue.profile);
-            } else {
-                cc.warn('RankListView: RankListViewItem component not found on prefab');
-            }
-            itemNode.name = `RankListViewItem_${i + 1}`;
+            itemScript.setRankListItemValue(i + 1, itemValue.name, itemValue.revenue, itemValue.profile);
+            itemNode.name = "Clone(RankListViewItem)";
             this.content.addChild(itemNode);
         }
     }
