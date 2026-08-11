@@ -1,0 +1,212 @@
+// ============================================================
+// Common.proto  —  通用协议定义（玩家数据、排行榜、邮件等）
+// ============================================================
+
+// 玩家基础数据：登录后下发给客户端的基本信息
+PlayerBaseData{
+	uint64 playerId    // 玩家唯一ID
+	string playerUid   // 玩家UID（字符串型，用于外部标识）
+	string name        // 玩家昵称
+	string avatarUrl   // 玩家头像URL
+	uint64 coins       // 玩家金币数量
+}
+
+// 资源/奖励数据：用于邮件附件奖励等场景
+ResourceData{
+	uint32 resType              // 资源类型
+	uint32 resId                // 资源ID
+	uint64 resCount             // 资源数量
+	int32  oddsType             // 赔率类型
+	map<string, string> gemeExt // 游戏扩展字段（键值对）
+	uint64 roundId              // 关联的局号
+}
+
+// 登录成功推送：服务器通知客户端登录完成并下发玩家基础数据
+ScLoginSucPush{
+	PlayerBaseData pBaseData    // 玩家基础数据
+}
+
+// 时间同步请求：客户端上报本地时间用于校准
+CsSyncTimeReq{
+	uint64 cTime    // 客户端时间戳（毫秒）
+}
+
+// 时间同步响应：服务端返回客户端时间和服务器时间
+CsSyncTimeResp{
+	uint64 cTime    // 客户端时间戳（毫秒），回传给客户端用于计算RTT
+	uint64 sTime    // 服务器时间戳（毫秒）
+}
+
+// 请求玩家基础数据
+CsPlayerBaseDataReq{
+}
+
+// 返回玩家基础数据
+CsPlayerBaseDataResp{
+	PlayerBaseData pBaseData    // 玩家基础数据
+}
+
+// 玩家金币变更推送：金币发生变化时服务端主动下发
+ScCoinsUpdatePush{
+	uint64 coins    // 变更后的金币数量
+}
+
+// SDK状态同步推送：通知客户端SDK相关的状态变化
+ScSdkStatePush{
+	int32 state     // SDK状态值
+}
+
+// 排行榜:玩家信息
+RankUserInfo {
+	string uid      // 玩家UID
+	string avatar   // 玩家头像URL
+	string name     // 玩家昵称
+	uint32 rank     // 排名
+	uint64 bonus    // 可获得奖励金额
+	uint64 score    // 排行依据分数
+	bool get        // 是否已领取奖励
+}
+
+// 排行榜:客户端拉取今日实时排名
+CsGetTodayRealTimeRankReq {
+}
+
+// 排行榜:返回今日实时排名
+CsGetTodayRealTimeRankResp {
+	uint64 timestamp    // 服务器时间戳
+	uint32 timezone     // 时区偏移
+	string uid          // 当前玩家UID
+	uint32 rank         // 当前玩家排名
+}
+
+// 排行榜:自己的排名变化推送
+ScTodayRealTimeRankPush{
+	uint64 timestamp    // 服务器时间戳
+	uint32 timezone     // 时区偏移
+	string uid          // 玩家UID
+	uint32 rank         // 变更后的排名
+}
+
+// 排行榜:请求昨日日榜可领奖数据
+//（请求适配2.0版本）
+CsDayRankAwardReq{
+}
+
+// 排行榜:昨日日榜可领奖推送（含排行榜列表）
+ScDayRankAwardPush {
+	string uid                  // 当前玩家UID
+	uint32 rank                 // 当前玩家排名
+	uint64 bonus                // 可领取奖励
+	uint64 score                // 排行分数
+	array<RankUserInfo> rankUsers   // 排行榜玩家列表
+}
+
+// 排行榜:请求上周周榜可领奖数据
+//（请求适配2.0版本）
+CsWeekRankAwardReq{
+}
+
+// 排行榜:上周周榜可领奖推送（含排行榜列表）
+ScWeekRankAwardPush {
+	string uid                  // 当前玩家UID
+	uint32 rank                 // 当前玩家排名
+	uint64 bonus                // 可领取奖励
+	uint64 score                // 排行分数
+	array<RankUserInfo> rankUsers   // 排行榜玩家列表
+}
+
+// 排行榜:客户端按日期拉取历史榜单
+CsGetRankListByDateStrReq{
+	string dateStr      // 日期字符串（如 "2024-01-01"）
+}
+
+// 排行榜:返回指定日期的榜单数据
+CsGetRankListByDateStrResp{
+	string dateStr                  // 日期字符串
+	array<RankUserInfo> rankUsers   // 排行榜玩家列表
+}
+
+// 排行榜:客户端领取日榜奖励
+CsReceiveDayAwardReq {
+}
+
+// 排行榜:日榜奖励领取结果
+CsReceiveDayAwardResp {
+	int32 code              // 错误码（0表示成功）
+	uint64 accountDiamond   // 领取后账户钻石数
+	uint64 bonus            // 领取到的奖励金额
+}
+
+// 排行榜:客户端领取周榜奖励
+CsReceiveWeekAwardReq {
+}
+
+// 排行榜:周榜奖励领取结果
+CsReceiveWeekAwardResp {
+	int32 code              // 错误码（0表示成功）
+	uint64 accountDiamond   // 领取后账户钻石数
+	uint64 bonus            // 领取到的奖励金额
+}
+
+// 邮件数据
+MailData{
+	string uId                  // 玩家UID
+	uint64 mailId               // 邮件唯一ID
+	uint32 mailCfgId            // 邮件配置ID（对应配表）
+	uint32 gameId               // 游戏ID（关联的游戏模块）
+	array<ResourceData> rewards // 邮件附带的奖励列表
+	uint32 rewardState          // 领奖状态（0:无奖励 1:有奖未领取 2:有奖已领取）
+	string extraJson            // 额外JSON参数（扩展字段）
+	uint64 sendTime             // 邮件发送时间戳（毫秒）
+	bool   read                 // 是否已读
+}
+
+// 请求邮件列表
+CsMailListReq{
+}
+
+// 返回邮件列表
+CsMailListResp{
+	array<MailData> mails   // 邮件数据列表
+}
+
+// 新邮件推送：有新的邮件到达时服务端主动下发
+ScNewMailPush{
+	MailData mail           // 新邮件数据
+}
+
+// 标记邮件为已读
+CsMailReadReq{
+	array<uint64> mails     // 需要标记已读的邮件ID列表
+}
+
+// 标记已读结果
+CsMailReadResp{
+	array<uint64> mails     // 已成功标记为已读的邮件ID列表
+}
+
+// 删除邮件
+CsMailDeleteReq{
+	array<uint64> mails     // 需要删除的邮件ID列表
+}
+
+// 删除所有已读邮件
+CsMailDeleteAllReadReq{
+}
+
+// 删除邮件结果
+CsMailDeleteResp{
+	array<uint64> mails     // 已成功删除的邮件ID列表
+}
+
+// 邮件领奖请求
+CsMailRewardReceiveReq{
+	array<uint64> mails     // 需要领取奖励的邮件ID列表
+}
+
+// 邮件领奖结果
+CsMailRewardReceiveResp{
+	int64  errorCode        // 错误码（0表示成功）
+	uint64 mailId           // 邮件唯一ID
+	ResourceData reward     // 领取到的奖励数据
+}

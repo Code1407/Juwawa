@@ -1,0 +1,329 @@
+HistoryItem {
+    string date
+    int32 round
+    int64 bet
+    int64 win
+    float multiple
+    int32 gameType
+    array<int32> results
+}
+
+RankUserInfo {
+    string uid
+    string avatar
+    string name
+    uint32 rank
+    uint64 bonus
+    uint64 score
+    bool get
+}
+CsGetTodayRealTimeRankReq {}
+CsGetTodayRealTimeRankResp {
+    uint64 timestamp
+    uint32 timezone
+    string uid
+    uint32 rank
+}
+ScTodayRealTimeRankPush {
+    uint64 timestamp
+    uint32 timezone
+    string uid
+    uint32 rank
+}
+CsDayRankAwardReq {}
+ScDayRankAwardPush {
+    string uid
+    uint32 rank
+    uint64 bonus
+    uint64 score
+    array<RankUserInfo> rankUsers
+}
+CsWeekRankAwardReq {}
+ScWeekRankAwardPush {
+    string uid
+    uint32 rank
+    uint64 bonus
+    uint64 score
+    array<RankUserInfo> rankUsers
+}
+CsGetRankListByDateStrReq {
+    string dateStr
+}
+CsGetRankListByDateStrResp {
+    string dateStr
+    array<RankUserInfo> rankUsers
+}
+CsReceiveDayAwardReq {}
+CsReceiveDayAwardResp {
+    int32 code
+    uint64 accountDiamond
+    uint64 bonus
+}
+CsReceiveWeekAwardReq {}
+CsReceiveWeekAwardResp {
+    int32 code
+    uint64 accountDiamond
+    uint64 bonus
+}
+test {
+    int32 betAmount
+    int32 count
+}
+testResp {
+    int32 count
+    int32 winCount
+    float averageMultiple
+}
+// ============================================================================
+// Defs.proto - 水果 slots 游戏协议定义文件
+// 定义所有客户端与服务器通信的消息结构体
+// 包括通用数据结构、请求/响应消息、服务端推送消息
+// ============================================================================
+
+// ============================== 通用数据结构 ==============================
+
+// 玩家设置（本地持久化，非服务端存储）
+PlayerSettings {
+    int32 soundVol            // 音量大小
+    int32 lastBetAmountButton // 上次使用的下注按钮索引
+    bool isSpeed              // 是否开启快速模式
+}
+
+// 玩家账户信息
+Account {
+    int64 diamond   // 钻石余额
+    string avatar   // 头像URL
+    string nickname // 昵称
+    int32 level     // 玩家等级
+}
+
+// 单条中奖线的匹配结果
+LineSame {
+    int32 lineNum // 中奖线编号
+    int32 target  // 匹配到的图标ID
+    int32 count   // 连续匹配的数量
+}
+
+// 单轮游戏结果详情
+Results {
+    int32 betAmount                   // 本局下注金额
+    array<int32> results              // 5x3 盘面结果，共15个位置的图标ID
+    array<LineSame> lineSames         // 所有中奖线匹配结果
+    float multiple                    // 本局总倍数（普通+免费）
+    array<float> multiples            // 每条中奖线的倍数明细
+    int64 freeWinAmount               // 免费游戏累计赢得的金额
+    int32 freeCount                   // 剩余免费游戏次数
+    int64 jackpotAmount               // 本局赢得的 Jackpot 金额
+    map<string, int64> jackpotAmountPool // 各 Jackpot 池当前累积金额
+}
+
+// 回合状态步骤（用于断线重连恢复）
+RoundStep {
+    int32 runningRoundID             // 当前进行中的回合ID
+    int32 status                     // 回合状态（参见 FRGameStatus 枚举）
+    int64 accountDiamond             // 当前账户钻石余额
+    map<string, int64> jackpotPool   // 当前各 Jackpot 池金额
+    Results results                  // 当前回合的结算结果
+}
+
+// Jackpot 中奖提示信息
+Hint {
+    string userName // 中奖玩家昵称
+    int64 amount    // 中奖金额
+}
+
+// 账户钻石变化通知
+AccountDiamondUpdate {
+    int64 value  // 变化后的当前值
+    int64 offset // 变化量（正数为增加，负数为减少）
+}
+
+// 通用投注响应
+BetResp {
+    int32 code    // 返回码（0表示成功）
+    Results result // 投注结果
+    int32 roundId // 分配的回合ID
+}
+
+// 停止回合响应
+RoundResultResp {
+    int64 accountDiamond // 结算后账户钻石余额
+}
+
+// ============================== 请求/响应消息对 ==============================
+
+// ---------- 进入游戏 ----------
+// 进入游戏请求
+enterGame {
+    string uid   // 玩家唯一ID
+    string token // 登录凭证Token
+    string lang  // 客户端语言
+    string ua    // 客户端User-Agent
+}
+
+// 进入游戏响应
+enterGameResp {
+    Account account                       // 玩家账户信息
+    map<string, int64> jackpotAmountPool  // 所有 Jackpot 池当前金额
+    int32 betAmountIndex                  // 当前下注金额按钮索引
+    Results lastResult                    // 上一局未完成的结算结果（用于断线重连）
+    PlayerSettings playerSettings         // 玩家本地设置
+    array<HistoryItem> history
+}
+
+// ---------- 普通投注 ----------
+// 普通投注请求
+betNormal {
+    int32 betAmount // 本次下注金额
+}
+
+// 普通投注响应
+betNormalResp {
+    int32 code     // 返回码
+    Results result // 投注结果（含盘面和中奖信息）
+    int32 roundId  // 分配的回合ID
+}
+
+// ---------- 免费游戏投注 ----------
+// 免费游戏投注请求（免费游戏期间使用，不扣除金币）
+betFree {
+}
+
+// 免费游戏投注响应
+betFreeResp {
+    int32 code     // 返回码
+    Results result // 投注结果
+    int32 roundId  // 分配的回合ID
+}
+
+// ---------- 停止回合（结算） ----------
+// 停止回合请求（由自动停止定时器触发或手动触发）
+stopRound {
+    int32 roundId // 要结算的回合ID
+}
+
+// 停止回合响应
+stopRoundResp {
+    int64 accountDiamond // 结算后的钻石余额
+}
+
+// ---------- 设置下注按钮 ----------
+// 选择下注金额按钮请求
+setBetAmountButton {
+    int32 betAmountButtonIndex // 下注金额按钮索引
+}
+
+// 选择下注金额按钮响应
+setBetAmountButtonResp {
+    int32 code // 返回码
+}
+
+// ---------- 同步状态（断线重连） ----------
+// 同步状态请求
+synchronize {
+}
+
+// 同步状态响应
+synchronizeResp {
+    Account account                       // 玩家账户信息
+    map<string, int64> jackpotAmountPool  // 各 Jackpot 池当前金额
+    int32 betAmountIndex                  // 当前下注金额索引
+    Results lastResult                    // 上一局未完成的结果
+    PlayerSettings playerSettings         // 玩家本地设置
+    array<HistoryItem> history
+}
+
+// ---------- 更新玩家设置 ----------
+// 更新设置请求
+updateSettings {
+    PlayerSettings config // 新的设置配置
+}
+
+// 更新设置响应
+updateSettingsResp {
+    int32 code // 返回码
+}
+
+// ---------- 下发下注档位 ----------
+// 服务端下发可用下注档位请求
+sendBetAmounts {
+    array<int32> betAmounts // 可用的下注金额列表
+}
+
+// 下发下注档位响应
+sendBetAmountsResp {
+    int32 code // 返回码
+}
+
+// ---------- 心跳 ----------
+// DBM 代理心跳请求
+dbmHeartbeat {
+}
+
+// DBM 代理心跳响应
+dbmHeartbeatResp {
+    int32 code // 返回码
+}
+
+// ---------- 用户行为上报 ----------
+// 用户行为埋点上报请求
+userAction {
+    string action // 行为标识
+    string extra  // 附加数据（JSON格式）
+}
+
+// 用户行为上报响应
+userActionResp {
+    int32 code // 返回码
+}
+
+// ---------- 用户延迟上报 ----------
+// 用户延迟数据上报请求
+userDelay {
+    string action // 延迟相关行为标识
+    string extra  // 附加数据
+}
+
+// 用户延迟上报响应
+userDelayResp {
+    int32 code // 返回码
+}
+
+// ============================== 服务端推送消息 ==============================
+
+// 服务器维护通知（收到后客户端应停止操作）
+onMaintenance {
+}
+
+// 回合状态步骤推送（客户端展示滚动动画的每个状态阶段）
+onRoundStep {
+    int32 runningRoundID            // 进行中的回合ID
+    int32 status                    // 当前步骤状态
+    int64 accountDiamond            // 当前钻石余额
+    map<string, int64> jackpotPool  // 当前 Jackpot 池金额
+    Results results                 // 当前结算结果
+}
+
+// Jackpot 中奖跑马灯推送（广播给所有在线玩家）
+onJackpotHint {
+    string userName // 中奖玩家昵称
+    int64 amount    // 中奖金额
+}
+
+// 投注结果推送（通知客户端本局结果）
+onResultHandler {
+    int32 code     // 返回码
+    Results result // 投注结果
+    int32 roundId  // 回合ID
+}
+
+// 停止回合结果推送
+onStopRound {
+    int64 accountDiamond // 结算后的钻石余额
+}
+
+// 账户钻石变化推送（实时通知客户端余额变动）
+onAccountDiamondUpdate {
+    int64 value  // 变化后的当前值
+    int64 offset // 变化量
+}

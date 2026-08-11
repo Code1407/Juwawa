@@ -1,0 +1,72 @@
+{
+  "1": {
+    "carName": "布加迪",
+    "wheelPositions": [1],
+    "wheelMultiples": [100],
+    "positionProbabilities": [0.0097],
+    "totalProbability": 0.0097
+  },
+  "2": {
+    "carName": "奔驰",
+    "wheelPositions": [2, 16],
+    "wheelMultiples": [5, 5],
+    "positionProbabilities": [0.099, 0.099],
+    "totalProbability": 0.198
+  },
+  "3": {
+    "carName": "玛莎拉蒂",
+    "wheelPositions": [3, 15],
+    "wheelMultiples": [8, 8],
+    "positionProbabilities": [0.062, 0.062],
+    "totalProbability": 0.124
+  },
+  "4": {
+    "carName": "宝马",
+    "wheelPositions": [4, 10],
+    "wheelMultiples": [2, 2],
+    "positionProbabilities": [0.2425, 0.2425],
+    "totalProbability": 0.485
+  },
+  "5": {
+    "carName": "法拉利",
+    "wheelPositions": [5],
+    "wheelMultiples": [50],
+    "positionProbabilities": [0.0198],
+    "totalProbability": 0.0198
+  },
+  "6": {
+    "carName": "兰博基尼",
+    "wheelPositions": [6, 11],
+    "wheelMultiples": [30, 30],
+    "positionProbabilities": [0.0165, 0.0165],
+    "totalProbability": 0.033
+  },
+  "7": {
+    "carName": "迈巴赫",
+    "wheelPositions": [7, 14],
+    "wheelMultiples": [20, 20],
+    "positionProbabilities": [0.02475, 0.02475],
+    "totalProbability": 0.0495
+  },
+  "8": {
+    "carName": "保时捷",
+    "wheelPositions": [8, 12],
+    "wheelMultiples": [18, 18],
+    "positionProbabilities": [0.0275, 0.0275],
+    "totalProbability": 0.055
+  },
+  "9": {
+    "carName": "宾利",
+    "wheelPositions": [9],
+    "wheelMultiples": [88],
+    "positionProbabilities": [0.011],
+    "totalProbability": 0.011
+  },
+  "10": {
+    "carName": "劳斯莱斯",
+    "wheelPositions": [13],
+    "wheelMultiples": [66],
+    "positionProbabilities": [0.015],
+    "totalProbability": 0.015
+  }
+}

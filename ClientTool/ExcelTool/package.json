@@ -1,0 +1,28 @@
+{
+  "name": "exceltool",
+  "version": "1.0.0",
+  "description": "",
+  "main": "dist/index.js",
+  "bin": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "pkg": "pkg . --targets node18-win-x64 --output excel-tool.exe"
+  },
+  "keywords": [],
+  "author": "cd",
+  "license": "",
+  "devDependencies": {
+    "@types/exceljs": "^0.5.3",
+    "@types/node": "^25.6.2",
+    "pkg": "^5.8.1",
+    "typescript": "^6.0.3"
+  },
+  "dependencies": {
+    "exceljs": "^4.4.0"
+  },
+  "pkg": {
+    "assets": [],
+    "scripts": "dist/**/*.js"
+  }
+}

@@ -1,0 +1,8 @@
+{
+    "protos":[
+        "Protos/Defs.proto",
+        "Protos/Common.proto"
+    ],
+    "client":"../FortuneSlot/assets/script/Defs.ts",
+    "server":"Game/Defs.lua"
+}

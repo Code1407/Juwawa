@@ -1,0 +1,40 @@
+﻿{
+    "serverAdress": [
+        {
+            "machArea": 2,
+            "envName": "test",
+            "url": "https://front.fa.hotgame.win:8000/adress"
+        },
+        {
+            "machArea": 3,
+            "envName": "test",
+            "url": "https://front.xn.hotgame.win:8000/adress"
+        },
+        {
+            "machArea": 4,
+            "envName": "test",
+            "url": "https://front.fj.hotgame.win:8000/adress"
+        },
+        {
+            "machArea": 2,
+            "envName": "product",
+            "url": "https://front.fa.hotgame.win:8080/adress"
+        },
+        {
+            "machArea": 3,
+            "envName": "product",
+            "url": "https://front.xn.hotgame.win:8080/adress"
+        },
+        {
+            "machArea": 4,
+            "envName": "product",
+            "url": "https://front.fj.hotgame.win:8080/adress"
+        }
+    ],
+    "platKey": "3h5mCb8vev",
+    "platId": 2000,
+    "gameId": 31,
+    "sudGameId": "2028770301301043202",
+    "sudGameName": "Super777",
+    "sudIsBrowser": false
+}

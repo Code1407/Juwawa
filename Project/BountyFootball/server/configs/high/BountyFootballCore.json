@@ -1,0 +1,13 @@
+{
+  "1": {
+    "gameName": "BountyFootball",
+    "heartbeatMs": 1000,
+    "rankSize": 100,
+    "betSeconds": 17,
+    "runSeconds": 5,
+    "finalSeconds": 6,
+    "resultBetIndex": [8, 2, 10, 1, 4, 7, 6, 3, 5, 1, 7, 3, 9, 6, 10, 2],
+    "wheelMultiple": [100, 5, 8, 2, 50, 30, 20, 18, 88, 2, 30, 18, 66, 20, 8, 5],
+    "resultProbability": [0.0097, 0.099, 0.062, 0.2425, 0.0198, 0.0165, 0.02475, 0.0275, 0.011, 0.2425, 0.0165, 0.0275, 0.015, 0.02475, 0.062, 0.099]
+  }
+}

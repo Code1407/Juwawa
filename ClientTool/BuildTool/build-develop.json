@@ -1,0 +1,347 @@
+{
+  "common": {
+    "md5Cache": true,
+	"pureClientPath": "D:/GameTemplate/PureClient",
+	"projectsPath": "D:/Project",
+    "exportRoot": "D:/Work/ClientTool/BuildTool/buildOut/release",
+    "obfuscate": {
+      "enabled": true,
+      "includeAllBundles": true,
+      "level": 2
+    },
+    "resEncrypt": {
+      "enabled": false,
+      "includeAllBundles": true,
+      "key": "juwawaVXjOTTiFFiLGG",
+      "sig": "juwawasign",
+      "exts": [
+        "png"
+      ]
+    }
+  },
+  "projects": [
+    {
+      "name": "77",
+      "packageName": "Seven7",
+      "build": {
+        "orientation": "Auto",
+        "startScene": "assets/scene/start.scene",
+        "scenes": [
+          "assets/scene/start.scene"
+        ]
+      }
+    },
+    {
+      "name": "猫咪",
+      "packageName": "GreedyCat",
+      "build": {
+        "orientation": "Auto",
+        "startScene": "assets/scene/start.scene",
+        "scenes": [
+          "assets/scene/start.scene"
+        ]
+      }
+    },
+    {
+      "name": "美味摩天轮",
+      "packageName": "Wheel_Delicious",
+      "build": {
+        "orientation": "Auto",
+        "startScene": "assets/scene/start.scene",
+        "scenes": [
+          "assets/scene/start.scene"
+        ]
+      }
+    },
+    {
+      "name": "太空摩天轮",
+      "packageName": "Wheel_OuterSpace",
+      "build": {
+        "orientation": "Auto",
+        "startScene": "assets/scene/start.scene",
+        "scenes": [
+          "assets/scene/start.scene"
+        ]
+      }
+    },
+	{
+      "name": "海洋拉霸",
+      "packageName": "OceanHuntSlot",
+      "creatorVersion": "2.4.10",
+      "build": {
+        "orientation": "auto",
+        "startScene": "assets/scene/seven_screen.fire",
+        "scenes": [
+          "assets/scene/seven_screen.fire"
+        ]
+      }
+    },
+	{
+      "name": "金花",
+      "packageName": "TeenPatti",
+      "creatorVersion": "2.4.10",
+      "build": {
+        "orientation": "auto",
+        "startScene": "assets/scene/loadingScene.fire",
+        "scenes": [
+          "assets/scene/loadingScene.fire"
+        ]
+      }
+    },
+	{
+      "name": "金花99",
+      "packageName": "TeenPatti99",
+      "creatorVersion": "2.4.10",
+      "build": {
+        "orientation": "Auto",
+        "startScene": "assets/scene/main_seven.fire",
+        "scenes": [
+          "assets/scene/main_seven.fire"
+        ]
+      }
+    },
+	{
+      "name": "狮子摩天轮",
+      "packageName": "GreedyLion",
+      "creatorVersion": "2.4.10",
+      "build": {
+        "orientation": "Auto",
+        "startScene": "assets/scene/seven_screen.fire",
+        "scenes": [
+          "assets/scene/seven_screen.fire"
+        ]
+      }
+    },
+    {
+      "name": "兔子",
+      "packageName": "Rabbit",
+      "build": {
+        "orientation": "Auto",
+        "startScene": "assets/scene/start.scene",
+        "scenes": [
+          "assets/scene/start.scene"
+        ]
+      }
+    },
+    {
+      "name": "宙斯",
+      "packageName": "Zeus",
+      "build": {
+        "orientation": "Auto",
+        "startScene": "assets/scene/start.scene",
+        "scenes": [
+          "assets/scene/start.scene"
+        ]
+      }
+    },
+    {
+      "name": "迈阿密",
+      "packageName": "Miami",
+      "build": {
+        "orientation": "Auto",
+        "startScene": "assets/scene/start.scene",
+        "scenes": [
+          "assets/scene/start.scene"
+        ]
+      }
+    },
+    {
+      "name": "捕鱼",
+      "packageName": "CatchFish",
+      "build": {
+        "orientation": "landscape",
+        "startScene": "assets/scene/start.scene",
+        "scenes": [
+          "assets/scene/start.scene",
+          "assets/scene/gameScene.scene"
+        ]
+      }
+    },
+    {
+      "name": "石头",
+      "packageName": "Gemstone",
+      "build": {
+        "orientation": "Auto",
+        "startScene": "assets/scene/start.scene",
+        "scenes": [
+          "assets/scene/start.scene"
+        ]
+      }
+    },
+    {
+      "name": "Yummy",
+      "packageName": "Yummy",
+      "build": {
+        "orientation": "Auto",
+        "startScene": "assets/scene/start.scene",
+        "scenes": [
+          "assets/scene/start.scene"
+        ]
+      }
+    },
+    {
+      "name": "斯芬克斯",
+      "packageName": "Sphinx",
+      "build": {
+        "orientation": "Auto",
+        "startScene": "assets/scene/start.scene",
+        "scenes": [
+          "assets/scene/start.scene"
+        ]
+      }
+    },
+    {
+      "name": "音乐狂潮",
+      "packageName": "RaveOn",
+      "build": {
+        "orientation": "Auto",
+        "startScene": "assets/scene/start.scene",
+        "scenes": [
+          "assets/scene/start.scene"
+        ]
+      }
+    },
+    {
+      "name": "火山Slot",
+      "packageName": "LavaSlot",
+      "build": {
+        "orientation": "Auto",
+        "startScene": "assets/scene/start.scene",
+        "scenes": [
+          "assets/scene/start.scene"
+        ]
+      }
+    },
+    {
+      "name": "足球汇",
+      "packageName": "Football",
+      "build": {
+        "orientation": "Auto",
+        "startScene": "assets/scene/start.scene",
+        "scenes": [
+          "assets/scene/start.scene"
+        ]
+      }
+    },
+    {
+      "name": "宝石2.4",
+      "packageName": "FortuneSlot",
+      "creatorVersion": "2.4.10",
+      "build": {
+        "orientation": "Auto",
+        "startScene": "assets/scene/seven.fire",
+        "scenes": [
+          "assets/scene/seven.fire"
+        ]
+      }
+    },
+    {
+      "name": "海盗捕鱼2.4.1",
+      "packageName": "PirateFishing",
+      "creatorVersion": "2.4.10",
+      "build": {
+        "orientation": "Auto",
+        "startScene": "assets/scenes/seven_screen.fire",
+        "scenes": [
+          "assets/scenes/seven_screen.fire"
+        ]
+      }
+    },
+    {
+      "name": "水果派对2",
+      "packageName": "FruitParty2",
+      "creatorVersion": "2.4.10",
+      "build": {
+        "orientation": "Auto",
+        "startScene": "assets/scene/loading_screen.fire",
+        "scenes": [
+          "assets/scene/loading_screen.fire"
+        ]
+      }
+    },
+	{
+      "name": "火山slot",
+      "packageName": "LavaSlot",
+      "creatorVersion": "2.4.10",
+      "build": {
+        "orientation": "Auto",
+        "startScene": "assets/scene/seven_screen.fire",
+        "scenes": [
+          "assets/scene/seven_screen.fire"
+        ]
+      }
+    },
+	{
+      "name": "Super777",
+      "packageName": "Super777Slot",
+      "creatorVersion": "2.4.10",
+      "build": {
+        "orientation": "Auto",
+        "startScene": "assets/scene/seven_screen.fire",
+        "scenes": [
+          "assets/scene/seven_screen.fire"
+        ]
+      }
+    },
+	{
+      "name": "海盗王",
+      "packageName": "PirateKing",
+      "creatorVersion": "2.4.10",
+      "build": {
+        "orientation": "Auto",
+        "startScene": "assets/scene/full_screen.fire",
+        "scenes": [
+          "assets/scene/full_screen.fire"
+        ]
+      }
+    },
+    {
+      "name": "火箭",
+      "packageName": "Rocket",
+      "creatorVersion": "2.4.10",
+      "build": {
+        "orientation": "Auto",
+        "startScene": "assets/scenes/seven_screen.fire",
+        "scenes": [
+          "assets/scenes/seven_screen.fire"
+        ]
+      }
+    },
+	{
+      "name": "宝箱",
+      "packageName": "Box",
+      "creatorVersion": "2.4.10",
+      "build": {
+        "orientation": "Auto",
+        "startScene": "assets/scene/half_screen.fire",
+        "scenes": [
+          "assets/scene/half_screen.fire"
+        ]
+      }
+    },
+	{
+      "name": "轮盘",
+      "packageName": "Roulette",
+      "creatorVersion": "2.4.10",
+      "build": {
+        "orientation": "Auto",
+        "startScene": "assets/scene/seven.fire",
+        "scenes": [
+          "assets/scene/seven.fire"
+        ]
+      }
+    },
+	{
+      "name": "豪车汇",
+      "packageName": "LuxuryCar",
+      "creatorVersion": "2.4.10",
+      "build": {
+        "orientation": "Auto",
+        "startScene": "assets/scene/seven_screen.fire",
+        "scenes": [
+          "assets/scene/seven_screen.fire"
+        ]
+      }
+    }
+  ]
+}

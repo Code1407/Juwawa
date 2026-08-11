@@ -1,0 +1,454 @@
+{
+    "sdkId": "0",
+    "sdkName": "hg",
+    "apps": {
+        "default": {
+            "appId": "0",
+            "appName": "test",
+            "extra": {
+                "showName": -1
+            },
+            "servers": {
+                "dev": {
+                    "host": "192.168.3.124",
+                    "port": 3000
+                },
+                "pro": {
+                    "host": "test.hotgame.win/api/hg",
+                    "port": 443
+                }
+            },
+            "appCoinIcon": "https://test.hotgame.win/resource/sdk/default/coin.png",
+            "enableRank": true,
+            "rankUrls": {
+                "dev": "https://test.hotgame.win/game/api/rank"
+            },
+            "games": {
+                "FerrisWheel": {
+                    "gameId": "101",
+                    "gameName": "FerrisWheel",
+                    "extra": {
+                        "maxBetNode": 8
+                    },
+                    "betGradeAmounts": [
+                        10,
+                        100,
+                        1000,
+                        10000
+                    ]
+                },
+                "FruitSlots": {
+                    "gameId": "102",
+                    "gameName": "FruitSlots",
+                    "betGradeAmounts": [
+                       5,
+                       10,
+                       20,
+                       50,
+                       100,
+                       200,
+                       1000
+                    ]
+                },
+                "TeenPatti": {
+                    "gameId": "103",
+                    "gameName": "TeenPatti",
+                    "betGradeAmounts": [
+                        10,
+                        100,
+                        1000,
+                        10000
+                    ],
+                    "chipUrls": {
+                        "10": "https://test.hotgame.win/resource/sdk/default/TeenPatti/10.png",
+                        "50": "https://test.hotgame.win/resource/sdk/default/TeenPatti/50.png",
+                        "100": "https://test.hotgame.win/resource/sdk/default/TeenPatti/100.png",
+                        "1K": "https://test.hotgame.win/resource/sdk/default/TeenPatti/1K.png",
+                        "5K": "https://test.hotgame.win/resource/sdk/default/TeenPatti/5K.png",
+                        "10K": "https://test.hotgame.win/resource/sdk/default/TeenPatti/10K.png",
+                        "50K": "https://test.hotgame.win/resource/sdk/default/TeenPatti/50K.png",
+                        "100K": "https://test.hotgame.win/resource/sdk/default/TeenPatti/100K.png",
+                        "200K": "https://test.hotgame.win/resource/sdk/default/TeenPatti/200K.png"
+                    }
+                },
+                "FruitMachine": {
+                    "gameId": "104",
+                    "gameName": "FruitMachine",
+                    "betGradeAmounts": [
+                        1,
+                        10,
+                        100,
+                        1000
+                    ]
+                },
+                "Racing": {
+                    "gameId": "105",
+                    "gameName": "Racing",
+                    "betGradeAmounts": [
+                        10,
+                        100,
+                        1000,
+                        10000,
+                        100000
+                    ],
+                    "chipUrls": {
+                        "10": "https://test.hotgame.win/resource/sdk/default/Racing/10.png",
+                        "100": "https://test.hotgame.win/resource/sdk/default/Racing/100.png",
+                        "1K": "https://test.hotgame.win/resource/sdk/default/Racing/1K.png",
+                        "10K": "https://test.hotgame.win/resource/sdk/default/Racing/10K.png",
+                        "100K": "https://test.hotgame.win/resource/sdk/default/Racing/100K.png"
+                    }
+                },
+                "Box": {
+                    "gameId": "106",
+                    "gameName": "Box",
+                    "betGradeAmounts": [
+                        10,
+                        100,
+                        1000,
+                        10000
+                    ],
+                    "chipUrls": {
+                        "10": "https://test.hotgame.win/resource/sdk/default/Box/10.png",
+                        "100": "https://test.hotgame.win/resource/sdk/default/Box/100.png",
+                        "1K": "https://test.hotgame.win/resource/sdk/default/Box/1K.png",
+                        "10K": "https://test.hotgame.win/resource/sdk/default/Box/10K.png",
+                        "100K": "https://test.hotgame.win/resource/sdk/default/Box/100K.png"
+                    }
+                },
+                "FishLord": {
+                    "gameId": "107",
+                    "gameName": "FishLord",
+                    "betGradeAmounts": [
+                        10,
+                        100,
+                        1000,
+                        10000
+                    ]
+                },
+                "PirateKing": {
+                    "gameId": "108",
+                    "gameName": "PirateKing",
+                    "betGradeAmounts": [
+                        1,
+                        10,
+                        100,
+                        1000
+                    ]
+                },
+                "DragonTiger": {
+                    "gameId": "109",
+                    "gameName": "DragonTiger",
+                    "betGradeAmounts": [
+                        10,
+                        100,
+                        1000,
+                        10000
+                    ],
+                    "chipUrls": {
+                        "10": "https://test.hotgame.win/resource/sdk/default/DragonTiger2/10.png",
+                        "100": "https://test.hotgame.win/resource/sdk/default/DragonTiger2/100.png",
+                        "1K": "https://test.hotgame.win/resource/sdk/default/DragonTiger2/1K.png",
+                        "10K": "https://test.hotgame.win/resource/sdk/default/DragonTiger2/10K.png",
+                        "100K": "https://test.hotgame.win/resource/sdk/default/DragonTiger2/100K.png"
+                    }
+                },
+                "Wheel77": {
+                    "gameId": "110",
+                    "gameName": "Wheel77",
+                    "betGradeAmounts": [
+                        10,
+                        100,
+                        1000,
+                        10000
+                    ],
+                    "chipUrls": {
+                        "5": "https://test.hotgame.win/resource/sdk/default/Wheel77/5.png",
+                        "10": "https://test.hotgame.win/resource/sdk/default/Wheel77/10.png",
+                        "50": "https://test.hotgame.win/resource/sdk/default/Wheel77/50.png",
+                        "100": "https://test.hotgame.win/resource/sdk/default/Wheel77/100.png",
+                        "500": "https://test.hotgame.win/resource/sdk/default/Wheel77/500.png",
+                        "1K": "https://test.hotgame.win/resource/sdk/default/Wheel77/1K.png",
+                        "5K": "https://test.hotgame.win/resource/sdk/default/Wheel77/5K.png",
+                        "10K": "https://test.hotgame.win/resource/sdk/default/Wheel77/10K.png",
+                        "50K": "https://test.hotgame.win/resource/sdk/default/Wheel77/50K.png",
+                        "100K": "https://test.hotgame.win/resource/sdk/default/Wheel77/100K.png"
+                    }
+                },
+                "Crash": {
+                    "gameId": "111",
+                    "gameName": "Crash",
+                    "betGradeAmounts": [
+                        10,
+                        100,
+                        1000,
+                        10000
+                    ]
+                },
+                "HiLo": {
+                    "gameId": "112",
+                    "gameName": "HiLo",
+                    "betGradeAmounts": [
+                        10,
+                        100,
+                        1000,
+                        10000
+                    ]
+                },
+                "BoxingDragonTiger": {
+                    "gameId": "113",
+                    "gameName": "BoxingDragonTiger",
+                    "betGradeAmounts": [
+                        10,
+                        100,
+                        1000,
+                        10000,
+                        100000
+                    ]
+                },
+                "Roshambo": {
+                    "gameId": "114",
+                    "gameName": "Roshambo",
+                    "betGradeAmounts": [
+                        10,
+                        100,
+                        1000
+                    ]
+                },
+                "FootballSlot": {
+                    "gameId": "115",
+                    "gameName": "FootballSlot",
+                    "betGradeAmounts": [
+                        1,
+                        10,
+                        100,
+                        1000
+                    ]
+                },
+                "Rocket": {
+                    "gameId": "116",
+                    "gameName": "Rocket",
+                    "betGradeAmounts": [
+                        100,
+                        1000,
+                        10000,
+                        100000
+                    ],
+                    "chipUrls": {
+                        "100": "https://test.hotgame.win/resource/sdk/default/Rocket/100.png",
+                        "1K": "https://test.hotgame.win/resource/sdk/default/Rocket/1K.png",
+                        "10K": "https://test.hotgame.win/resource/sdk/default/Rocket/10K.png",
+                        "100K": "https://test.hotgame.win/resource/sdk/default/Rocket/100K.png"
+                    }
+                },
+                "PirateFishing": {
+                    "gameId": "117",
+                    "gameName": "PirateFishing",
+                    "betGradeAmounts": [
+                        10,
+                        100,
+                        1000,
+                        10000
+                    ]
+                },
+                "Roulette": {
+                    "gameId": "118",
+                    "gameName": "Roulette",
+                    "betGradeAmounts": [
+                        10,
+                        100,
+                        1000,
+                        10000
+                    ],
+                    "chipUrls": {
+                        "10": "https://test.hotgame.win/resource/sdk/default/Roulette/10.png",
+                        "100": "https://test.hotgame.win/resource/sdk/default/Roulette/100.png",
+                        "1K": "https://test.hotgame.win/resource/sdk/default/Roulette/1K.png",
+                        "10K": "https://test.hotgame.win/resource/sdk/default/Roulette/10K.png",
+                        "100K": "https://test.hotgame.win/resource/sdk/default/Roulette/100K.png"
+                    }
+                },
+                "LuxurySlot": {
+                    "gameId": "119",
+                    "gameName": "LuxurySlot",
+                    "betGradeAmounts": [
+                        10,
+                        100,
+                        1000,
+                        10000
+                    ]
+                },
+                "GreedyCat": {
+                    "gameId": "120",
+                    "gameName": "GreedyCat",
+                    "betGradeAmounts": [
+                        10,
+                        100,
+                        1000,
+                        10000
+                    ]
+                },
+                "FruitParty": {
+                    "gameId": "121",
+                    "gameName": "FruitParty",
+                    "betGradeAmounts": [
+                        10,
+                        100,
+                        1000,
+                        10000
+                    ]
+                },
+                "PirateFishingMulti": {
+                    "gameId": "122",
+                    "gameName": "PirateFishingMulti",
+                    "betGradeAmounts": [
+                        10,
+                        100,
+                        1000,
+                        10000
+                    ]
+                },
+                "FruitParty2": {
+                    "gameId": "123",
+                    "gameName": "FruitParty2",
+                    "betGradeAmounts": [
+                        10,
+                        100,
+                        1000,
+                        10000
+                    ],
+                    "chipUrls": {
+                        "10": "https://test.hotgame.win/resource/sdk/default/FruitParty2/10.png",
+                        "100": "https://test.hotgame.win/resource/sdk/default/FruitParty2/100.png",
+                        "1K": "https://test.hotgame.win/resource/sdk/default/FruitParty2/1K.png",
+                        "5K": "https://test.hotgame.win/resource/sdk/default/FruitParty2/5K.png",
+                        "10K": "https://test.hotgame.win/resource/sdk/default/FruitParty2/10K.png",
+                        "50K": "https://test.hotgame.win/resource/sdk/default/FruitParty2/50K.png",
+                        "100K": "https://test.hotgame.win/resource/sdk/default/FruitParty2/100K.png"
+                    }
+                },
+                "GreedyLion": {
+                    "gameId": "124",
+                    "gameName": "GreedyLion",
+                    "betGradeAmounts": [
+                        10,
+                        100,
+                        1000,
+                        10000
+                    ]
+                },
+                "Delicious": {
+                    "gameId": "125",
+                    "gameName": "Delicious",
+                    "betGradeAmounts": [
+                        10,
+                        100,
+                        1000,
+                        10000
+                    ]
+                },
+                "GreedyLionR": {
+                    "gameId": "126",
+                    "gameName": "GreedyLionR",
+                    "betGradeAmounts": [
+                        10,
+                        100,
+                        1000,
+                        10000
+                    ]
+                },
+                "TeenPatti99": {
+                    "gameId": "127",
+                    "gameName": "TeenPatti99",
+                    "betGradeAmounts": [
+                        10,
+                        100,
+                        1000,
+                        10000
+                    ],
+                    "chipUrls": {
+                        "10": "https://test.hotgame.win/resource/sdk/default/TeenPatti/10.png",
+                        "50": "https://test.hotgame.win/resource/sdk/default/TeenPatti/50.png",
+                        "100": "https://test.hotgame.win/resource/sdk/default/TeenPatti/100.png",
+                        "1K": "https://test.hotgame.win/resource/sdk/default/TeenPatti/1K.png",
+                        "5K": "https://test.hotgame.win/resource/sdk/default/TeenPatti/5K.png",
+                        "10K": "https://test.hotgame.win/resource/sdk/default/TeenPatti/10K.png",
+                        "50K": "https://test.hotgame.win/resource/sdk/default/TeenPatti/50K.png",
+                        "100K": "https://test.hotgame.win/resource/sdk/default/TeenPatti/100K.png",
+                        "200K": "https://test.hotgame.win/resource/sdk/default/TeenPatti/200K.png"
+                    }
+                },
+                "FightSlot": {
+                    "gameId": "128",
+                    "gameName": "FightSlot",
+                    "betGradeAmounts": [
+                        1,
+                        10,
+                        100,
+                        1000
+                    ]
+                },
+                "EuroCup": {
+                    "gameId": "129",
+                    "gameName": "EuroCup",
+                    "betGradeAmounts": [
+                        10,
+                        100,
+                        1000,
+                        10000
+                    ],
+                    "chipUrls": {
+                        "10": "https://test.hotgame.win/resource/sdk/default/EuroCup/10.png",
+                        "50": "https://test.hotgame.win/resource/sdk/default/EuroCup/50.png",
+                        "100": "https://test.hotgame.win/resource/sdk/default/EuroCup/100.png",
+                        "1K": "https://test.hotgame.win/resource/sdk/default/EuroCup/1K.png",
+                        "5K": "https://test.hotgame.win/resource/sdk/default/EuroCup/5K.png",
+                        "10K": "https://test.hotgame.win/resource/sdk/default/EuroCup/10K.png",
+                        "50K": "https://test.hotgame.win/resource/sdk/default/EuroCup/50K.png",
+                        "100K": "https://test.hotgame.win/resource/sdk/default/EuroCup/100K.png"
+                    }
+                },
+                "BeeSlot": {
+                    "gameId": "130",
+                    "gameName": "BeeSlot",
+                    "betGradeAmounts": [
+                        1,
+                        10,
+                        100,
+                        1000
+                    ]
+                },
+                "Ludo": {
+                    "gameId": "131",
+                    "gameName": "Ludo",
+                    "betGradeAmounts": [
+                        10,
+                        100,
+                        1000,
+                        10000
+                    ]
+                },
+                "Jurassic": {
+                    "gameId": "132",
+                    "gameName": "Jurassic",
+                    "betGradeAmounts": [
+                        10,
+                        100,
+                        1000,
+                        10000
+                    ]
+                },
+                "PiggyBank": {
+                    "gameId": "133",
+                    "gameName": "PiggyBank",
+                    "betGradeAmounts": [
+                        10,
+                        100,
+                        1000,
+                        10000
+                    ]
+                }
+            }
+        }
+    }
+}

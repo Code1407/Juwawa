@@ -1,0 +1,16 @@
+{
+    "development": {
+        "host": "127.0.0.1",
+        "port": 3306,
+        "database": "",
+        "user": "root",
+        "password": "123456"
+    },
+    "production": {
+        "host": "127.0.0.1",
+        "port": 3099,
+        "database": "",
+        "user": "不要使用root",
+        "password": "生产环境要用复杂点的密码，并且不能使用默认端口"
+    }
+}

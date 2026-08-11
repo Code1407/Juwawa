@@ -1,0 +1,104 @@
+
+phb_tb.png
+size: 512,512
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+bt
+  rotate: false
+  xy: 263, 462
+  size: 114, 29
+  orig: 116, 31
+  offset: 1, 1
+  index: -1
+g_00000
+  rotate: false
+  xy: 217, 266
+  size: 35, 43
+  orig: 39, 47
+  offset: 2, 2
+  index: -1
+g_00001
+  rotate: true
+  xy: 254, 225
+  size: 53, 71
+  orig: 57, 75
+  offset: 2, 2
+  index: -1
+g_00002
+  rotate: true
+  xy: 373, 238
+  size: 68, 110
+  orig: 72, 113
+  offset: 2, 2
+  index: -1
+g_00003
+  rotate: true
+  xy: 260, 280
+  size: 83, 111
+  orig: 86, 118
+  offset: 1, 6
+  index: -1
+g_00004
+  rotate: true
+  xy: 146, 405
+  size: 86, 115
+  orig: 91, 119
+  offset: 3, 3
+  index: -1
+g_00005
+  rotate: true
+  xy: 146, 311
+  size: 92, 112
+  orig: 96, 119
+  offset: 2, 6
+  index: -1
+g_00006
+  rotate: true
+  xy: 379, 390
+  size: 101, 112
+  orig: 104, 119
+  offset: 1, 6
+  index: -1
+g_00007
+  rotate: true
+  xy: 263, 365
+  size: 95, 112
+  orig: 99, 118
+  offset: 3, 5
+  index: -1
+g_00008
+  rotate: true
+  xy: 377, 308
+  size: 80, 112
+  orig: 85, 117
+  offset: 3, 3
+  index: -1
+g_00009
+  rotate: true
+  xy: 2, 308
+  size: 64, 106
+  orig: 68, 110
+  offset: 2, 3
+  index: -1
+g_00010
+  rotate: true
+  xy: 110, 262
+  size: 47, 105
+  orig: 52, 108
+  offset: 3, 2
+  index: -1
+jb
+  rotate: false
+  xy: 2, 374
+  size: 142, 117
+  orig: 146, 121
+  offset: 2, 2
+  index: -1
+xx
+  rotate: false
+  xy: 2, 228
+  size: 80, 78
+  orig: 105, 106
+  offset: 12, 14
+  index: -1

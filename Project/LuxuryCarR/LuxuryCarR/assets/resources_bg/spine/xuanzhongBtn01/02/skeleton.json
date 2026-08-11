@@ -1,0 +1,154 @@
+{
+"skeleton": {
+	"hash": "2L5jOuQ25rMP1Elu7JvoMLa+GpE",
+	"spine": "3.8.75",
+	"x": -145,
+	"y": -161,
+	"width": 306,
+	"height": 322,
+	"images": "./动画素材/",
+	"audio": "D:/吉姆/豪车汇"
+},
+"bones": [
+	{ "name": "root" },
+	{ "name": "20", "parent": "root" },
+	{ "name": "201", "parent": "root" },
+	{ "name": "202", "parent": "root" },
+	{ "name": "gd", "parent": "root" },
+	{ "name": "gd2", "parent": "root", "x": 15 }
+],
+"slots": [
+	{ "name": "21", "bone": "root", "attachment": "21" },
+	{ "name": "22", "bone": "root", "attachment": "23" },
+	{ "name": "23", "bone": "root", "attachment": "23" },
+	{ "name": "20", "bone": "20", "attachment": "20" },
+	{ "name": "201", "bone": "201", "attachment": "201" },
+	{ "name": "202", "bone": "202", "attachment": "202" },
+	{ "name": "gd", "bone": "gd", "attachment": "gd" },
+	{ "name": "gd2", "bone": "gd2", "attachment": "gd2" }
+],
+"skins": [
+	{
+		"name": "default",
+		"attachments": {
+			"22": {
+				"23": { "path": "22", "x": 0.5, "width": 275, "height": 130 }
+			},
+			"23": {
+				"23": { "x": 0.5, "width": 275, "height": 130 }
+			},
+			"gd": {
+				"gd": { "x": 0.5, "width": 291, "height": 322 }
+			},
+			"201": {
+				"201": { "x": 0.5, "width": 275, "height": 130 }
+			},
+			"202": {
+				"202": { "x": 0.5, "width": 275, "height": 130 }
+			},
+			"gd2": {
+				"gd2": { "x": 0.5, "width": 291, "height": 322 }
+			},
+			"20": {
+				"20": { "x": 0.5, "width": 275, "height": 130 }
+			},
+			"21": {
+				"21": { "x": 0.5, "width": 275, "height": 130 }
+			}
+		}
+	}
+],
+"animations": {
+	"1": {
+		"slots": {
+			"20": {
+				"color": [
+					{ "color": "ffffffff" },
+					{ "time": 0.3333, "color": "ffffff00" }
+				]
+			},
+			"gd2": {
+				"color": [
+					{ "color": "ffffff00", "curve": "stepped" },
+					{ "time": 0.1333, "color": "ffffff00" },
+					{ "time": 0.1667, "color": "ffffffff", "curve": "stepped" },
+					{ "time": 0.5, "color": "ffffffff" },
+					{ "time": 0.6667, "color": "ffffff00" }
+				]
+			},
+			"22": {
+				"color": [
+					{ "time": 0.6667, "color": "ffffffff" },
+					{ "time": 0.8333, "color": "ffffff00" }
+				]
+			},
+			"201": {
+				"color": [
+					{ "time": 0.1667, "color": "ffffffff" },
+					{ "time": 0.5, "color": "ffffff00" }
+				]
+			},
+			"21": {
+				"color": [
+					{ "time": 0.8333, "color": "ffffffff" },
+					{ "time": 1, "color": "ffffff00" }
+				]
+			},
+			"202": {
+				"color": [
+					{ "time": 0.3333, "color": "ffffffff" },
+					{ "time": 0.6667, "color": "ffffff00" }
+				]
+			},
+			"gd": {
+				"color": [
+					{ "time": 0.3333, "color": "ffffffff" },
+					{ "time": 0.5, "color": "ffffff00" }
+				]
+			},
+			"23": {
+				"color": [
+					{ "time": 0.5, "color": "ffffffff" },
+					{ "time": 0.6667, "color": "ffffff00" }
+				]
+			}
+		},
+		"bones": {
+			"20": {
+				"scale": [
+					{},
+					{ "time": 0.3333, "x": 1.432, "y": 1.432 }
+				]
+			},
+			"201": {
+				"scale": [
+					{ "time": 0.1667 },
+					{ "time": 0.5, "x": 1.433, "y": 1.433 }
+				]
+			},
+			"202": {
+				"scale": [
+					{ "time": 0.3333 },
+					{ "time": 0.6667, "x": 1.433, "y": 1.433 }
+				]
+			},
+			"gd": {
+				"scale": [
+					{ "x": 0.284, "y": 0.284 },
+					{ "time": 0.5, "x": 0.645, "y": 0.645 }
+				]
+			},
+			"gd2": {
+				"rotate": [
+					{ "angle": -61.35 }
+				],
+				"scale": [
+					{ "x": 0.195, "y": 0.195, "curve": "stepped" },
+					{ "time": 0.1667, "x": 0.195, "y": 0.195 },
+					{ "time": 0.6667, "x": 0.594, "y": 0.594 }
+				]
+			}
+		}
+	}
+}
+}

@@ -1,0 +1,83 @@
+
+skeleton.png
+size: 1024,1024
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+光晕
+  rotate: false
+  xy: 2, 366
+  size: 322, 324
+  orig: 352, 345
+  offset: 15, 8
+  index: -1
+光点
+  rotate: true
+  xy: 125, 113
+  size: 251, 249
+  orig: 334, 250
+  offset: 41, 0
+  index: -1
+光线
+  rotate: false
+  xy: 2, 692
+  size: 326, 326
+  orig: 344, 344
+  offset: 9, 9
+  index: -1
+奖杯
+  rotate: false
+  xy: 137, 3
+  size: 107, 108
+  orig: 121, 137
+  offset: 7, 14
+  index: -1
+奖杯g
+  rotate: true
+  xy: 326, 370
+  size: 121, 130
+  orig: 121, 137
+  offset: 0, 3
+  index: -1
+字
+  rotate: true
+  xy: 326, 493
+  size: 197, 67
+  orig: 201, 70
+  offset: 2, 2
+  index: -1
+徽章g
+  rotate: true
+  xy: 26, 21
+  size: 27, 109
+  orig: 31, 113
+  offset: 2, 2
+  index: -1
+星点
+  rotate: true
+  xy: 26, 2
+  size: 17, 16
+  orig: 20, 20
+  offset: 1, 2
+  index: -1
+横幅
+  rotate: true
+  xy: 2, 50
+  size: 314, 121
+  orig: 314, 123
+  offset: 0, 0
+  index: -1
+羽毛
+  rotate: false
+  xy: 2, 5
+  size: 22, 43
+  orig: 22, 43
+  offset: 0, 0
+  index: -1
+翅膀
+  rotate: true
+  xy: 246, 5
+  size: 106, 195
+  orig: 112, 195
+  offset: 0, 0
+  index: -1

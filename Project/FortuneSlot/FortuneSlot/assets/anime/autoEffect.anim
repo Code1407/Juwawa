@@ -1,0 +1,92 @@
+{
+  "__type__": "cc.AnimationClip",
+  "_name": "autoEffect",
+  "_objFlags": 0,
+  "_native": "",
+  "_duration": 4.5,
+  "sample": 60,
+  "speed": 1,
+  "wrapMode": 1,
+  "curveData": {
+    "paths": {
+      "auto": {
+        "props": {
+          "angle": [
+            {
+              "frame": 0,
+              "value": 0
+            },
+            {
+              "frame": 2.0166666666666666,
+              "value": 720
+            },
+            {
+              "frame": 4.3,
+              "value": 1980
+            }
+          ],
+          "opacity": [
+            {
+              "frame": 1.5,
+              "value": 250
+            },
+            {
+              "frame": 4.5,
+              "value": 0
+            }
+          ]
+        }
+      },
+      "exeff": {
+        "props": {
+          "opacity": [
+            {
+              "frame": 0,
+              "value": 0
+            },
+            {
+              "frame": 0.5,
+              "value": 150
+            },
+            {
+              "frame": 1,
+              "value": 0
+            },
+            {
+              "frame": 1.5,
+              "value": 150
+            },
+            {
+              "frame": 2,
+              "value": 0
+            }
+          ]
+        }
+      },
+      "Label": {
+        "props": {
+          "opacity": [
+            {
+              "frame": 0,
+              "value": 0
+            },
+            {
+              "frame": 2.0166666666666666,
+              "value": 180,
+              "curve": "linear"
+            },
+            {
+              "frame": 3.5166666666666666,
+              "value": 180
+            },
+            {
+              "frame": 4.5,
+              "value": 0
+            }
+          ]
+        }
+      }
+    }
+  },
+  "events": []
+}

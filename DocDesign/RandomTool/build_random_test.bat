@@ -1,0 +1,1 @@
+GameSvr.exe -name RandomTest -config RandomTest.cfg

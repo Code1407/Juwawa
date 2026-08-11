@@ -1,0 +1,16 @@
+﻿{
+    "serverAdress": [
+        {
+            "machArea": 2,
+            "url": "https://front.fa.hotgame.win:8000/adress"
+        },
+        {
+            "machArea": 3,
+            "url": "https://front.xn.hotgame.win:8000/adress"
+        },
+        {
+            "machArea": 4,
+            "url": "https://front.fj.hotgame.win:8000/adress"
+        }
+    ]
+}

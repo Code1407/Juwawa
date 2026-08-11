@@ -1,0 +1,50 @@
+{
+  "__type__": "cc.AnimationClip",
+  "_name": "good",
+  "_objFlags": 0,
+  "_native": "",
+  "_duration": 0.3333333333333333,
+  "sample": 60,
+  "speed": 1,
+  "wrapMode": 2,
+  "curveData": {
+    "paths": {
+      "图层 2": {
+        "props": {
+          "width": [
+            {
+              "frame": 0,
+              "value": 90
+            },
+            {
+              "frame": 0.16666666666666666,
+              "value": 100,
+              "curve": "cubicInOut"
+            },
+            {
+              "frame": 0.3333333333333333,
+              "value": 90
+            }
+          ],
+          "height": [
+            {
+              "frame": 0,
+              "value": 90,
+              "curve": "cubicInOut"
+            },
+            {
+              "frame": 0.16666666666666666,
+              "value": 100,
+              "curve": "cubicInOut"
+            },
+            {
+              "frame": 0.3333333333333333,
+              "value": 90
+            }
+          ]
+        }
+      }
+    }
+  },
+  "events": []
+}

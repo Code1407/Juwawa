@@ -1,0 +1,96 @@
+{
+    "sdkId": "0",
+    "sdkName": "hg",
+    "apps": {
+        "default": {
+            "appId": "0",
+            "appName": "test",
+            "httpServer": "http://192.168.0.150/main/",
+            "extra": {
+                "showReload": false,
+                "showReloadNextRound": false,
+                "quitNotDestroy": true,
+                "removeAuto": false,
+                "hideSilence": true,
+                "showKeepAuto": false,
+                "antiAddiction": false,
+                "mergeSecond": 1,
+                "mergeGear": 3,
+                "realtimeBalance": true
+            },
+            "servers": {
+                "dev": {
+                    "host": "192.168.124.13/adress",
+                    "port": 8090,
+                    "serverAdress": "http://192.168.124.13:8090/adress",
+                    "serverAddress": "http://192.168.124.13:8090/adress"
+                },
+                "pro": {
+                    "host": "192.168.124.13/adress",
+                    "port": 8090,
+                    "serverAdress": "http://192.168.124.13:8090/adress",
+                    "serverAddress": "http://192.168.124.13:8090/adress"
+                }
+            },
+            "appCoinIcon": "https://test.hotgame.win/resource/sdk/default/coin.png",
+            "enableRank": true,
+            "rankUrls": {
+                "dev": "https://hg.hotgame.win/game/api/rank"
+            },
+            "rank": {
+                "dev": {
+                    "enable": true,
+                    "platform": "binmo_test",
+                    "url": "https://hg.hotgame.win/game/api/rank"
+                },
+                "pro": {
+                    "enable": true,
+                    "platform": "binmo_test",
+                    "url": "https://hg.hotgame.win/game/api/rank"
+                }
+            },
+            "activity": {
+                "dev": {
+                    "enable": true,
+                    "iconUrl": "https://test.hotgame.win/resource/sdk/hawa/activityIcon.png",
+                    "url": "http://test.hawatalk.com/activitys/pet/index.html"
+                },
+                "pro": {
+                    "enable": true,
+                    "iconUrl": "https://web.hotgame.win/resource/sdk/hawa/activityIcon.png",
+                    "url": "http://test.hawatalk.com/activitys/pet/index.html"
+                }
+            },
+            "games": {
+                "PirateFishingMulti": {
+                    "httpServer": "http://192.168.0.150/main/",
+                    "gameId": "19",
+                    "gameName": "PirateFishingMulti",
+                    "platId": 101,
+                    "platKey": "abc",
+                    "serverIndex": 3,
+                    "serverAdress": "http://192.168.124.13:8090/adress",
+                    "serverAddress": "http://192.168.124.13:8090/adress",
+                    "uid": "test_1124",
+                    "token": "qwertyuiop123",
+                    "betGradeAmounts": [
+                        1,
+                        10,
+                        30,
+                        50,
+                        100,
+                        300,
+                        500,
+                        1000,
+                        3000,
+                        5000,
+                        10000
+                    ],
+                    "extra": {
+                        "crabSlot2": true
+                    }
+                }
+            }
+        }
+    }
+}

@@ -1,0 +1,290 @@
+{
+    "1": {
+        "id": 1,
+        "section": "normalReel",
+        "symbolId": 0,
+        "symbolName": "J",
+        "column1": 0.25,
+        "column2": 0.25,
+        "column3": 0.25
+    },
+    "2": {
+        "id": 2,
+        "section": "normalReel",
+        "symbolId": 1,
+        "symbolName": "Q",
+        "column1": 0.22,
+        "column2": 0.2,
+        "column3": 0.22
+    },
+    "3": {
+        "id": 3,
+        "section": "normalReel",
+        "symbolId": 2,
+        "symbolName": "K",
+        "column1": 0.16,
+        "column2": 0.16,
+        "column3": 0.2
+    },
+    "4": {
+        "id": 4,
+        "section": "normalReel",
+        "symbolId": 3,
+        "symbolName": "A",
+        "column1": 0.12,
+        "column2": 0.1,
+        "column3": 0.12
+    },
+    "5": {
+        "id": 5,
+        "section": "normalReel",
+        "symbolId": 4,
+        "symbolName": "GreenGem",
+        "column1": 0.08,
+        "column2": 0.06,
+        "column3": 0.08
+    },
+    "6": {
+        "id": 6,
+        "section": "normalReel",
+        "symbolId": 5,
+        "symbolName": "BlueGem",
+        "column1": 0.07,
+        "column2": 0.05,
+        "column3": 0.07
+    },
+    "7": {
+        "id": 7,
+        "section": "normalReel",
+        "symbolId": 6,
+        "symbolName": "RedGem",
+        "column1": 0.02,
+        "column2": 0.02,
+        "column3": 0.04
+    },
+    "8": {
+        "id": 8,
+        "section": "normalReel",
+        "symbolId": 7,
+        "symbolName": "Wild",
+        "column1": 0.08,
+        "column2": 0.16,
+        "column3": 0.02
+    },
+    "9": {
+        "id": 9,
+        "section": "normalLast",
+        "symbolId": 0,
+        "symbolName": "1x",
+        "multiple": 1,
+        "rate": 0.47,
+        "specialMultiple": 1
+    },
+    "10": {
+        "id": 10,
+        "section": "normalLast",
+        "symbolId": 1,
+        "symbolName": "2x",
+        "multiple": 2,
+        "rate": 0.35,
+        "specialMultiple": 2
+    },
+    "11": {
+        "id": 11,
+        "section": "normalLast",
+        "symbolId": 2,
+        "symbolName": "3x",
+        "multiple": 3,
+        "rate": 0.1,
+        "specialMultiple": 3
+    },
+    "12": {
+        "id": 12,
+        "section": "normalLast",
+        "symbolId": 3,
+        "symbolName": "5x",
+        "multiple": 5,
+        "rate": 0.074,
+        "specialMultiple": 5
+    },
+    "13": {
+        "id": 13,
+        "section": "normalLast",
+        "symbolId": 4,
+        "symbolName": "10x",
+        "multiple": 10,
+        "rate": 0.001,
+        "specialMultiple": 10
+    },
+    "14": {
+        "id": 14,
+        "section": "normalLast",
+        "symbolId": 6,
+        "symbolName": "Wheel",
+        "multiple": 0,
+        "rate": 0.005,
+        "specialMultiple": 1
+    },
+    "15": {
+        "id": 15,
+        "section": "wheel",
+        "multiple": 1,
+        "rate": 0.12
+    },
+    "16": {
+        "id": 16,
+        "section": "wheel",
+        "multiple": 3,
+        "rate": 0.27
+    },
+    "17": {
+        "id": 17,
+        "section": "wheel",
+        "multiple": 5,
+        "rate": 0.25
+    },
+    "18": {
+        "id": 18,
+        "section": "wheel",
+        "multiple": 8,
+        "rate": 0.1
+    },
+    "19": {
+        "id": 19,
+        "section": "wheel",
+        "multiple": 10,
+        "rate": 0.08
+    },
+    "20": {
+        "id": 20,
+        "section": "wheel",
+        "multiple": 15,
+        "rate": 0.05
+    },
+    "21": {
+        "id": 21,
+        "section": "wheel",
+        "multiple": 20,
+        "rate": 0.03
+    },
+    "22": {
+        "id": 22,
+        "section": "wheel",
+        "multiple": 30,
+        "rate": 0.06
+    },
+    "23": {
+        "id": 23,
+        "section": "wheel",
+        "multiple": 50,
+        "rate": 0.035
+    },
+    "24": {
+        "id": 24,
+        "section": "wheel",
+        "multiple": 100,
+        "rate": 0.004
+    },
+    "25": {
+        "id": 25,
+        "section": "wheel",
+        "multiple": 200,
+        "rate": 0.001
+    },
+    "26": {
+        "id": 26,
+        "section": "wheel",
+        "multiple": 1000,
+        "rate": 0.0
+    },
+    "27": {
+        "id": 27,
+        "section": "extraWheel",
+        "multiple": 1,
+        "rate": 0.5
+    },
+    "28": {
+        "id": 28,
+        "section": "extraWheel",
+        "multiple": 2,
+        "rate": 0.33
+    },
+    "29": {
+        "id": 29,
+        "section": "extraWheel",
+        "multiple": 3,
+        "rate": 0.12
+    },
+    "30": {
+        "id": 30,
+        "section": "extraWheel",
+        "multiple": 5,
+        "rate": 0.04
+    },
+    "31": {
+        "id": 31,
+        "section": "extraWheel",
+        "multiple": 10,
+        "rate": 0.009
+    },
+    "32": {
+        "id": 32,
+        "section": "extraWheel",
+        "multiple": 15,
+        "rate": 0.001
+    },
+    "33": {
+        "id": 33,
+        "section": "extraLast",
+        "symbolId": 1,
+        "symbolName": "2x",
+        "multiple": 2,
+        "rate": 0.52,
+        "specialMultiple": 2
+    },
+    "34": {
+        "id": 34,
+        "section": "extraLast",
+        "symbolId": 2,
+        "symbolName": "3x",
+        "multiple": 3,
+        "rate": 0.35,
+        "specialMultiple": 3
+    },
+    "35": {
+        "id": 35,
+        "section": "extraLast",
+        "symbolId": 3,
+        "symbolName": "5x",
+        "multiple": 5,
+        "rate": 0.12,
+        "specialMultiple": 5
+    },
+    "36": {
+        "id": 36,
+        "section": "extraLast",
+        "symbolId": 4,
+        "symbolName": "10x",
+        "multiple": 10,
+        "rate": 0.004,
+        "specialMultiple": 10
+    },
+    "37": {
+        "id": 37,
+        "section": "extraLast",
+        "symbolId": 5,
+        "symbolName": "15x",
+        "multiple": 15,
+        "rate": 0.001,
+        "specialMultiple": 15
+    },
+    "38": {
+        "id": 38,
+        "section": "extraLast",
+        "symbolId": 6,
+        "symbolName": "Wheel",
+        "multiple": 0,
+        "rate": 0.005,
+        "specialMultiple": 1
+    }
+}

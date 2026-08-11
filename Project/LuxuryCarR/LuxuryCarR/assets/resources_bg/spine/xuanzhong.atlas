@@ -1,0 +1,27 @@
+
+xuanzhong.png
+size: 256,256
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+2
+  rotate: false
+  xy: 117, 117
+  size: 65, 65
+  orig: 68, 66
+  offset: 2, 0
+  index: -1
+guang
+  rotate: false
+  xy: 2, 132
+  size: 50, 50
+  orig: 50, 50
+  offset: 0, 0
+  index: -1
+quan
+  rotate: true
+  xy: 54, 122
+  size: 60, 61
+  orig: 62, 61
+  offset: 1, 0
+  index: -1

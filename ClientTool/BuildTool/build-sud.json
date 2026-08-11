@@ -1,0 +1,166 @@
+{
+  "common": {
+    "md5Cache": true,
+	"pureClientPath": "D:/GameTemplate/PureClient_SUD",
+	"projectsPath": "D:/Project",
+    "exportRoot": "D:/ClientTool/BuildTool/buildOut/sud",
+    "obfuscate": {
+      "enabled": true,
+      "includeAllBundles": true,
+      "level": 2
+    },
+    "resEncrypt": {
+      "enabled": false,
+      "includeAllBundles": true,
+      "key": "juwawaVXjOTTiFFiLGG",
+      "sig": "juwawasign",
+      "exts": [
+        "png"
+      ]
+    }
+  },
+  "projects": [
+	{
+      "name": "宝石2.4",
+      "packageName": "FortuneSlot",
+      "creatorVersion": "2.4.10",
+	  "gameId":19,
+      "build": {
+        "orientation": "Auto",
+        "startScene": "assets/scene/seven.fire",
+        "scenes": [
+          "assets/scene/seven.fire"
+        ]
+      }
+    },
+    {
+      "name": "海盗捕鱼2.4.1",
+      "packageName": "PirateFishing",
+      "creatorVersion": "2.4.10",
+	  "gameId":13,
+      "build": {
+        "orientation": "Auto",
+        "startScene": "assets/scenes/seven_screen.fire",
+        "scenes": [
+          "assets/scenes/seven_screen.fire"
+        ]
+      }
+    },
+    {
+      "name": "水果派对2",
+      "packageName": "FruitParty2",
+      "creatorVersion": "2.4.10",
+	  "gameId":20,
+      "build": {
+        "orientation": "Auto",
+        "startScene": "assets/scene/loading_screen.fire",
+        "scenes": [
+          "assets/scene/loading_screen.fire"
+        ]
+      }
+    },
+	{
+      "name": "金花",
+      "packageName": "TeenPatti",
+      "creatorVersion": "2.4.10",
+      "build": {
+        "orientation": "auto",
+        "startScene": "assets/scene/loadingScene.fire",
+        "scenes": [
+          "assets/scene/loadingScene.fire"
+        ]
+      }
+    },
+	{
+      "name": "火山slot",
+      "packageName": "LavaSlot",
+      "creatorVersion": "2.4.10",
+	  "gameId":11,
+      "build": {
+        "orientation": "Auto",
+        "startScene": "assets/scene/seven_screen.fire",
+        "scenes": [
+          "assets/scene/seven_screen.fire"
+        ]
+      }
+    },
+	{
+      "name": "海盗王",
+      "packageName": "PirateKing",
+      "creatorVersion": "2.4.10",
+	  "gameId":24,
+      "build": {
+        "orientation": "Auto",
+        "startScene": "assets/scene/full_screen.fire",
+        "scenes": [
+          "assets/scene/full_screen.fire"
+        ]
+      }
+    },
+	{
+      "name": "狮子摩天轮",
+      "packageName": "GreedyLion",
+      "creatorVersion": "2.4.10",
+	  "gameId":52,
+      "build": {
+        "orientation": "Auto",
+        "startScene": "assets/scene/seven_screen.fire",
+        "scenes": [
+          "assets/scene/seven_screen.fire"
+        ]
+      }
+    },
+	{
+      "name": "Super777",
+      "packageName": "Super777Slot",
+      "creatorVersion": "2.4.10",
+	  "gameId":31,
+      "build": {
+        "orientation": "Auto",
+        "startScene": "assets/scene/seven_screen.fire",
+        "scenes": [
+          "assets/scene/seven_screen.fire"
+        ]
+      }
+    },
+	{
+      "name": "海洋拉霸",
+      "packageName": "OceanHuntSlot",
+      "creatorVersion": "2.4.10",
+	  "gameId":32,
+      "build": {
+        "orientation": "auto",
+        "startScene": "assets/scene/seven_screen.fire",
+        "scenes": [
+          "assets/scene/seven_screen.fire"
+        ]
+      }
+    },
+    {
+      "name": "火箭",
+      "packageName": "Rocket",
+      "creatorVersion": "2.4.10",
+	  "gameId":26,
+      "build": {
+        "orientation": "Auto",
+        "startScene": "assets/scenes/seven_screen.fire",
+        "scenes": [
+          "assets/scenes/seven_screen.fire"
+        ]
+      }
+    },
+	{
+      "name": "豪车汇",
+      "packageName": "LuxuryCar",
+      "creatorVersion": "2.4.10",
+	  "gameId":26,
+      "build": {
+        "orientation": "Auto",
+        "startScene": "assets/scenes/seven_screen.fire",
+        "scenes": [
+          "assets/scenes/seven_screen.fire"
+        ]
+      }
+    }
+  ]
+}

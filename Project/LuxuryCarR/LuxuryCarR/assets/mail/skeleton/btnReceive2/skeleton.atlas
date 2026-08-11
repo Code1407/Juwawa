@@ -1,0 +1,20 @@
+
+skeleton.png
+size: 128,128
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+大领取2
+  rotate: false
+  xy: 2, 34
+  size: 97, 32
+  orig: 97, 32
+  offset: 0, 0
+  index: -1
+大领取按钮
+  rotate: false
+  xy: 2, 68
+  size: 104, 38
+  orig: 104, 38
+  offset: 0, 0
+  index: -1

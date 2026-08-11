@@ -1,0 +1,31 @@
+{
+  "creatorExe": "C:/ProgramData/cocos/editors/Creator/3.8.6/CocosCreator.exe",
+  "creatorExe24": "C:/ProgramData/cocos/editors/Creator/2.4.10/CocosCreator.exe",
+  "buildConfigs": [
+    {
+      "name": "打包测试",
+      "path": "build-config.json",
+      "sdkConfig": "test.json"
+    },
+    {
+      "name": "外网开发服",
+      "path": "build-develop.json",
+      "sdkConfig": "develop.json",
+      "default": true
+    },
+    {
+      "name": "平台测试服",
+      "path": "build-test_fa.json",
+      "sdkConfig": "test_fa.json"
+    },
+    {
+      "name": "平台正式服",
+      "path": "build-product_fa.json",
+      "sdkConfig": "product_fa.json"
+    },
+    {
+      "name": "SUD",
+      "path": "build-sud.json"
+    }
+  ]
+}

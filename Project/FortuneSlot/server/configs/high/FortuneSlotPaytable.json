@@ -1,0 +1,10 @@
+{
+    "1": { "id": 1, "symbolId": 0, "symbolName": "J", "lineMultiple": 0.4 },
+    "2": { "id": 2, "symbolId": 1, "symbolName": "Q", "lineMultiple": 1.0 },
+    "3": { "id": 3, "symbolId": 2, "symbolName": "K", "lineMultiple": 1.6 },
+    "4": { "id": 4, "symbolId": 3, "symbolName": "A", "lineMultiple": 2.0 },
+    "5": { "id": 5, "symbolId": 4, "symbolName": "GreenGem", "lineMultiple": 2.4 },
+    "6": { "id": 6, "symbolId": 5, "symbolName": "BlueGem", "lineMultiple": 3.0 },
+    "7": { "id": 7, "symbolId": 6, "symbolName": "RedGem", "lineMultiple": 4.0 },
+    "8": { "id": 8, "symbolId": 7, "symbolName": "Wild", "lineMultiple": 5.0 }
+}

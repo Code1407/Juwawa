@@ -1,0 +1,9 @@
+{
+  "__version__": "1.0.0",
+  "PathExcel": "project://config",
+  "PathJsonClient": "project://assets/bundles/config/game",
+  "PathTsClient": "project://assets/script/table",
+  "PathJsonServer": "project://config/serverJson",
+  "PathTsServer": "project://config/serverTs",
+  "PathLangJsonClient": "project://assets/bundles/config/language"
+}

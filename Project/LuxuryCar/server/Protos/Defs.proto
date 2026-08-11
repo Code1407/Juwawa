@@ -1,0 +1,210 @@
+// LuxuryCar 游戏协议定义
+// 说明：
+// 1. 协议名需要与客户端 MessageRouter 中注册的消息名保持一致。
+// 2. 排行榜与邮件相关协议名沿用公共模块命名，方便复用公共排行榜逻辑。
+
+// ------------------------------
+// 基础数据结构
+// ------------------------------
+
+// 玩家账户信息
+Account {
+    uint64 diamond
+    string avatar
+    string nickname
+    uint32 level
+}
+
+// 玩家本地设置
+PlayerSettings {
+    int32 soundVol
+    int32 lastBetAmountButton
+    bool isSpeed
+}
+
+// 排行榜条目
+LuxuryCarRankItem {
+    string uid
+    string profile
+    string name
+    uint64 revenue
+    uint32 rank
+}
+
+// 玩家历史记录
+LuxuryCarHistoryItem {
+    uint64 timestamp
+    string date
+    uint64 round
+    array<uint64> betDatails
+    int32 roundResult
+}
+
+// 单个玩家在一轮中的下注数据
+LuxuryCarPlayerBetList {
+    string uid
+    array<uint32> betGradeArr
+    array<array<uint32>> betGradeNum
+}
+
+// 当前轮次状态
+LuxuryCarRoundStep {
+    uint64 todayRound
+    int32 status
+    int32 remainSecond
+    int32 result
+    array<int32> hot
+    array<LuxuryCarRankItem> roundRank
+    uint64 timestamp
+}
+
+// ------------------------------
+// 客户端请求 / 服务端响应
+// ------------------------------
+
+// 进入游戏
+enterGame {
+}
+
+// 进入游戏返回
+enterGameResp {
+    LuxuryCarRoundStep roundStep
+    array<int32> historyResults
+    array<LuxuryCarRankItem> rankList
+    string uid
+    Account account
+    uint64 todayRevenue
+    array<uint64> wheelAmount
+    array<array<uint64>> wheelChipAmount
+    array<uint64> totalWheelAmount
+    array<LuxuryCarPlayerBetList> curRoundAllWheelAmount
+    array<LuxuryCarHistoryItem> myHistory
+    int32 lastBetAmountButton
+    PlayerSettings playerSettings
+}
+
+// 下注请求
+bet {
+    uint64 todayRound
+    array<uint32> betGradeArr
+    array<array<uint32>> betGradeNumArr
+    array<uint64> betDiamonList
+}
+
+// 下注返回
+betResp {
+    int32 code
+    uint64 accountDiamond
+    array<uint64> wheelAmount
+    array<array<uint64>> wheelChipAmount
+}
+
+onResultHandler {
+    int32 code
+    uint64 roundId
+}
+
+// 设置默认下注档位
+setBetAmountButton {
+    int32 betAmountButtonIndex
+}
+
+// 设置默认下注档位返回
+setBetAmountButtonResp {
+    int32 code
+}
+
+// 同步游戏状态
+synchronize {
+}
+
+// 同步游戏状态返回
+synchronizeResp {
+    LuxuryCarRoundStep roundStep
+    array<int32> historyResults
+    array<LuxuryCarRankItem> rankList
+    string uid
+    Account account
+    uint64 todayRevenue
+    array<uint64> wheelAmount
+    array<array<uint64>> wheelChipAmount
+    array<uint64> totalWheelAmount
+    array<LuxuryCarPlayerBetList> curRoundAllWheelAmount
+    array<LuxuryCarHistoryItem> myHistory
+    int32 lastBetAmountButton
+    PlayerSettings playerSettings
+}
+
+// 更新玩家设置
+updateSettings {
+    PlayerSettings config
+}
+
+// 更新玩家设置返回
+updateSettingsResp {
+    int32 code
+}
+
+// DBM 心跳
+dbmHeartbeat {
+}
+
+// DBM 心跳返回
+dbmHeartbeatResp {
+    int32 code
+}
+
+// ------------------------------
+// 服务端推送
+// ------------------------------
+
+// 排行榜变化推送
+onRankListChange {
+    array<LuxuryCarRankItem> rankList
+}
+
+// 轮次状态变化推送
+onRoundStep {
+    uint64 todayRound
+    int32 status
+    int32 remainSecond
+    int32 result
+    array<int32> hot
+    array<LuxuryCarRankItem> roundRank
+    uint64 timestamp
+}
+
+// 当前轮下注列表推送
+onBetListRound {
+    string uid
+    int32 flyPlayerPos
+    array<uint32> batIndex
+    array<array<uint32>> num
+}
+
+// 全场下注总额推送
+onBetNoticeAll {
+    array<uint64> wheelAmount
+}
+
+// 跨天重置推送
+onNewDay {
+}
+
+// 维护状态推送
+onMaintenance {
+}
+
+// 玩家资产更新推送
+onPlayerUpdate {
+    string uid
+    uint64 diamond
+    array<uint64> itemAmount
+    uint64 todayRound
+}
+
+// ------------------------------
+// 排行榜公共协议
+// ------------------------------
+
+// 排行榜玩家信息

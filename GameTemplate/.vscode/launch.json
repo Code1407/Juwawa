@@ -1,0 +1,16 @@
+{
+    "configurations": [
+        {
+            "type": "emmylua_new",
+            "request": "launch",
+            "name": "远程调试",
+            "host": "localhost",
+            "port": 9966,
+            "ext": [
+                ".lua"
+            ],
+            "ideConnectDebugger": true
+        }
+    ]
+
+}

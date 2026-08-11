@@ -1,0 +1,165 @@
+
+//类型：bool, string, int16, uint16, int32, uint32, int64, uint64, array<>, map<>, 已定义的类型名
+//范围：使用中括号[]，在变量名后给出[min, max]，使用闭区间，即包含min和max
+//默认范围：整型取各自的最大范围，字符串和数组为[0, 256]
+//限制：为了和js和行为一致，map类型的key只能使用string类型，当然在写入数据时，map和key可以为数字，会被默认转成字符串处理
+//示例：
+
+
+//玩家数据
+RankData{
+	uint64 pid
+	string name
+	string avatarUrl
+	uint16 rankNum 
+	uint64 score
+	uint64 bet
+	uint64 win
+}
+
+//玩家进入游戏
+ScPlayerEnterGamePush{
+	PlayerBaseData pBaseData
+	bool openAudio
+	uint16 chipIndex
+}
+
+//当前这局游戏信息
+CsCurGameInfoReq{}
+CsCurGameInfoResp{
+	uint64 round
+	uint64 gameState
+	//准备时间戳
+	uint64 prepareTime
+	//全局
+	map<string, uint64> betWorld
+	//自己
+	map<string, uint64> betSelf
+}
+
+ScGamePreparePush{
+	//时间
+	uint64 prepareTime
+	//期数
+	uint64 round
+}
+
+//下注信息
+BetData{
+	//奖励ID
+	uint16 rewardID
+	//筹码
+	uint64 chipValue
+	//筹码数量
+	uint64 chipCount
+}
+//请求下注
+CsBetReq{
+	//押注信息List
+	array<BetData> betList
+}
+CsBetResp{
+	int16 errorCode
+	//玩家当前钱
+	uint64 money 
+	//押注信息List
+	array<BetData> betList
+}
+//同步全局下注信息
+ScUpdateWorldBetPush{
+	//<RewardID, 押注筹码总额>
+	map<string, uint64> betMap
+	//押注信息List
+	array<BetData> betList
+	//玩家pid
+	uint64 pid
+	//期数
+	uint64 round
+}
+
+//下了注的玩家游戏结果推送
+ScPlayerRoundResultPush{
+	int16 errorCode
+	//期数
+	uint64 round
+	uint64 playerBet
+	uint64 playerWin
+}
+
+//开奖结果
+ScOpenRewardPush{
+	//期数
+	uint64 round
+	//奖励ID
+	uint16 rewardID
+	//jp
+	array<uint16> jpRewards
+	//转盘Index
+	uint16 zhuanPanIndex
+	//前三名
+	array<RankData>roundRank3 
+}
+
+//游戏历史记录List
+//游戏结果
+GameResultData{
+	//准备时间戳
+	uint64 prepareTime
+	//期数
+	uint64 round
+	uint16 resultID
+	//额外多个奖励
+	array<uint16> jpRewards
+}
+CsGameHistoryReq{}
+CsGameHistoryResp{
+	array<GameResultData> list
+}
+
+//玩家下注历史记录
+//每次下注数据
+BetOnceData{
+	//下注时间戳
+	uint64 betTime
+	//下注数据List
+	array<BetData> betList
+}
+//每局游戏数据
+BetRoundData{
+	//服务器ID
+	uint16 serverIndex
+	//期数
+	uint64 round
+	//准备时间
+	uint64 prepareTime
+	//开奖结果ID
+	uint16 rewardID
+	//额外多个奖励
+	array<uint16> jpRewards
+	//赢数量
+	uint64 winNum
+	//下注信息
+	array<BetOnceData> betInfo
+}
+
+HistoryData{
+	uint64 serverIndex
+	uint64 prepareTime
+	uint64 round
+	map<string, uint64> betMap //<resultId, betCoins>
+	map<string, uint64> result //<resultId, addCoins>
+}
+CsSelfBetHistoryReq{}
+CsSelfBetHistoryResp{
+	array<HistoryData> list
+}
+
+//音频开关变更
+CsAudioChangeReq{
+	bool openAudio
+}
+
+//挡位开关变更
+CsChipChangeReq{
+	uint16 chipIndex
+}

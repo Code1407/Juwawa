@@ -1,0 +1,5 @@
+{
+  "protos": ["Protos/Defs.proto", "Protos/Common.proto"],
+  "client": "../BountyFootball/assets/script/Defs.ts",
+  "server": "Game/Defs.lua"
+}

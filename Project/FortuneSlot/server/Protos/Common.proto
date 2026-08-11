@@ -1,0 +1,101 @@
+PlayerBaseData{
+	uint64 playerId
+	string name
+	string avatarUrl
+	uint64 coins
+}
+
+ResourceData{
+	uint32 resType
+	uint32 resId
+	uint64 resCount
+	int32  oddsType
+	map<string, string> gemeExt
+	uint64 roundId
+}
+
+//登录成功
+ScLoginSucPush{
+	PlayerBaseData pBaseData
+}
+
+//时间同步
+CsSyncTimeReq{
+	uint64 cTime
+}
+CsSyncTimeResp{
+	uint64 cTime
+	uint64 sTime
+}
+
+//玩家基本数据更新
+CsPlayerBaseDataReq{
+}
+CsPlayerBaseDataResp{
+	PlayerBaseData pBaseData
+}
+
+//玩家积分改变同步
+ScCoinsUpdatePush{
+	uint64 coins
+}
+
+//Sdk状态同步
+ScSdkStatePush{
+	int32 state
+}
+
+//邮件系统
+MailData{
+	string uId						//玩家uId
+	uint64 mailId          			//唯一ID
+	uint32 mailCfgId      		 	//配置ID
+	uint32 gameId		   			//游戏Id
+	array<ResourceData>rewards      //奖励
+	uint32 rewardState     			//领奖状态(0:没有奖励 1:有奖未领取 2:有奖已领取)
+	string extraJson				//额外Json参数
+	uint64 sendTime	       			//发送时间
+	bool   read		       			//是否已读
+	
+}
+
+//获取邮件数据
+CsMailListReq{
+}
+CsMailListResp{
+	array<MailData> mails
+}
+
+//新邮件推送
+ScNewMailPush{
+	MailData mail
+}
+
+//邮件读取
+CsMailReadReq{
+	array<uint64> mails
+}
+CsMailReadResp{
+	array<uint64> mails
+}
+
+//邮件删除
+CsMailDeleteReq{
+	array<uint64> mails
+}
+//邮件删除所有已读
+CsMailDeleteAllReadReq{
+}
+CsMailDeleteResp{
+	array<uint64> mails
+}
+
+//邮件领奖
+CsMailRewardReceiveReq{
+	array<uint64> mails
+}
+CsMailRewardReceiveResp{
+	int64  errorCode	 //错误码
+	uint64 mailId        //唯一ID
+	ResourceData reward  //奖励
+}

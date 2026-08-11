@@ -1,0 +1,1 @@
+"use strict";module.exports={open_panel:"BMFont Generator",description:"A tool for make a bmfont."};

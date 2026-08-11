@@ -1,0 +1,42 @@
+# Compiled Object files
+*.slo
+*.lo
+*.o
+*.obj
+
+# Precompiled Headers
+*.gch
+*.pch
+
+# Compiled Dynamic libraries
+*.so
+*.dylib
+
+# Fortran module files
+*.mod
+
+# Compiled Static libraries
+*.lai
+*.la
+*.a
+*.lib
+
+# Windows
+*.pdb
+*.ilk
+*.idb
+*.exp
+*.log
+*.tlog
+*.sdf
+*.lastbuildstate
+*.suo
+*.cache
+
+#VSCode
+/.vscode
+
+/temp/
+/library/
+/build/
+/profiles/

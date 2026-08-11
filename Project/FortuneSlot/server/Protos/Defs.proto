@@ -1,0 +1,251 @@
+PlayerSettings {
+    int32 soundVol
+    int32 lastBetAmountButton
+    bool isSpeed
+}
+
+Account {
+    int64 diamond
+    string avatar
+    string nickname
+    int32 level
+}
+
+HistoryItem {
+    string date
+    int32 round
+    int32 betAmount
+    array<int32> lines
+    array<int32> goods
+    int32 win
+    int32 wheelMultiple
+    bool isExtra
+}
+
+Results {
+    int32 betAmount
+    int32 calculateAmount
+    array<int32> slotResults
+    float multiple
+    array<float> multiples
+    int32 wheelMultipleIndex
+    int32 wheelExtraIndex
+}
+
+RoundStep {
+    int32 runningRoundID
+    int32 status
+    int64 accountDiamond
+}
+
+Hint {
+    string userName
+    int64 amount
+}
+
+AccountDiamondUpdate {
+    int64 value
+    int64 offset
+}
+
+BetResp {
+    int32 code
+    Results result
+    int32 roundId
+}
+
+RoundResultResp {
+    int64 accountDiamond
+    array<HistoryItem> history
+}
+
+enterGame {
+}
+
+enterGameResp {
+    Account account
+    PlayerSettings playerSettings
+    Results lastResult
+    array<HistoryItem> history
+}
+
+betNormal {
+    int32 betAmount
+    int32 calculateAmount
+    bool isExtra
+}
+
+betNormalResp {
+    int32 code
+}
+
+betFree {
+}
+
+betFreeResp {
+    int32 code
+}
+
+stopRound {
+    int32 roundId
+}
+
+stopRoundResp {
+    int64 accountDiamond
+    array<HistoryItem> history
+}
+
+setBetAmountButton {
+    int32 betAmountButtonIndex
+}
+
+setBetAmountButtonResp {
+    int32 code
+}
+
+synchronize {
+}
+
+synchronizeResp {
+    Account account
+    PlayerSettings playerSettings
+    Results lastResult
+    array<HistoryItem> history
+}
+
+updateSettings {
+    PlayerSettings config
+}
+
+updateSettingsResp {
+    int32 code
+}
+
+test {
+    int32 betAmount
+    int32 calculateAmount
+    bool isExtra
+}
+
+testResp {
+    int32 code
+}
+
+dbmHeartbeat {
+}
+
+dbmHeartbeatResp {
+    int32 code
+}
+
+onMaintenance {
+}
+
+onRoundStep {
+    int32 runningRoundID
+    int32 status
+    int64 accountDiamond
+}
+
+onJackpotHint {
+    string userName
+    int64 amount
+}
+
+onResultHandler {
+    int32 code
+    Results result
+    int32 roundId
+}
+
+onStopRound {
+    int64 accountDiamond
+    array<HistoryItem> history
+}
+
+onAccountDiamondUpdate {
+    int64 value
+    int64 offset
+}
+
+// 排行榜:玩家信息
+RankUserInfo {
+	string uid
+	string avatar
+	string name
+	uint32 rank
+	uint64 bonus
+	uint64 score
+	bool get
+}
+
+//排行榜:客户端拉取实时排名
+CsGetTodayRealTimeRankReq {
+}
+CsGetTodayRealTimeRankResp {
+	uint64 timestamp
+	uint32 timezone
+	string uid
+	uint32 rank
+}
+
+//排行榜:自己排名变化推送
+ScTodayRealTimeRankPush{
+	uint64 timestamp
+	uint32 timezone
+	string uid
+	uint32 rank
+}
+
+// 排行榜:昨日日榜可领奖推送
+//请求适配2.0
+CsDayRankAwardReq{
+}
+ScDayRankAwardPush {
+	string uid
+	uint32 rank
+	uint64 bonus
+	uint64 score
+	array<RankUserInfo> rankUsers
+}
+
+// 排行榜:上周周榜可领奖推送
+//请求适配2.0
+CsWeekRankAwardReq{
+}
+ScWeekRankAwardPush {
+	string uid
+	uint32 rank
+	uint64 bonus
+	uint64 score
+	array<RankUserInfo> rankUsers
+}
+
+//排行榜:客户端拉取榜单
+CsGetRankListByDateStrReq{
+	string dateStr
+}
+CsGetRankListByDateStrResp{
+	string dateStr
+	array<RankUserInfo> rankUsers
+}
+
+//排行榜:客户端领取日榜奖励
+CsReceiveDayAwardReq {
+}
+CsReceiveDayAwardResp {
+	int32 code
+	uint64 accountDiamond
+	uint64 bonus
+}
+
+//排行榜:客户端领取周榜奖励
+CsReceiveWeekAwardReq {
+}
+CsReceiveWeekAwardResp {
+	int32 code
+	uint64 accountDiamond
+	uint64 bonus
+}
+
+

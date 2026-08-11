@@ -1,0 +1,71 @@
+{
+"skeleton": {
+	"hash": "KhcnIZ8GmMa5CshEtITAOScY8Ig",
+	"spine": "3.8.75",
+	"x": -123,
+	"y": -69.5,
+	"width": 246,
+	"height": 141.18,
+	"images": "./动画素材/go/",
+	"audio": "D:/吉姆/豪车汇/新建文件夹/新建文件夹/Go"
+},
+"bones": [
+	{ "name": "root" },
+	{ "name": "骨骼", "parent": "root" },
+	{ "name": "骨骼2", "parent": "root" }
+],
+"slots": [
+	{ "name": "go", "bone": "骨骼", "attachment": "go" },
+	{ "name": "gh", "bone": "骨骼2", "attachment": "1" }
+],
+"skins": [
+	{
+		"name": "default",
+		"attachments": {
+			"gh": {
+				"1": { "width": 246, "height": 139 },
+				"2": { "width": 283, "height": 139 },
+				"3": { "width": 277, "height": 139 }
+			},
+			"go": {
+				"go": { "x": -2.15, "y": 2.18, "width": 214, "height": 139 }
+			}
+		}
+	}
+],
+"animations": {
+	"animation": {
+		"slots": {
+			"go": {
+				"color": [
+					{ "color": "ffffff00" },
+					{ "time": 0.1, "color": "ffffffff", "curve": "stepped" },
+					{ "time": 0.5, "color": "ffffffff" },
+					{ "time": 0.7333, "color": "ffffff00" }
+				]
+			},
+			"gh": {
+				"color": [
+					{ "color": "ffffff00", "curve": "stepped" },
+					{ "time": 0.4667, "color": "ffffff00" },
+					{ "time": 0.5333, "color": "ffffffff" },
+					{ "time": 0.7333, "color": "ffffff00" }
+				],
+				"attachment": [
+					{ "time": 0.6, "name": "2" },
+					{ "time": 0.6667, "name": "3" }
+				]
+			}
+		},
+		"bones": {
+			"骨骼": {
+				"translate": [
+					{ "x": -33.63 },
+					{ "time": 0.1, "x": 26.37 },
+					{ "time": 0.1667, "x": 4.5 }
+				]
+			}
+		}
+	}
+}
+}

@@ -1,0 +1,22 @@
+{
+  "projectsPath": "E:/Project/Cocos/GitProject",
+  "FrameConfig": {
+    "name": "ClientFramework",
+	"updates": [
+	   "extensions",
+       "assets/script/framework",
+	   "assets/bundles/common/resources",
+	   "assets/bundles/common/fonts",
+	   "assets/bundles/common/texture"
+      ]
+  },
+  "projects": [
+	"Seven7",
+	"GreedyCat",
+	"Rabbit",
+	"Zeus",
+	"Miami",
+	"Wheel_Delicious",
+	"Wheel_OuterSpace"
+  ]
+}

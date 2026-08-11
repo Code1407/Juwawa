@@ -1,0 +1,14 @@
+{
+  "httpServer": "http://127.0.0.1/main/",
+  "host": "127.0.0.1",
+  "port": "8090",
+  "serverAdress": "http://127.0.0.1:8090/adress",
+  "serverAddress": "http://127.0.0.1:8090/adress",
+  "gameId": 62,
+  "platId": 101,
+  "platKey": "abc",
+  "serverIndex": 1,
+  "uId": "gcc_00999",
+  "token": "qwertyuiop123",
+  "routerPath": "game"
+}

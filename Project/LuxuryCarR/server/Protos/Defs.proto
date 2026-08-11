@@ -1,0 +1,216 @@
+// ============================================================
+// Defs.proto  —  LuxuryCarR（豪车游戏）协议定义
+// ============================================================
+// 说明：
+// 1. 协议名需要与客户端 MessageRouter 中注册的消息名保持一致（区分大小写）。
+// 2. 排行榜与邮件相关协议沿用公共模块 Common.proto 中的命名，方便复用。
+// 3. 消息命名规范：
+//    - 请求消息：动词原形（如 bet、enterGame）
+//    - 响应消息：动词原形 + Resp（如 betResp、enterGameResp）
+//    - 推送消息：on + 事件名（如 onRoundStep、onRankListChange）
+
+// ------------------------------
+// 基础数据结构
+// ------------------------------
+
+// 玩家账户信息：登录后下发的玩家核心财务数据
+Account {
+    uint64 diamond      // 钻石数量（游戏主货币）
+    string avatar       // 玩家头像URL
+    string nickname     // 玩家昵称
+    uint32 level        // 玩家等级
+}
+
+// 玩家本地设置：保存在客户端的个性化配置
+PlayerSettings {
+    int32 soundVol              // 音效音量（0-100）
+    int32 lastBetAmountButton   // 上次使用的下注档位按钮索引
+    bool isSpeed                // 是否开启加速模式
+}
+
+// 排行榜条目：排行榜单条记录
+LuxuryCarRRankItem {
+    string uid      // 玩家UID
+    string profile  // 玩家头像URL
+    string name     // 玩家昵称
+    uint64 revenue  // 盈亏金额（正为赢，负为输）
+    uint32 rank     // 当前排名
+}
+
+// 玩家历史记录：单局游戏结算数据
+LuxuryCarRHistoryItem {
+    uint64 timestamp        // 结算时间戳（毫秒）
+    string date             // 结算日期字符串（如 "2024-01-01"）
+    uint64 round            // 局号
+    array<uint64> betDatails   // 各下注区下注明细（依次为10个下注区）
+    int32 roundResult       // 该局最终结果位置（1-16）
+}
+
+// 单个玩家在一轮中的下注数据：用于展示当前轮所有玩家下注情况
+LuxuryCarRPlayerBetList {
+    string uid                      // 玩家UID
+    array<uint32> betGradeArr       // 各下注区启用的筹码档位（10个元素，0表示未下注）
+    array<array<uint32>> betGradeNum   // 各下注区各档位下注数量（二维数组 [下注区][档位]）
+}
+
+// 当前轮次状态：服务端定时同步给所有客户端的核心状态快照
+LuxuryCarRRoundStep {
+    uint64 todayRound                   // 当天局号（递增）
+    int32 status                        // 游戏阶段状态（0:等待 1:下注 2:开奖动画 3:结算）
+    int32 remainSecond                  // 当前阶段剩余秒数（倒计时）
+    int32 result                        // 开奖结果位置（1-16，未开奖时为0）
+    array<int32> hot                    // 热门下注区列表（统计各区域热度）
+    array<LuxuryCarRRankItem> roundRank // 当前轮排行榜（实时变化）
+    uint64 timestamp                    // 服务端时间戳（毫秒）
+}
+
+// ------------------------------
+// 客户端请求 / 服务端响应
+// ------------------------------
+
+// 进入游戏请求：玩家打开游戏场景时发送
+enterGame {
+}
+
+// 进入游戏响应：返回游戏初始化的全部数据
+enterGameResp {
+    LuxuryCarRRoundStep roundStep                          // 当前轮次状态
+    array<int32> historyResults                            // 历史开奖结果（最近若干局，用于展示走势）
+    array<LuxuryCarRRankItem> rankList                     // 今日排行榜
+    string uid                                             // 当前玩家UID
+    Account account                                        // 玩家账户信息
+    uint64 todayRevenue                                    // 今日盈亏
+    array<uint64> wheelAmount                              // 各下注区当前累计下注额
+    array<array<uint64>> wheelChipAmount                   // 当前玩家各下注区各档位筹码数量
+    array<uint64> totalWheelAmount                         // 各下注区历史累计下注额
+    array<LuxuryCarRPlayerBetList> curRoundAllWheelAmount  // 当前轮所有玩家的下注明细
+    array<LuxuryCarRHistoryItem> myHistory                 // 我的历史游戏记录
+    int32 lastBetAmountButton                              // 上次下注档位按钮
+    PlayerSettings playerSettings                          // 玩家个性化设置
+}
+
+// 下注请求：玩家确认下注时发送
+bet {
+    uint64 todayRound                   // 当天局号（用于防重入校验）
+    array<uint32> betGradeArr           // 各下注区启用的筹码档位（10个下注区，0表示不下注）
+    array<array<uint32>> betGradeNumArr // 各下注区各档位下注数量（二维数组）
+    array<uint64> betDiamonList         // 各下注区下注钻石总数（汇总）
+}
+
+// 下注响应：服务端处理下注后返回
+betResp {
+    int32 code                              // 错误码（0表示成功，非0表示失败原因）
+    uint64 accountDiamond                   // 下注后账户剩余钻石数
+    array<uint64> wheelAmount               // 更新后的各下注区累计下注额
+    array<array<uint64>> wheelChipAmount    // 各下注区各档位筹码数量（二维数组）
+}
+
+onResultHandler {
+    int32 code
+    uint64 roundId
+}
+
+// 设置默认下注档位请求：玩家选择一个下注档位作为默认
+setBetAmountButton {
+    int32 betAmountButtonIndex   // 下注档位按钮索引
+}
+
+// 设置默认下注档位响应
+setBetAmountButtonResp {
+    int32 code      // 错误码（0表示成功）
+}
+
+// 同步游戏状态请求：客户端断线重连后拉取最新状态
+synchronize {
+}
+
+// 同步游戏状态响应：返回与 enterGameResp 相同结构的全量状态数据
+synchronizeResp {
+    LuxuryCarRRoundStep roundStep                          // 当前轮次状态
+    array<int32> historyResults                            // 历史开奖结果
+    array<LuxuryCarRRankItem> rankList                     // 今日排行榜
+    string uid                                             // 当前玩家UID
+    Account account                                        // 玩家账户信息
+    uint64 todayRevenue                                    // 今日盈亏
+    array<uint64> wheelAmount                              // 各下注区当前累计下注额
+    array<array<uint64>> wheelChipAmount                   // 当前玩家各下注区各档位筹码数量
+    array<uint64> totalWheelAmount                         // 各下注区历史累计下注额
+    array<LuxuryCarRPlayerBetList> curRoundAllWheelAmount  // 当前轮所有玩家下注明细
+    array<LuxuryCarRHistoryItem> myHistory                 // 我的历史记录
+    int32 lastBetAmountButton                              // 上次下注档位按钮
+    PlayerSettings playerSettings                          // 玩家个性化设置
+}
+
+// 更新玩家设置请求：玩家修改音效、加速等个性化选项
+updateSettings {
+    PlayerSettings config    // 新的设置数据
+}
+
+// 更新玩家设置响应
+updateSettingsResp {
+    int32 code      // 错误码（0表示成功）
+}
+
+// DBM 心跳请求：用于保持 DBM（数据库管理模块）连接活跃
+dbmHeartbeat {
+}
+
+// DBM 心跳响应
+dbmHeartbeatResp {
+    int32 code      // 状态码（0表示正常）
+}
+
+// ------------------------------
+// 服务端推送（Push消息，服务端主动下发）
+// ------------------------------
+
+// 排行榜变化推送：排行榜数据发生更新时推送给所有在线玩家
+onRankListChange {
+    array<LuxuryCarRRankItem> rankList     // 更新后的排行榜列表
+}
+
+// 轮次状态变化推送：游戏进入下一阶段（等待→下注→动画→结算）时推送
+onRoundStep {
+    uint64 todayRound                   // 当天局号
+    int32 status                        // 新的游戏阶段状态
+    int32 remainSecond                  // 当前阶段剩余秒数
+    int32 result                        // 开奖结果（结算阶段有效，未开奖为0）
+    array<int32> hot                    // 热门下注区
+    array<LuxuryCarRRankItem> roundRank // 当前轮排行榜
+    uint64 timestamp                    // 推送时间戳
+}
+
+// 当前轮下注列表推送：有玩家下注时推送给其他玩家（用于展示投注动画）
+onBetListRound {
+    string uid                  // 下注玩家UID
+    int32 flyPlayerPos          // 玩家头像飞入动画的目标位置（座位号）
+    array<uint32> batIndex      // 下注的区域索引列表
+    array<array<uint32>> num    // 各区域各档位下注数量
+}
+
+// 全场下注总额推送：各下注区累计下注额变化时推送
+onBetNoticeAll {
+    array<uint64> wheelAmount   // 更新后的各下注区累计下注额
+}
+
+// 跨天重置推送：服务器日期变更时通知客户端重置当日数据
+onNewDay {
+}
+
+// 维护状态推送：服务器进入/退出维护模式时通知客户端
+onMaintenance {
+}
+
+// 玩家资产更新推送：玩家的钻石或道具发生变化时推送
+onPlayerUpdate {
+    string uid                  // 玩家UID
+    uint64 diamond              // 更新后的钻石数量
+    array<uint64> itemAmount    // 更新后的道具数量列表
+    uint64 todayRound           // 当前局号
+}
+
+// ------------------------------
+// 排行榜公共协议（与 Common.proto 中排行榜消息配合使用）
+// ------------------------------
+
+// 排行榜玩家信息（如需扩展可在此定义额外字段）

@@ -1,0 +1,9 @@
+{
+    "protos":[
+		"Protos/Common.proto",
+        "Protos/Defs.proto"
+		
+    ],
+    "client":"../Seven7/assets/script/module/seven7/Defs.ts",
+    "server":"Game/Defs.lua"
+}

@@ -1,0 +1,106 @@
+
+//类型：bool, string, int16, uint16, int32, uint32, int64, uint64, array<>, map<>, 已定义的类型名
+//范围：使用中括号[]，在变量名后给出[min, max]，使用闭区间，即包含min和max
+//默认范围：整型取各自的最大范围，字符串和数组为[0, 256]
+//限制：为了和js和行为一致，map类型的key只能使用string类型，当然在写入数据时，map和key可以为数字，会被默认转成字符串处理
+//规范：所有数字相关的定义，尽可能使用无符号整型，除非已经明确可能为负数才定义有符号类型
+//示例：
+//Base {
+//    int16 num1
+//    uint16 num2
+//    float num3[1, 100]
+//    bool b1
+//    string str1
+//    array<int16> arr1
+//    array<string> arr2
+//    map<string, string> map1
+//}
+
+//Test {
+//    Base base1
+//    array<Base> arr1
+//    map<string, Base> map1
+//}
+
+// 排行榜检测登录
+CsIsNetworkReadyReq{
+}
+CsIsNetworkReadyResp{
+}
+
+// 排行榜玩家
+RankUserInfo {
+	string uid
+	string avatar
+	string name
+	int32 rank
+	int64 bonus
+	int64 score
+	bool get
+}
+
+// 客户端领取日榜奖励
+CsReceiveDayAwardReq {
+}
+CsReceiveDayAwardResp {
+	int32 code
+	uint64 accountDiamond
+}
+
+// 客户端领取周榜奖励
+CsReceiveWeekAwardReq {
+}
+CsReceiveWeekAwardResp {
+	int32 code
+	uint64 accountDiamond
+}
+
+// 服务端推送：昨日日榜可领奖
+CsDayRankAwardResp {
+	string uid
+	int32 rank
+	int64 bonus
+	int64 score
+	array<RankUserInfo> rankUsers
+}
+
+// 服务端推送：上周周榜可领奖
+CsWeekRankAwardResp {
+	string uid
+	int32 rank
+	int64 bonus
+	int64 score
+	array<RankUserInfo> rankUsers
+}
+
+// 服务端推送:今日实时榜
+CsTodayRealTimeRankResp{
+	uint64 timestamp
+	int32 timezone
+	string uid
+	int32 rank
+}
+
+// 客户端拉取实时排名
+CsGetTodayRealTimeRankReq {
+}
+CsGetTodayRealTimeRankResp {
+	uint64 timestamp
+	int32 timezone
+	string uid
+	int32 rank
+}
+
+//客户端拉取榜单
+CsGetRankListByDateStrReq{
+	string dateStr
+}
+CsGetRankListByDateStrResp{
+	string dateStr
+	array<RankUserInfo> rankUsers
+}
+
+//测试排行榜推数据
+CsRankTestReq{
+	int32 score
+}

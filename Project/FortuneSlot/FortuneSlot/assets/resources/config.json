@@ -1,0 +1,16 @@
+{
+    "config":{
+        "httpServer": "http://192.168.0.150/main/",
+        "host": "192.168.124.13/adress",
+        "port": "8090",
+        "serverAdress": "http://192.168.124.13:8090/adress",
+        "serverAddress": "http://192.168.124.13:8090/adress",
+        "gameId": 19,
+        "platId": 101,
+        "platKey": "abc",
+        "serverIndex": 3,
+        "uid": "1d1rf",
+        "token": "qwertyuiop123",
+        "routerPath": "game"
+    }
+}

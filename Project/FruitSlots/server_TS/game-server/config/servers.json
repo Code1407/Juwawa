@@ -1,0 +1,14 @@
+{
+  "development":{
+    "game": [
+      {"id": "test", "host": "0.0.0.0", "port": 3500, "clientHost": "0.0.0.0", "clientPort": 3000, "frontend": true,
+      "args" : " --inspect=32300"}
+    ]
+  },
+  "production":{
+    "game": [
+      {"id": "production_test", "host": "0.0.0.0", "port": 5500, "clientHost": "0.0.0.0", "clientPort": 5000, "frontend": true,
+      "args" : " --inspect=52300"}
+    ]
+  }
+}

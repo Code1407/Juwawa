@@ -1,0 +1,53 @@
+﻿{
+    "config": {
+        "version": "1.0.5",
+        "package": "com.oops.game",
+        "localDataKey": "oops",
+        "localDataIv": "framework",
+        "httpServer": "http://192.168.0.150/main/",
+        "httpTimeout": 10000,
+        "frameRate": "60",
+        "loadingTimeoutGui": 1000
+    },
+    "gui": [
+        {
+            "name": "LayerGame",
+            "type": "Game"
+        },
+        {
+            "name": "LayerUI",
+            "type": "UI"
+        },
+        {
+            "name": "LayerPopUp",
+            "type": "PopUp"
+        },
+        {
+            "name": "LayerDialog",
+            "type": "Dialog"
+        },
+        {
+            "name": "LayerSystem",
+            "type": "Dialog"
+        },
+        {
+            "name": "LayerNotify",
+            "type": "Notify"
+        },
+        {
+            "name": "LayerGuide",
+            "type": "Node"
+        }
+    ],
+    "language": {
+        "default": "en"
+    },
+    "bundle": {
+        "enable": false,
+        "server": "http://localhost",
+        "default": "resources",
+        "packages": {
+            "bundle": ""
+        }
+    }
+}

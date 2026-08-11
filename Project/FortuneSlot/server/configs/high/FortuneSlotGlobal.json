@@ -1,0 +1,15 @@
+{
+    "1": {
+        "id": 1,
+        "baseBet": 200,
+        "bigWinMultiple": 2000,
+        "balanceMinBet": 0,
+        "killRevenueTimes": 10,
+        "killCount": 5,
+        "regenerateCount": 1,
+        "regenerateMin": 0,
+        "regenerateMax": 10,
+        "defaultRateType": 0,
+        "heartbeatInterval": 1000
+    }
+}

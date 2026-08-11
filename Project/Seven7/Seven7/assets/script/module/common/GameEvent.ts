@@ -1,0 +1,21 @@
+/** 游戏事件 */
+export enum GameEvent {
+    /**玩家进入游戏 */
+    MSG_PLAYER_ENTER_GAME_PUSH = "MSG_PLAYER_ENTER_GAME_PUSH",
+    /** 获取当前游戏信息 */
+    MSG_CUR_GAME_INFO = "MSG_CUR_GAME_INFO",
+    /** 游戏开始准备 */
+    MSG_GAME_PREPARE_PUSH = "MSG_GAME_PREPARE_PUSH",
+    /** 更新本轮下注信息 */
+    MSG_UPDATE_SELF_BET = "MSG_UPDATE_SELF_BET",
+    /** 更新全局下注信息 */
+    MSG_UPDATE_WORLD_BET = "MSG_UPDATE_WORLD_BET",
+    /** 开奖 */
+    MSG_OPEN_REWARD = "MSG_OPEN_REWARD",
+    //历史抽奖结果 */
+    MSG_SHOW_GAME_HISTORY = "MSG_SHOW_GAME_HISTORY",
+    //我的下注记录 */
+    MSG_SHOW_SELF_BET_HISTORY = "MSG_SHOW_SELF_BET_HISTORY",
+    //排行榜 */
+    MSG_SHOW_RANK = "MSG_SHOW_RANK",
+}

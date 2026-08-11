@@ -1,0 +1,55 @@
+
+zhongjiang_light.png
+size: 256,256
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+guang
+  rotate: false
+  xy: 2, 21
+  size: 115, 115
+  orig: 115, 115
+  offset: 0, 0
+  index: -1
+x1
+  rotate: true
+  xy: 2, 2
+  size: 17, 18
+  orig: 17, 18
+  offset: 0, 0
+  index: -1
+x2
+  rotate: true
+  xy: 2, 2
+  size: 17, 18
+  orig: 17, 18
+  offset: 0, 0
+  index: -1
+x3
+  rotate: true
+  xy: 2, 2
+  size: 17, 18
+  orig: 17, 18
+  offset: 0, 0
+  index: -1
+x5
+  rotate: true
+  xy: 2, 2
+  size: 17, 18
+  orig: 17, 18
+  offset: 0, 0
+  index: -1
+x6
+  rotate: true
+  xy: 2, 2
+  size: 17, 18
+  orig: 17, 18
+  offset: 0, 0
+  index: -1
+x4
+  rotate: false
+  xy: 22, 2
+  size: 17, 17
+  orig: 17, 18
+  offset: 0, 0
+  index: -1
