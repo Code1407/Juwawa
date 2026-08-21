@@ -74,7 +74,11 @@ end
 function Player:onCoinChanged()
     PlayerBase.onCoinChanged(self)
     if self:isOnline() then
-        Router.Client.ScCoinsUpdatePush({coins = self:getCoins()}, self)
+        local uid = self.getUid and self:getUid() or "nil"
+        local pid = self.getPid and self:getPid() or "nil"
+        local coins = self:getCoins()
+        log_info("[BalanceTrace] LuxuryCarR ScCoinsUpdatePush send: uid:{0} pid:{1} coins:{2}", tostring(uid), tostring(pid), coins)
+        Router.Client.ScCoinsUpdatePush({coins = coins}, self)
     end
 end
 

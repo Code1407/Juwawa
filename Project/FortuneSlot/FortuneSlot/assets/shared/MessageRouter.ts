@@ -720,6 +720,7 @@ class JsNetMessageRouter {
         let sdk = client.getSdk()
         this.jsSdk = sdk;
         this.jsNet = client.getNet();
+        (<any>window).net = this.jsNet; // net
         if (sdk.addEvent) {
             sdk.addEvent("onQueryUser", (...args: any[]) => {
                 logJsNet("onQueryUser", args && args.length > 0 ? args : undefined);
@@ -844,6 +845,9 @@ class JsNetMessageRouter {
             this.isAuthed = false;
             if (wasAuthed) {
                 this.needRunReconnectHandler = true;
+            }
+            if(!this.jsNet){
+                return
             }
             if (this.jsNet.enableRetry) {
                 this.jsNet.enableRetry(true);

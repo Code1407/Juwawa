@@ -25,7 +25,6 @@ export interface ICountDownPlayerUpdate {
 
 export interface IPlayerSettings {
     soundVol?: number;
-    lastBetAmountButton?: number;
     isSpeed?: boolean;
 }
 

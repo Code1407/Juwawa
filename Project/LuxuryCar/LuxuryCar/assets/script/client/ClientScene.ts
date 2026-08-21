@@ -39,6 +39,12 @@ export default class ClientScene implements ISceneListen {
         });
         // 基础 Player 推送，与 Seven7 的 PlayerSystem 行为对齐。
         this.msgRouter.on('ScCoinsUpdatePush', function (data: any) {
+            console.log('[BalanceTrace] LuxuryCar ScCoinsUpdatePush recv', {
+                localUid: Game.Instance.player?.uid,
+                coins: data?.coins,
+                round: gGameData.roundStep?.todayRound,
+                status: gGameData.roundStep?.status,
+            });
             if (data?.coins >= 0) {
                 Game.Instance.player.setAccountDiamond(data.coins);
             }
@@ -52,6 +58,14 @@ export default class ClientScene implements ISceneListen {
         this.msgRouter.on('ScSdkStatePush', function (data: any) {
             if (data?.state != null) {
                 Game.Instance.player.setSdkState(data.state);
+            }
+        });
+        // 服务器关服消息由游戏场景消费，通用网络层只负责分发。
+        this.msgRouter.on('SvrNotifyMsg', function () {
+            (<any>window).pendingCloseServerView = true;
+            const closeServerView = (<any>window).closeServerView as cc.Node;
+            if (closeServerView && closeServerView.isValid) {
+                closeServerView.active = true;
             }
         });
     }
@@ -70,8 +84,10 @@ export default class ClientScene implements ISceneListen {
         Game.Instance.onBetNoticeAll(data);
     }
     onPlayerUpdate(playerUpdate: ICountDownPlayerUpdate) {
+        // 防止其他玩家的结算消息覆盖本机余额和个人下注。
+        if (playerUpdate?.uid == null || Game.Instance.player?.uid == null ||
+            String(playerUpdate.uid) !== String(Game.Instance.player.uid)) return;
         if (playerUpdate?.itemAmount?.length == 10 && playerUpdate?.diamond >= 0 && playerUpdate.todayRound == gGameData.roundStep.todayRound) {
-            Game.Instance.player.setAccountDiamond(playerUpdate.diamond);
             Game.Instance.player.setWheelAmount(playerUpdate.itemAmount);
         }
     }
@@ -92,6 +108,7 @@ export default class ClientScene implements ISceneListen {
     }
 
     onRoundStep(roundStep: any) {
+        if ((<any>window).breakRoundStep) return;
         if (!roundStep.todayRound) return;
 
         let game = Game.Instance;

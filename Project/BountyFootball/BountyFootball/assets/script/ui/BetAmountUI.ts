@@ -22,6 +22,7 @@ export default class BetAmountUI extends cc.Component {
     isChecked: boolean[] = []; // 用于记录每个按钮是否被选中过
 
     onClick(e: cc.Event) {
+        (<any>window).updateAutoQuit?.();
         if ([EGameStatus.final, EGameStatus.stop].includes(gGameData.status)) return;
 
         Audio.Instance.playchangebet();

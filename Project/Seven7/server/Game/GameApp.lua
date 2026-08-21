@@ -26,3 +26,7 @@ end
 function GameApp:onProjConfig()
     RankCfgMgr:onProjRankCfgMgr()
 end
+
+function GameApp:onClosing()
+    log_info("***服务器准备停服更新***")
+end

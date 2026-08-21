@@ -26,6 +26,8 @@ export default class Account extends cc.Component {
 
     setAccountDiamond(value: number) {
         this.myDiamond.string = toThousands(value);
+
+        console.log("11111-----------setAccountDiamond", value);
     }
 
     setTodayRevenue(value: number) {

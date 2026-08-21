@@ -41,6 +41,7 @@ export default class AutoBetUI extends cc.Component {
         const now = Date.now();
         if (now - this.lastClickTime < 80) return;
         this.lastClickTime = now;
+        (<any>window).updateAutoQuit?.();
 
         if ([EGameStatus.stop].includes(gGameData.status)) return;
         if (gGameData.coolDown || gGameData.roundBetCount > roundBetCountMax) return;
@@ -63,6 +64,7 @@ export default class AutoBetUI extends cc.Component {
     async tryAutoBetNow() {
         if (!this.autoBet || this.autoBetting) return;
         if (gGameData.status != EGameStatus.bet) return;
+        if (gGameData.roundStep.remainSecond <= 3) return;
         if (gGameData.roundStep.todayRound < this.autoBetStartRound) return;
 
         let player = PlayerAccount.Instance;
@@ -127,7 +129,14 @@ export default class AutoBetUI extends cc.Component {
     }
 
     switchButton() {
+       // 自动下注期间由游戏持续代替玩家操作，不应被全局挂机检测判定为未操作。
+       // 关闭 Auto 后不主动刷新倒计时，沿用最后一次真实/自动操作的时间。
+       (<any>window).isAutoBetActive = this.autoBet;
        this.AutoBg2.active = this.autoBet;
+    }
+
+    onDestroy() {
+        (<any>window).isAutoBetActive = false;
     }
 
     // LIFE-CYCLE CALLBACKS:

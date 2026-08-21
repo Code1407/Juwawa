@@ -105,6 +105,9 @@ function FruitSlotsPlayer:onEnter()
     else
         self:changeMachineStatus(FRGameStatus.final)
     end
+    if self.scene:isStop() then
+        self:prepareServerClosing()
+    end
 end
 
 -- 玩家离开：结算所有运行中回合，取消注册
@@ -113,6 +116,7 @@ function FruitSlotsPlayer:onLeave()
     if self.scene then
         self.scene:unregisterPlayer(self:getUid())
     end
+    self.machine = nil
     SystemBase.onLeave(self)
 end
 
@@ -142,6 +146,29 @@ function FruitSlotsPlayer:getDataSafe()
     data.playerSettings = data.playerSettings or { soundVol = 1, lastBetAmountButton = 0, isSpeed = false }
     data.history = data.history or {}
     return data
+end
+
+-- 免费次数属于触发它的普通局；次数耗尽且最终派彩完成后，整局才算结束。
+function FruitSlotsPlayer:hasPendingFreeRounds()
+    local lastResult = self:getDataSafe().lastResult
+    return type(lastResult) == "table" and (tonumber(lastResult.freeCount) or 0) > 0
+end
+
+-- 是否还有必须在关服前完成的扣款回调、运行中回合或免费次数。
+function FruitSlotsPlayer:hasUnsettledRounds()
+    return self.pendingBet ~= nil or
+        next(self:getDataSafe().runningRounds or {}) ~= nil or
+        self:hasPendingFreeRounds()
+end
+
+function FruitSlotsPlayer:prepareServerClosing()
+    -- 不在这里强制结算正在展示的回合。客户端会按正常流程 stopRound，
+    -- 免费次数之间仍可继续调用 betFree；普通付费下注由 betNormal 拒绝。
+    if not self:hasUnsettledRounds() then
+        self.machineStatus = FRGameStatus.maintenance
+        self.runningRoundID = 0
+        self.runningResults = nil
+    end
 end
 
 -- 构建返回给客户端的完整游戏状态
@@ -434,16 +461,24 @@ function FruitSlotsPlayer:completePaidBet(roundId, betAmount, linesBetAmount)
         self:changeMachineStatus(FRGameStatus.final)
         log_error("FruitSlots paid bet result generation failed, roundId:{0}, error:{1}", roundId, tostring(err))
         self:notifyBetFailure(FRTradeCode.fail)
+        self.scene:tryFinishServerClosing()
         return false
+    end
+    if self.scene:isClosing() then
+        self.scene:tryFinishServerClosing()
     end
     return true
 end
 
 -- 普通下注流程：扣款 -> 生成单控结果 -> 启动回合
 function FruitSlotsPlayer:betNormal(betAmount)
-    if self.scene:isStop() or self.machineStatus ~= FRGameStatus.bet then
+    if self.scene:isStop() then
+        self:notifyBetFailure(FRTradeCode.closeServer)
+        return { code = FRTradeCode.closeServer, result = nil, roundId = 0 }
+    end
+    if self.machineStatus ~= FRGameStatus.bet then
         self:notifyBetFailure(FRTradeCode.fail)
-        return { code = FRTradeCode.fail }
+        return { code = FRTradeCode.fail, result = nil, roundId = 0 }
     end
 
     local data = self:getDataSafe()
@@ -484,6 +519,10 @@ function FruitSlotsPlayer:betNormal(betAmount)
         local persistedPending = systemData and systemData.pendingBets[tostring(roundId)] or nil
         if not system or not persistedPending then
             log_error("FruitSlots bet callback ignored, pending bet not found, roundId:{0}", roundId)
+            if system and system.pendingBet and system.pendingBet.roundId == roundId then
+                system.pendingBet = nil
+                system.scene:tryFinishServerClosing()
+            end
             return
         end
         system.pendingBet = nil
@@ -491,6 +530,7 @@ function FruitSlotsPlayer:betNormal(betAmount)
             systemData.pendingBets[tostring(roundId)] = nil
             system:changeMachineStatus(FRGameStatus.bet)
             system:notifyBetFailure(payCode)
+            system.scene:tryFinishServerClosing()
             return
         end
         system.scene:onAccountDiamondUpdate(system:getUid(), { value = system:getDiamond(), offset = -linesBetAmount })
@@ -506,6 +546,7 @@ function FruitSlotsPlayer:betNormal(betAmount)
         data.pendingBets[tostring(roundId)] = nil
         self.pendingBet = nil
         self:changeMachineStatus(FRGameStatus.bet)
+        self.scene:tryFinishServerClosing()
     end
 
     return {
@@ -517,7 +558,13 @@ end
 
 -- 免费游戏下注：不扣款，使用上次的结果配置，生成免费旋转结果
 function FruitSlotsPlayer:betFree()
-    if self.scene:isStop() or self.machineStatus ~= FRGameStatus.bet then
+    -- 优雅关服只允许消费本局已经获得的免费次数，不能开启新的付费局。
+    local canFinishFreeMode = self.scene:isClosing() and self:hasPendingFreeRounds()
+    if self.scene:isStop() and not canFinishFreeMode then
+        self:notifyBetFailure(FRTradeCode.closeServer)
+        return { code = FRTradeCode.closeServer, result = nil, roundId = 0 }
+    end
+    if self.machineStatus ~= FRGameStatus.bet then
         self:notifyBetFailure(FRTradeCode.fail)
         return { code = FRTradeCode.fail, result = nil, roundId = 0 }
     end
@@ -599,6 +646,7 @@ function FruitSlotsPlayer:settleResult(roundId)
         if player and player.statisGameRound then
             player:statisGameRound(roundId, result.roundBet or 0, 0)
         end
+        self.scene:tryFinishServerClosing()
         return
     end
 
@@ -637,6 +685,7 @@ function FruitSlotsPlayer:settleResult(roundId)
                 player:statisGameRound(roundId, result.roundBet or 0, committed)
             end
         end
+        system.scene:tryFinishServerClosing()
     end)
 end
 
@@ -710,7 +759,8 @@ function FruitSlotsPlayer:updateSettings(config)
     local soundVol = current.soundVol
     if soundVol == nil then soundVol = 1 end
     if config and config.soundVol ~= nil then soundVol = config.soundVol end
-    soundVol = math.max(0, math.floor(tonumber(soundVol) or 1))
+    soundVol = math.max(0, math.min(1, tonumber(soundVol) or 1))
+    soundVol = math.floor(soundVol * 100 + 0.5) / 100
 
     local lastBetAmountButton = current.lastBetAmountButton
     if lastBetAmountButton == nil then lastBetAmountButton = data.lastBetAmountButton or 0 end

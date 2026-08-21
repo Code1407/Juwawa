@@ -1,5 +1,5 @@
 import { afterLoad } from "../lang/afterLoad";
-import { GameClientConfig, GameCommonConfig } from "../PureClient/PureClient.min";
+import { GameClientConfig, GameCommonConfig, NetConfig } from "../PureClient/PureClient.min";
 import { getQuery, serverConfig } from "../shared/Common"
 import { setDisconnectRollView, setDisconnectView, setDisconnectView2 } from "../shared2/GlobalViewsLoader";
 const PureClientModule = require("../PureClient/PureClient.min.js");
@@ -49,6 +49,8 @@ let disconnectViewTimer = -1;
 let disconnectUiStage: "idle" | "roll" | "view" = "idle";
 let isLoginOtherKickOut = false;
 
+
+
 function normalizeRoute(routeName: string): string {
     if (!routeName) {
         return routeName;
@@ -57,9 +59,9 @@ function normalizeRoute(routeName: string): string {
     return routeList[routeList.length - 1];
 }
 
-function pickFirst(): any {
-    for (let i = 0; i < arguments.length; i++) {
-        let value = arguments[i];
+function pickFirst(...values: any[]): any {
+    for (let i = 0; i < values.length; i++) {
+        let value = values[i];
         if (value !== undefined && value !== null && value !== "") {
             return value;
         }
@@ -85,9 +87,9 @@ function toStringValue(value: any, defaultValue: string = ""): string {
     return String(value);
 }
 
-function getQueryValue(): string {
-    for (let i = 0; i < arguments.length; i++) {
-        let value = getQuery(arguments[i]);
+function getQueryValue(...keys: string[]): string {
+    for (let i = 0; i < keys.length; i++) {
+        let value = getQuery(keys[i]);
         if (value !== "") {
             return value;
         }
@@ -618,6 +620,11 @@ class JsNetMessageRouter {
     isAuthed: boolean = false;
     needRunReconnectHandler: boolean = false;
     initPromise: Promise<void>;
+    reconnectPromise: Promise<boolean>;
+    private reconnectResolve: (success: boolean) => void;
+    private manualReconnectPending: boolean = false;
+    private manualReconnectFallbackTimer: any = null;
+    private authAttemptId: number = 0;
     connectConfig: IRuntimeConnectConfig;
     listenerMap: { [routeName: string]: MsgCallback[] } = {};
     listenerBound: { [routeName: string]: boolean } = {};
@@ -676,7 +683,6 @@ class JsNetMessageRouter {
         if (!this.jsNet || !this.isAuthed) {
             throw new Error("JsNet is not ready");
         }
-        (<any>window).updateAutoQuit?.();
         return this.jsNet.reqMsg(normalizeRoute(routeName), msg || {});
     }
 
@@ -706,6 +712,80 @@ class JsNetMessageRouter {
         client.disconnect();
     }
 
+    async reconnect(): Promise<boolean> {
+        if (this.isAuthed && this.jsNet) {
+            hideDisconnectUi();
+            return true;
+        }
+        if (this.reconnectPromise) {
+            return this.reconnectPromise;
+        }
+        if (!this.jsNet || !this.connectConfig) {
+            try {
+                await this.init(this.gameName || _gameName || (<any>window).gameName);
+                return this.isAuthed;
+            }
+            catch (error) {
+                showDisconnectUi("manual_reconnect_failed", toErrorMessage(error));
+                return false;
+            }
+        }
+
+        this.needRunReconnectHandler = true;
+        showDisconnectUi("manual_reconnect", this.connectConfig.serverAdress);
+        this.reconnectPromise = new Promise<boolean>(resolve => {
+            this.reconnectResolve = resolve;
+        });
+
+        // 先使旧鉴权失效，再等待旧连接真正关闭后发起新连接。
+        // PureClient 的 disconnect/onDisconnect 是异步的，不能在 disconnect 后立即 connect。
+        this.authAttemptId++;
+        this.manualReconnectPending = true;
+        try {
+            this.jsNet.enableRetry?.(false);
+            this.jsNet.disconnect?.();
+        }
+        catch (error) {
+            console.warn("[JsNet] stop old connection before manual reconnect failed", error);
+            this.startManualConnect();
+        }
+        // 已关闭状态下 PureClient 可能不再回调 onDisconnect，留一个兜底。
+        this.manualReconnectFallbackTimer = setTimeout(() => this.startManualConnect(), 1000);
+        return this.reconnectPromise;
+    }
+
+    private startManualConnect() {
+        if (!this.manualReconnectPending || !this.jsNet || !this.connectConfig) {
+            return;
+        }
+        this.manualReconnectPending = false;
+        if (this.manualReconnectFallbackTimer) {
+            clearTimeout(this.manualReconnectFallbackTimer);
+            this.manualReconnectFallbackTimer = null;
+        }
+        this.jsNet.enableRetry?.(true);
+        this.jsNet.connect(this.connectConfig.serverAdress, {
+            pingInterval: 3,
+            pingOut: 8,
+            retryInterval: 2,
+            retryMaxCount: 10,
+            compress: true
+        });
+    }
+
+    private finishReconnect(success: boolean) {
+        this.manualReconnectPending = false;
+        if (this.manualReconnectFallbackTimer) {
+            clearTimeout(this.manualReconnectFallbackTimer);
+            this.manualReconnectFallbackTimer = null;
+        }
+        if (this.reconnectResolve) {
+            this.reconnectResolve(success);
+        }
+        this.reconnectResolve = null;
+        this.reconnectPromise = null;
+    }
+
     private async ensureJsSdk(gameName: string, initOptions?: any) {
         if (this.jsSdk) {
             return;
@@ -721,6 +801,7 @@ class JsNetMessageRouter {
         let sdk = client.getSdk()
         this.jsSdk = sdk;
         this.jsNet = client.getNet();
+        (<any>window).net = this.jsNet; // net
         if (sdk.addEvent) {
             sdk.addEvent("onQueryUser", (...args: any[]) => {
                 logJsNet("onQueryUser", args && args.length > 0 ? args : undefined);
@@ -737,6 +818,7 @@ class JsNetMessageRouter {
                     catch (error) {
                         console.error("[JsNet] onQueryUser handler failed", error);
                     }
+
                     return;
                 }
                 if (typeof (<any>window).updateBalance === "function") {
@@ -843,10 +925,17 @@ class JsNetMessageRouter {
                 isAuthed: this.isAuthed
             });
             this.isAuthed = false;
+            if (this.manualReconnectPending) {
+                this.startManualConnect();
+                return;
+            }
             if (wasAuthed) {
                 this.needRunReconnectHandler = true;
             }
-            if (this.jsNet.enableRetry) {
+            // An intentional disconnect clears this.jsNet before PureClient
+            // synchronously emits onDisconnect. Do not dereference or restart
+            // retries after the client has already been released.
+            if (this.jsNet && this.jsNet.enableRetry) {
                 this.jsNet.enableRetry(true);
             }
             showDisconnectUi("disconnected", cfg.serverAdress);
@@ -916,6 +1005,7 @@ class JsNetMessageRouter {
             return;
         }
 
+        const authAttemptId = ++this.authAttemptId;
         try {
             let cfg = this.connectConfig;
             let authReq = {
@@ -940,6 +1030,10 @@ class JsNetMessageRouter {
             logJsNet("AuthGame request", (<any>window).__lastJsNetAuthRequest);
 
             let resp = await this.jsNet.reqMsg("AuthGame", authReq);
+            if (authAttemptId !== this.authAttemptId) {
+                console.warn("[JsNet] ignore stale AuthGame response", { authAttemptId });
+                return;
+            }
             (<any>window).__lastJsNetStage = "auth_game_response";
             (<any>window).__lastJsNetAuthResponse = resp;
             logJsNet("AuthGame response", resp);
@@ -960,7 +1054,9 @@ class JsNetMessageRouter {
             }
             if (this.needRunReconnectHandler && typeof (<any>window).onReconnect === "function") {
                 this.needRunReconnectHandler = false;
-                await (<any>window).onReconnect();
+                if (!(<any>window).isAutoQuitLocked) {
+                    await (<any>window).onReconnect();
+                }
             }
             (<any>window).__lastJsNetStage = "auth_game_success";
             logJsNet("AuthGame success", {
@@ -1011,9 +1107,17 @@ class JsNetMessageRouter {
                     (<any>window).config.gameCoin=spriteFrame
                 });
             }
+            this.finishReconnect(true);
             resolve();
         }
         catch (error) {
+            if (authAttemptId !== this.authAttemptId) {
+                console.warn("[JsNet] ignore stale AuthGame failure", {
+                    authAttemptId,
+                    error: toErrorMessage(error)
+                });
+                return;
+            }
             this.isAuthed = false;
             (<any>window).__lastJsNetStage = "auth_game_failed";
             (<any>window).__lastJsNetError = {
@@ -1026,6 +1130,7 @@ class JsNetMessageRouter {
                 request: (<any>window).__lastJsNetAuthRequest
             });
             showDisconnectUi("auth_failed", toErrorMessage(error));
+            this.finishReconnect(false);
 
             reject(error);
             if (this.jsNet) {
@@ -1069,6 +1174,7 @@ class JsNetMessageRouter {
 }
 
 const compatRouter = new JsNetMessageRouter();
+
 
 function buildGameRoute(gameName: string, routeName: string): string {
     return `${serverConfig.routerPath}.${gameName}.${routeName}`;

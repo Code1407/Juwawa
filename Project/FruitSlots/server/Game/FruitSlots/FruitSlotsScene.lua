@@ -19,6 +19,8 @@ function FruitSlotsScene:ctor__()
     self.gameRateDefault = FruitSlotsDefaultGameRate() -- 默认倍率
     self.gameStatus = FRGameStatus.bet
     self.heartbeatTimerId = 0
+    self.closingFinished = false
+    self.closingPlayers = {}
 end
 
 -- 场景数据加载：初始化Jackpot池、启动心跳定时器
@@ -59,12 +61,25 @@ end
 
 -- 游戏是否已停止
 function FruitSlotsScene:isStop()
-    return self.gameStatus == FRGameStatus.stop
+    return self.gameStatus == FRGameStatus.stop or
+        self.gameStatus == FRGameStatus.maintenance or
+        (gApp and gApp.isWaitClosing and gApp:isWaitClosing())
+end
+
+-- 是否正在执行优雅关服。关服期间禁止开启普通付费局，但允许已经触发的
+-- 免费次数继续完成。
+function FruitSlotsScene:isClosing()
+    return self.gameStatus == FRGameStatus.maintenance or
+        (gApp and gApp.isWaitClosing and gApp:isWaitClosing())
 end
 
 -- 启动游戏服务
 function FruitSlotsScene:gameStart()
+    if gApp and gApp.isWaitClosing and gApp:isWaitClosing() then
+        return false
+    end
     self.gameStatus = FRGameStatus.bet
+    return true
 end
 
 -- 停止游戏服务
@@ -74,12 +89,64 @@ end
 
 -- 注册在线玩家
 function FruitSlotsScene:registerPlayer(playerSys)
-    self.playerList[playerSys:getUid()] = playerSys
+    local uid = playerSys:getUid()
+    self.playerList[uid] = playerSys
+    if self.gameStatus == FRGameStatus.maintenance then
+        self.closingPlayers[uid] = playerSys
+    end
 end
 
 -- 取消注册离线玩家
 function FruitSlotsScene:unregisterPlayer(uid)
+    local playerSys = self.playerList[uid]
     self.playerList[uid] = nil
+    if self.gameStatus == FRGameStatus.maintenance and playerSys and playerSys:hasUnsettledRounds() then
+        self.closingPlayers[uid] = playerSys
+    else
+        self.closingPlayers[uid] = nil
+    end
+end
+
+-- 关服期间同时跟踪在线玩家和已经离线但仍有异步订单回调的玩家。
+function FruitSlotsScene:hasPendingClosingWork()
+    for uid, playerSys in pairs(self.playerList) do
+        self.closingPlayers[uid] = playerSys
+    end
+    for uid, playerSys in pairs(self.closingPlayers) do
+        if playerSys and playerSys:hasUnsettledRounds() then
+            return true
+        end
+        self.closingPlayers[uid] = nil
+    end
+    return false
+end
+
+-- 拒绝新的普通付费局；当前回合和已经触发的免费次数仍按正常流程完成，
+-- 异步扣款、开奖和派彩由各自回调继续收尾。
+function FruitSlotsScene:prepareServerClosing()
+    if self.closingFinished then return false end
+    self.gameStatus = FRGameStatus.maintenance
+    for uid, playerSys in pairs(self.playerList) do
+        self.closingPlayers[uid] = playerSys
+        playerSys:prepareServerClosing()
+    end
+    return self:hasPendingClosingWork()
+end
+
+function FruitSlotsScene:tryFinishServerClosing()
+    if self.closingFinished or self.gameStatus ~= FRGameStatus.maintenance then
+        return false
+    end
+    if self:hasPendingClosingWork() then
+        return false
+    end
+    self.closingFinished = true
+    self.gameStatus = FRGameStatus.stop
+    log_info("FruitSlots closing: all active rounds settled")
+    if gApp and gApp.finishClosing then
+        gApp:finishClosing()
+    end
+    return true
 end
 
 -- 获取指定UID的玩家系统实例
@@ -205,6 +272,14 @@ end
 
 -- 心跳回调：检查跨天重置，推送Jackpot池状态
 function FruitSlotsScene:onHeartbeat()
+    if self.gameStatus == FRGameStatus.maintenance then
+        for _, playerSys in pairs(self.closingPlayers) do
+            playerSys:prepareServerClosing()
+        end
+        self:tryFinishServerClosing()
+        return
+    end
+    if self.closingFinished then return end
     local todayKey = os.date("%Y-%m-%d")
     if todayKey ~= self.todayDate then
         self.todayDate = todayKey

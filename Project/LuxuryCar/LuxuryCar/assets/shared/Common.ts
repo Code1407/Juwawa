@@ -455,12 +455,21 @@ function ensureLocalBetGrade() {
 
 function finishLocalConfigInit(): boolean {
     ensureLocalRuntimeConfig();
+    applyRuntimeNoAudio();
     applyRuntimeNetworkFallback();
     ensureLocalBetGrade();
     client = (<any>window).client && (<any>window).client.client;
     DecimalUnit = (<any>window).DecimalUnit;
     (<any>window).isGameQuit = false;
     return true;
+}
+
+function applyRuntimeNoAudio() {
+    const noAudio = getQuery("noAudio");
+    if (noAudio !== "0" && noAudio !== "1") return;
+    const runtime = <any>window;
+    runtime.user = runtime.user || {};
+    runtime.user.noAudio = noAudio;
 }
 
 export namespace sdk {
@@ -543,6 +552,26 @@ export namespace sdk {
         if (sdkClient && sdkClient.recharge) sdkClient.recharge();
     }
 
+    export async function reconnect() {
+        console.log("sdk reconnect");
+        if ((<any>window).net) {
+            const table = serverConfig
+            let connectUrl = (table && table.serverAdress);
+            if (connectUrl) {
+                (<any>window).net.connect(connectUrl, {
+                    pingInterval: 3,
+                    pingOut: 8,
+                    retryInterval: 2,
+                    retryMaxCount: 10,
+                    compress: true
+                })
+            }
+        } else {
+            ((<any>window).sdk?.reload && (<any>window).sdk.reload()) || window.location.reload();
+        }
+        (<any>window).updateAutoQuit?.()
+    }
+
     export function quit() {
         console.log("quit");
 
@@ -592,6 +621,7 @@ export let isGameHide = () => (<any>window).gameHide;
 
 (<any>window).HotGameRecharge = sdk.recharge;
 (<any>window).HotGameQuit = sdk.quit;
+(<any>window).HotGameReconnect = sdk.reconnect;
 
 export let DecimalUnit: {
 

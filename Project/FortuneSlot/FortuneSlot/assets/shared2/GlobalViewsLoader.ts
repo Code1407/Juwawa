@@ -13,6 +13,13 @@ export default class GlobalViewsLoader extends cc.Component {
         console.log(`GlobalViewsLoader start`);
         (<any>window).GlobalViewsContainor = this.viewsContainor;
         (<any>window).dbmUINode = this.dbmUINode;
+
+        // GlobalViews is instantiated under this container at runtime. Keep the
+        // container above RankStart and GlobalMailUI so global dialogs cannot be
+        // covered by either UI layer.
+        if (this.viewsContainor?.parent) {
+            this.viewsContainor.setSiblingIndex(this.viewsContainor.parent.childrenCount - 1);
+        }
     }
 }
 

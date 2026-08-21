@@ -35,6 +35,8 @@ export default class GlobalViews extends cc.Component {
     maintenanceView: cc.Node;
     @property(cc.Node)
     rechargeView: cc.Node;
+    @property(cc.Node)
+    closeServerView: cc.Node;
     @property(TradeError)
     tradeError: TradeError;
     @property(cc.Node)
@@ -60,6 +62,7 @@ export default class GlobalViews extends cc.Component {
         (<any>window).maintenanceView = this.maintenanceView;
         (<any>window).rechargeView = this.rechargeView;
         (<any>window).cheatWarningView = this.cheatWarningView;
+        (<any>window).closeServerView = this.closeServerView;
         (<any>window).isGlobalViewsLoaded = true;
 
         console.log(`GlobalViews Finish`);

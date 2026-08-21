@@ -414,6 +414,25 @@ export class LayerManager {
             content: oops.language.getLangByID("common_tip_maintain"),
             okWord: "common_cancel",
             needCancel: false,
+            okAndClose:false,
+            okFunc: () => {
+                oops.network.quit();
+            }
+        }
+        this.openAsync(UIID.Confirm, params);
+    }
+
+
+    showSvrNotifyMsgUI(msgCode, seconds){
+        if (this.has(UIID.Confirm)) {
+            this.remove(UIID.Confirm);
+        }
+        let params = {
+            title: "common_hint",
+            iconPath: CommomIconPath.Maintain,
+            content: msgCode + "___" +seconds,
+            okWord: "common_cancel",
+            needCancel: false,
             okFunc: () => {
                 oops.network.quit();
             }

@@ -18,7 +18,6 @@ Account {
 // 玩家本地设置
 PlayerSettings {
     int32 soundVol
-    int32 lastBetAmountButton
     bool isSpeed
 }
 
@@ -89,10 +88,12 @@ bet {
     array<uint32> betGradeArr
     array<array<uint32>> betGradeNumArr
     array<uint64> betDiamonList
+    uint64 requestId
 }
 
 // 下注返回
 betResp {
+    uint64 requestId
     int32 code
     uint64 accountDiamond
     array<uint64> wheelAmount

@@ -59,8 +59,15 @@ export default class BettingBox extends cc.Component {
         //累计金额展示
         let total = totalWheelAmount.reduce((accumulator, currentValue) => { return accumulator + currentValue; }, 0);
         let myTotal = numlist.reduce((accumulator, currentValue) => { return accumulator + currentValue; }, 0);
-        this.totalBet.getComponent(cc.RichText).string = "TotalCost:" + "<color=#ecf3ff><outline color=#0d2454 width=1>" + DecimalUnit.humanReadable(total) + "</outline></color>";
-        this.myTotalBet.getComponent(cc.RichText).string = "My TotalCost:" + "<color=#ffeb61><outline color=#0d2454 width=1>" + DecimalUnit.humanReadable(myTotal) + "</outline></color>";
+        let langContent = (<any>window).langContent;
+        let totalCostPrefix = "TotalCost:";
+        let myTotalCostPrefix = "My TotalCost:";
+        if (langContent && langContent.game) {
+            if (langContent.game.totalCost) totalCostPrefix = langContent.game.totalCost;
+            if (langContent.game.myTotalCost) myTotalCostPrefix = langContent.game.myTotalCost;
+        }
+        this.totalBet.getComponent(cc.RichText).string = totalCostPrefix + "<color=#ecf3ff><outline color=#0d2454 width=1>" + DecimalUnit.humanReadable(total) + "</outline></color>";
+        this.myTotalBet.getComponent(cc.RichText).string = myTotalCostPrefix + "<color=#ffeb61><outline color=#0d2454 width=1>" + DecimalUnit.humanReadable(myTotal) + "</outline></color>";
     }
     resultEff() {
         let result: number = gGameData.roundStep.result;

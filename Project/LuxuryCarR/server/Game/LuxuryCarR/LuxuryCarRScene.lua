@@ -19,8 +19,11 @@ LuxuryCarRScene = class__(SvrSystemBase)
 -- 构造函数：初始化玩家列表、回合下注、历史结果、游戏状态、心跳计时器
 function LuxuryCarRScene:ctor__()
     SvrSystemBase.ctor__(self, LuxuryCarRConst.gameName)
-    self.players, self.roundPlayers, self.roundBets, self.historyResults = {}, {}, LCEmptyBets(), {}
+    self.players, self.roundPlayers, self.roundPlayerPids, self.roundBets, self.historyResults = {}, {}, {}, LCEmptyBets(), {}
     self.gameStatus, self.heartbeatTimer = LCGameStatus.bet, nil
+    self.pendingBetCount = 0
+    self.closingFinished = false
+    self.roundOutcomes, self.roundOutcomeIds = {}, {}
 end
 
 ----------------------------------------------------------------------
@@ -47,6 +50,16 @@ function LuxuryCarRScene:onLoad(data)
     state.roundStep = state.roundStep or { todayRound = state.todayRound, status = LCGameStatus.bet, remainSecond = LuxuryCarRConst.betSeconds, result = -1, hot = {}, roundRank = {}, timestamp = 0 }
     -- 客户端只使用当天自然期号；全局 roundId 不进入前端协议。
     state.roundStep.todayRound = state.todayRound
+    -- 每局保存独立上下文。state.roundId 仅保留为旧数据兼容镜像，业务流程不再读取它。
+    state.roundContext = state.roundContext or {
+        date = state.today,
+        todayRound = state.roundStep.todayRound,
+        roundId = state.roundId,
+    }
+    state.roundContext.date = state.roundContext.date or state.today
+    state.roundContext.todayRound = state.roundContext.todayRound or state.roundStep.todayRound
+    state.roundContext.roundId = state.roundContext.roundId or state.roundId
+    state.roundId = state.roundContext.roundId
     self.roundBets = state.roundBets or LCEmptyBets()
     self.historyResults = state.historyResults or {}
     self.heartbeatTimer = gTimer:addTimer(LuxuryCarRConst.heartbeatMs, LuxuryCarRConst.heartbeatMs, -1, function() self:onHeartbeat() end)
@@ -83,7 +96,35 @@ function LuxuryCarRScene:getScene() return self end
 
 -- 判断游戏是否已停止
 function LuxuryCarRScene:isStop() 
-    return self.gameStatus == LCGameStatus.stop 
+    return self.gameStatus == LCGameStatus.stop or
+        self.gameStatus == LCGameStatus.maintenance or
+        (gApp and gApp.isWaitClosing and gApp:isWaitClosing()) --加入停服检测
+end
+
+-- 进入优雅关服。返回 true 表示当前局已有下注，必须继续到结算完成。
+function LuxuryCarRScene:prepareServerClosing()
+    local step = self:getData().roundStep or {}
+    local hasBets = LCArraySum(self.roundBets) > 0
+    local hasPendingBets = (self.pendingBetCount or 0) > 0
+    local needSettle = step.status == LCGameStatus.run or
+        (step.status == LCGameStatus.bet and (hasBets or hasPendingBets))
+
+    self.gameStatus = needSettle and LCGameStatus.maintenance or LCGameStatus.stop
+    log_info("LuxuryCarR prepare closing: round:{0} status:{1} hasBets:{2} pendingBets:{3} needSettle:{4}",
+        step.todayRound or 0, step.status or -1, hasBets and 1 or 0,
+        self.pendingBetCount or 0, needSettle and 1 or 0)
+    return needSettle
+end
+
+-- 当前局结算完成后停止状态机，并通知框架可以关闭进程。
+function LuxuryCarRScene:finishServerClosing()
+    if self.closingFinished then return end
+    self.closingFinished = true
+    self.gameStatus = LCGameStatus.stop
+    log_info("LuxuryCarR closing: current round settled, stop creating new rounds")
+    if gApp and gApp.finishClosing then
+        gApp:finishClosing()
+    end
 end
 
 -- 注册玩家系统到场景（玩家进入游戏时调用）
@@ -109,16 +150,65 @@ function LuxuryCarRScene:getPlayerSystem(uid)
 end
 
 -- 参与过本局下注的玩家即使中途离线，也必须继续参与结算和统计。
-function LuxuryCarRScene:recordRoundPlayer(system)
-    self.roundPlayers[system:getUid()] = system
+function LuxuryCarRScene:recordRoundPlayer(system, rawPlayer)
+    self.roundPlayerPids = self.roundPlayerPids or {}
+    rawPlayer = rawPlayer or (system and system:getPlayer())
+    if not system or not rawPlayer then
+        log_error("LuxuryCarR record round player failed: system/player is nil")
+        return false
+    end
+
+    local systemUid = tostring(system:getUid())
+    local rawUid = rawPlayer.getUid and tostring(rawPlayer:getUid()) or "nil"
+    local rawPid = rawPlayer.getPid and rawPlayer:getPid() or nil
+    if systemUid ~= rawUid or rawPid == nil or rawPid == "" then
+        log_error("[BalanceTrace] LuxuryCarR record round player identity mismatch: systemUid:{0} rawUid:{1} rawPid:{2}",
+            systemUid, rawUid, tostring(rawPid))
+        return false
+    end
+
+    self.roundPlayers[rawUid] = system
+    self.roundPlayerPids[rawUid] = rawPid
+    return true
 end
 
--- 生成下一个回合ID（自增今日回合数）
+function LuxuryCarRScene:beginPendingBet()
+    self.pendingBetCount = (self.pendingBetCount or 0) + 1
+end
+
+function LuxuryCarRScene:endPendingBet()
+    self.pendingBetCount = math.max(0, (self.pendingBetCount or 0) - 1)
+end
+
+-- 仅在创建新局的边界执行跨日重置，保证跨零点的上一局能完整开奖和结算。
+function LuxuryCarRScene:rolloverDay(today)
+    local state = self:getData()
+    if state.today == today then return false end
+
+    SvrSystem.RankCommon.finalize(state.today, "day")
+    -- 与 Seven7 一致：周榜周期为周日至周六，在周日开启第一局前结算上一周。
+    if os.date("%w") == "0" then
+        SvrSystem.RankCommon.finalize(state.today, "week")
+    end
+
+    state.today, state.todayRound, state.roundId, state.roundContext = today, 0, nil, nil
+    self.roundBets, state.roundBets = LCEmptyBets(), LCEmptyBets()
+    for _, player in pairs(self.players) do
+        player:onNewDay()
+    end
+    return true
+end
+
+-- 生成下一个回合ID，并保存本局不可变上下文。
 function LuxuryCarRScene:nextRoundId()
     local state = self:getData()
+    self:rolloverDay(os.date("%Y-%m-%d"))
     state.todayRound = (state.todayRound or 0) + 1
-    state.roundId = GenUnionIncrId(state.todayRound)
-    return state.todayRound
+    local roundId = GenUnionIncrId(state.todayRound)
+    local context = { date = state.today, todayRound = state.todayRound, roundId = roundId }
+    state.roundContext = context
+    state.roundId = roundId -- 旧存档字段兼容；本局链路统一使用 context/local roundId。
+    return state.todayRound, roundId, context
 end
 
 -- 获取当前回合步骤的深拷贝（避免外部修改影响内部状态）
@@ -128,7 +218,35 @@ end
 
 -- 获取仅供服务端交易、调控和统计使用的全局唯一期号。
 function LuxuryCarRScene:getRoundId()
-    return self:getData().roundId
+    local context = self:getData().roundContext
+    return context and context.roundId or nil
+end
+
+function LuxuryCarRScene:getRoundContext()
+    return LCClone(self:getData().roundContext)
+end
+
+-- 保存最近若干局开奖结果，供扣款回调跨阶段/跨局后进行延迟返奖。
+function LuxuryCarRScene:recordRoundOutcome(roundId, result, oddsType)
+    if not roundId then return end
+    self.roundOutcomes = self.roundOutcomes or {}
+    self.roundOutcomeIds = self.roundOutcomeIds or {}
+    if not self.roundOutcomes[roundId] then
+        table.insert(self.roundOutcomeIds, roundId)
+    end
+    self.roundOutcomes[roundId] = {
+        result = tonumber(result) or -1,
+        oddsType = tonumber(oddsType) or 0,
+    }
+    while #self.roundOutcomeIds > 20 do
+        local expiredRoundId = table.remove(self.roundOutcomeIds, 1)
+        self.roundOutcomes[expiredRoundId] = nil
+    end
+end
+
+--
+function LuxuryCarRScene:getRoundOutcome(roundId)
+    return self.roundOutcomes and self.roundOutcomes[roundId] or nil
 end
 
 ----------------------------------------------------------------------
@@ -140,16 +258,20 @@ end
 --   4. 通知所有玩家 onNewRound，让客户端进入下注界面
 ----------------------------------------------------------------------
 function LuxuryCarRScene:newRound()
+    if gApp and gApp.isWaitClosing and gApp:isWaitClosing() then
+        self:finishServerClosing()
+        return false
+    end
     local state = self:getData()
-    state.todayRound = (state.todayRound or 0) + 1
-    state.roundId = GenUnionIncrId(state.todayRound)
-    state.roundStep = { todayRound = state.todayRound, status = LCGameStatus.bet, remainSecond = LuxuryCarRConst.betSeconds, result = -1, hot = LCEmptyBets(), roundRank = {}, timestamp = app__:utc_milli_s() }
+    local todayRound, roundId = self:nextRoundId()
+    state.roundStep = { todayRound = todayRound, status = LCGameStatus.bet, remainSecond = LuxuryCarRConst.betSeconds, result = -1, hot = LCEmptyBets(), roundRank = {}, timestamp = app__:utc_milli_s() }
     self.roundBets, state.roundBets = LCEmptyBets(), LCEmptyBets()
+    self.roundControl = nil
 
     local onlineCount = 0
     for _ in pairs(self.players) do onlineCount = onlineCount + 1 end
     log_info("LuxuryCarR new round: round:{0} roundId:{1} betSeconds:{2} onlinePlayers:{3}",
-        state.todayRound, state.roundId, LuxuryCarRConst.betSeconds, onlineCount)
+        todayRound, roundId, LuxuryCarRConst.betSeconds, onlineCount)
 
     for _, player in pairs(self.roundPlayers) do
         player:onNewRound()
@@ -159,7 +281,8 @@ function LuxuryCarRScene:newRound()
             player:onNewRound()
         end
     end
-    self.roundPlayers = {}
+    self.roundPlayers, self.roundPlayerPids = {}, {}
+    return true
 end
 
 ----------------------------------------------------------------------
@@ -173,9 +296,9 @@ end
 --   6. 按收益降序排列排行榜，仅保留前3名
 --   7. 将回合状态切换为 final（结算展示阶段），倒计时设为 finalSeconds
 ----------------------------------------------------------------------
-function LuxuryCarRScene:settleCurrentRound()
+function LuxuryCarRScene:settleCurrentRound(roundId)
     local state = self:getData()
-    local step, roundId, roundRank = state.roundStep, state.roundId, {}
+    local step, roundRank = state.roundStep, {}
 
     -- Move out of the run state before issuing SDK requests.  addCoins may
     -- throw synchronously after a request is queued; leaving the state as run
@@ -192,15 +315,32 @@ function LuxuryCarRScene:settleCurrentRound()
     log_info("LuxuryCarR round settle start: round:{0} roundId:{1} result:{2} oddsType:{3} playerCount:{4}",
         step.todayRound, roundId, step.result, control.oddsType, #self.roundPlayers)
 
-    for _, player in pairs(self.roundPlayers) do
+    for roundPlayerUid, player in pairs(self.roundPlayers) do
         local bets = LCClone(player:getData().bets or LCEmptyBets())
         local betTotal = LCArraySum(bets)
-        local rankItem, reward = player:settleCurrentRound(roundId, step.todayRound, step.result, control.oddsType)
+        local roundPlayerPid = self.roundPlayerPids and self.roundPlayerPids[roundPlayerUid] or nil
+        if (roundPlayerPid == nil or roundPlayerPid == "") and player:getPlayer() then
+            roundPlayerPid = player:getPlayer():getPid()
+            log_error("[BalanceTrace] LuxuryCarR settle missing stored pid, fallback to bound player: round:{0} roundId:{1} mapUid:{2} fallbackPid:{3}",
+                step.todayRound, roundId, tostring(roundPlayerUid), tostring(roundPlayerPid))
+        end
+        local rawPlayer = roundPlayerPid and gWorld:findAllPlayer(roundPlayerPid) or nil
+        local systemUid = player:getUid()
+        local rawUid = rawPlayer and rawPlayer.getUid and rawPlayer:getUid() or "nil"
+        local rawPid = rawPlayer and rawPlayer.getPid and rawPlayer:getPid() or "nil"
+        local rawCoins = rawPlayer and rawPlayer.getCoins and rawPlayer:getCoins() or -1
+        log_info("[BalanceTrace] LuxuryCarR settle dispatch: round:{0} roundId:{1} mapUid:{2} systemUid:{3} rawUid:{4} rawPid:{5} rawCoins:{6} betTotal:{7}",
+            step.todayRound, roundId, tostring(roundPlayerUid), tostring(systemUid), tostring(rawUid), tostring(rawPid), rawCoins, betTotal)
+        if tostring(roundPlayerUid) ~= tostring(systemUid) or tostring(systemUid) ~= tostring(rawUid) then
+            log_error("[BalanceTrace] LuxuryCarR settle identity mismatch: round:{0} roundId:{1} mapUid:{2} systemUid:{3} rawUid:{4} rawPid:{5}",
+                step.todayRound, roundId, tostring(roundPlayerUid), tostring(systemUid), tostring(rawUid), tostring(rawPid))
+        end
+        local rankItem, reward = player:settleCurrentRound(roundId, step.todayRound, step.result, control.oddsType, roundPlayerUid, roundPlayerPid)
         if rankItem then
             table.insert(roundRank, rankItem)
         end
         if reward ~= nil then
-            local playerId = getAnalyPlayerId(player)
+            local playerId = roundPlayerPid or getAnalyPlayerId(player)
             if playerId ~= nil then
                 rewards[playerId] = reward
             end
@@ -209,7 +349,7 @@ function LuxuryCarRScene:settleCurrentRound()
         if betTotal > 0 then
             playerCount = playerCount + 1
             roundTotalBet = roundTotalBet + betTotal
-            local uid = player:getUid()
+            local uid = tostring(roundPlayerUid)
             local rewardTotal = math.max(0, math.floor(tonumber(reward) or 0))
             local rewardMap = {}
             if rewardTotal > 0 then
@@ -218,9 +358,9 @@ function LuxuryCarRScene:settleCurrentRound()
             local payData = { betMap = bets, betTotal = betTotal }
             local rewardData = { rewardMap = rewardMap, rewardTotal = rewardTotal }
             gamePayData[uid], gameRewardData[uid] = payData, rewardData
-            local rawPlayer = player:getPlayer()
-            if rawPlayer and rawPlayer.statisGameRound then
-                rawPlayer:statisGameRound(roundId, payData, rewardData)
+            local statisPlayer = roundPlayerPid and gWorld:findAllPlayer(roundPlayerPid) or player:getPlayer()
+            if statisPlayer and statisPlayer.statisGameRound then
+                statisPlayer:statisGameRound(roundId, payData, rewardData)
             end
         end
     end
@@ -256,53 +396,42 @@ end
 -- onHeartbeat 心跳回调，驱动整个游戏流程的核心引擎
 -- 
 -- 执行逻辑：
---   1.【跨日检测】比较当前日期与状态中存储的日期，若发生变化：
---      - 结算日榜（RankCommon:finalize day）
---      - 若为周一（%w == "1"），额外结算上周周榜
---      - 重置今日数据（todayRound=0, 清空下注池）
---      - 通知所有玩家 onNewDay
---      - 立即开启新回合
---   2.【倒计时推进】将当前回合的 remainSecond 减1
---   3.【状态机流转】当倒计时归零时：
+--   1.【倒计时推进】将当前回合的 remainSecond 减1
+--   2.【状态机流转】当倒计时归零时：
 --      - bet → run：调用 selectResult 选出开奖结果，切换到运行态
 --      - run → final：调用 settleCurrentRound 进行结算
 --      - final → 新回合：调用 newRound 开启下一轮下注
+--   3.【回合边界跨日】newRound 创建下一局时才结算榜单并重置日数据，当前局不被零点打断
 --   4.【广播状态】每次心跳都广播 onRoundStep，同步给所有客户端
 -- 
 -- 状态机流转图：
 --   bet(下注) ──倒计时结束──► run(开奖) ──倒计时结束──► final(结算) ──倒计时结束──► bet(新回合)
 ----------------------------------------------------------------------
 function LuxuryCarRScene:onHeartbeat()
-    local today = os.date("%Y-%m-%d")
+    if self.closingFinished then return end
     local state = self:getData()
-    -- 跨日检测：日期变更时触发日榜/周榜结算和数据重置
-    if state.today ~= today then
-        SvrSystem.RankCommon.finalize(state.today, "day")
-        -- 周一额外结算周榜（因为周榜周期为周一至周日，周日结束后在周一触发结算）
-        if os.date("%w") == "1" then 
-            SvrSystem.RankCommon.finalize(state.today, "week")
-        end
-        state.today, state.todayRound, state.roundId, self.roundBets = today, 0, nil, LCEmptyBets()
-        state.roundBets = self.roundBets
-        for _, player in pairs(self.players) do 
-            player:onNewDay()
-        end
-        self:newRound()
-    end
     local step = state.roundStep
+    local context = state.roundContext
+    local roundId = context and context.roundId or nil
     step.remainSecond = (step.remainSecond or 0) - 1
     -- 倒计时归零：根据当前状态推进到下一阶段
     if step.remainSecond <= 0 then
         if step.status == LCGameStatus.bet then
             -- 下注阶段结束：选择开奖结果，切换到运行（开奖）阶段
-            step.result, step.status, step.remainSecond = self:selectResult(), LCGameStatus.run, LuxuryCarRConst.runSeconds
-            self:finishResult(step.result)
+            step.result, step.status, step.remainSecond = self:selectResult(roundId), LCGameStatus.run, LuxuryCarRConst.runSeconds
+            self:finishResult(roundId, step.result)
         elseif step.status == LCGameStatus.run then
             -- 开奖阶段结束：结算本回合
-            self:settleCurrentRound()
+            self:settleCurrentRound(roundId)
+            if gApp and gApp.isWaitClosing and gApp:isWaitClosing() then
+                step.timestamp = app__:utc_milli_s()
+                self:broadcast("onRoundStep", step)
+                self:finishServerClosing()
+                return
+            end
         elseif step.status == LCGameStatus.final then
             -- 结算展示阶段结束：开启新回合
-            self:newRound()
+            if not self:newRound() then return end
             step = state.roundStep
         end
     end
@@ -325,9 +454,8 @@ end
 --   5. 将开奖控制信息保存到 self.roundControl，供结算时使用
 --   6. 返回选中的开奖结果（0-15，对应16个开奖号码）
 ----------------------------------------------------------------------
-function LuxuryCarRScene:selectResult()
-    local state = self:getData()
-    local step, roundId, playerTab = state.roundStep, state.roundId, {}
+function LuxuryCarRScene:selectResult(roundId)
+    local playerTab = {}
     -- 收集所有下注金额大于0的玩家
     for _, system in pairs(self.roundPlayers) do
         if LCArraySum(system:getData().bets) > 0 then
@@ -352,7 +480,7 @@ function LuxuryCarRScene:selectResult()
     analy.bigRewardAddRate = 0
     analy.analyPlayer = 0
 
-    log_info("模拟全局调控数据  固定数据 ---  analy {0}", tableToString(analy))
+    --log_info("模拟全局调控数据  固定数据 ---  analy {0}", tableToString(analy))
 
     if gAnaly and gAnaly.multiAnaly then
         local ok, result = pcall(gAnaly.multiAnaly, gAnaly, playerTab, roundId)
@@ -388,7 +516,8 @@ end
 -- finishResult 记录开奖结果到历史记录
 -- 最多保留最近20条历史结果，用于客户端展示历史开奖轨迹
 ----------------------------------------------------------------------
-function LuxuryCarRScene:finishResult(result)
+function LuxuryCarRScene:finishResult(roundId, result)
+    self:recordRoundOutcome(roundId, result, self.roundControl and self.roundControl.oddsType or 0)
     table.insert(self.historyResults, result)
     if #self.historyResults > 20 then 
         table.remove(self.historyResults, 1)

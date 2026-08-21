@@ -129,7 +129,6 @@ export default class PoppusViewUI extends cc.Component {
             cc.find("tb_sy", this.setting).getComponent(cc.Sprite).spriteFrame = Audio.Instance.audioOn ? ImageCache.Instance.soundSprite[0] : ImageCache.Instance.soundSprite[1];
             gGameData.soundVol = Audio.Instance.audioOn ? 1 : 0;
             let playerSettings = {
-                lastBetAmountButton: gGameData.betAmountIndex,
                 soundVol: gGameData.soundVol
             }
             Game.Instance.player.updateSettings(playerSettings);

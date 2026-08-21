@@ -43,10 +43,31 @@ export default class SDKUI_EX extends cc.Component {
                 console.log(`call quit()`);
                 (<any>window).quit?.();
             }
+            this.close();
         })
         this.btnReload?.on(cc.Node.EventType.TOUCH_END, async () => {
             console.log(`touch reload button`);
-            ((<any>window).HotGameReconnect && (<any>window).HotGameReconnect() && this.close())
+            if (this.node.name === "timerToQuit" || this.node.name === "autoQuitView") {
+                const isFinalAutoQuit = this.node.name === "autoQuitView";
+                const needsReconnect = (<any>window).isNetworkError?.() === true;
+                if (isFinalAutoQuit) (<any>window).isAutoQuitLocked = false;
+                (<any>window).resetDisconnectType?.();
+                this.close();
+                (<any>window).updateAutoQuit?.();
+                if (isFinalAutoQuit) {
+                    if (needsReconnect) {
+                        await (<any>window).HotGameReconnect?.();
+                    }
+                    else {
+                        await (<any>window).onReconnect?.();
+                    }
+                }
+                return;
+            }
+            if ((<any>window).HotGameReconnect) {
+                const success = await (<any>window).HotGameReconnect();
+                if (success) this.close();
+            }
         })
         this.closeBtn?.on(cc.Node.EventType.TOUCH_END, async () => {
             this.close()

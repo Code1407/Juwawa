@@ -220,7 +220,7 @@ function RankPSystem:CsReceiveDayAwardReq()
                 end
                 local msg = {code = ercode, accountDiamond = accountDiamond, bonus = data.bonus}
                 Router.Client.CsReceiveDayAwardResp(msg, backPlayer)
-                log_info("排行日榜领奖加钱成功:uId:{} bonus:{} orderId:{}", uId, data.bonus, orderID)
+                --log_info("排行日榜领奖加钱成功:uId:{} bonus:{} orderId:{}", uId, data.bonus, orderID)
             end, {win_id = "-1"} )
         else
             Router.Client.CsReceiveDayAwardResp({ code = -1, accountDiamond = self.player:getCoins() }, self.player)

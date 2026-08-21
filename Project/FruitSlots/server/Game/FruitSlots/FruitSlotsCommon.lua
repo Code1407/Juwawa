@@ -195,7 +195,7 @@ end
 function FRProtoEncodePlayerSettings(settings)
     local data = settings or {}
     return {
-        soundVol = FRRoundInt(data.soundVol or 1),
+        soundVol = math.floor(math.max(0, math.min(1, tonumber(data.soundVol) or 1)) * 100 + 0.5) / 100,
         lastBetAmountButton = FRRoundInt(data.lastBetAmountButton or 0),
         isSpeed = data.isSpeed and true or false,
     }

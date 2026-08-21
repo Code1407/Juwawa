@@ -142,7 +142,7 @@ export default class EffectBigWin extends cc.Component {
             let an = win.getComponent(cc.Animation);
             an?.play();
             let auSource = AudioCtrl.clips.get(audioClip);
-            if (auSource != null)
+            if (auSource != null && !(<any>window).gameHide)
                 auSource.play();
             for (let i = 0; i < bgms.length; i++) {
                 let bgm = bgms[i];

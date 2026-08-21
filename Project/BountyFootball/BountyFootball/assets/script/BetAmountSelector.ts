@@ -26,6 +26,33 @@ export default class BetAmountSelector extends cc.Component {
         return cc.find("Canvas/Game/BetAmountSelector").getComponent(BetAmountSelector);
     }
 
+    waitForConfig() {
+        this.node.active = false;
+        (<any>window).changedw = () => this.showAfterConfigLoaded();
+    }
+
+    showDefaultConfigWhenOffline() {
+        if (typeof navigator !== "undefined" && navigator.onLine === false) {
+            this.showAfterConfigLoaded();
+        }
+    }
+
+    private showAfterConfigLoaded() {
+        if (!this.node || !this.node.isValid) return;
+
+        const betGrade = (<any>window).betGrade;
+        const gradeAmounts = betGrade && Array.isArray(betGrade.gradeAmounts)
+            ? betGrade.gradeAmounts
+            : (betGrade && typeof betGrade.getGradeAmounts === "function" ? betGrade.getGradeAmounts() : []);
+        if (!Array.isArray(gradeAmounts) || gradeAmounts.length === 0) {
+            this.node.active = false;
+            return;
+        }
+
+        this.refreshFromConfig();
+        this.node.active = true;
+    }
+
 
 
     swichBetAmountButton() {
@@ -38,7 +65,6 @@ export default class BetAmountSelector extends cc.Component {
     }
 
     protected onEnable(): void {
-        this.node.active = true;
         this.refreshFromConfig();
     }
 

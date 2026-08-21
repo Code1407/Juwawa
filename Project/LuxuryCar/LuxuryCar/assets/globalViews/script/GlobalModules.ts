@@ -107,7 +107,7 @@ if (pinus() != null) {
     });
     pinusResp('onAutoQuit', () => {
         onAutoQuit();
-        StopGame(`自动退出 服务端倒计时结束`);
+        StopGame(`自动退出 服务端倒计时结束`, true);
     });
     pinusResp("onMaintenance", () => {
         onMaintenance();
@@ -134,18 +134,18 @@ function onChangeToken(token: string) {
     (<any>window).onChangeToken?.(token);
 }
 
-export async function StopGame(str: string) {
+export async function StopGame(str: string, immediately: boolean = false) {
     console.log(`Stop Game`, str);
-    await new Promise((res) => {
-        let id = setInterval(() => {
-            if ((<any>window).waitRound) {
-            }
-            else {
-                res(0);
-                clearInterval(id);
-            }
-        }, 100);
-    });
+    if (!immediately) {
+        await new Promise((res) => {
+            let id = setInterval(() => {
+                if (!(<any>window).waitRound) {
+                    res(0);
+                    clearInterval(id);
+                }
+            }, 100);
+        });
+    }
     (<any>window).stopGame?.();
 }
 

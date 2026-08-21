@@ -1,4 +1,4 @@
--- this is a generate file, do't modify
+-- 这是一个自动生成的文件，请勿修改
 
  return {
     { name = "Account", type = 7, objs = {
@@ -9,7 +9,6 @@
     },},
     { name = "PlayerSettings", type = 7, objs = {
         soundVol = {type = 2, range = {min = -2147483648, max = 2147483647},},
-        lastBetAmountButton = {type = 2, range = {min = -2147483648, max = 2147483647},},
         isSpeed = {type = 1,},
     },},
     { name = "LuxuryCarRankItem", type = 7, objs = {
@@ -62,8 +61,10 @@
         betGradeArr = {type = 5, range = {min = 0, max = 256}, value = {type = 2, range = {min = 0, max = 4294967295},},},
         betGradeNumArr = {type = 5, range = {min = 0, max = 256}, value = {type = 5, range = {min = 0, max = 256}, value = {type = 2, range = {min = 0, max = 4294967295},},},},
         betDiamonList = {type = 5, range = {min = 0, max = 256}, value = {type = 2, range = {min = 0, max = 9223372036854775807},},},
+        requestId = {type = 2, range = {min = 0, max = 9223372036854775807},},
     },},
     { name = "betResp", type = 7, objs = {
+        requestId = {type = 2, range = {min = 0, max = 9223372036854775807},},
         code = {type = 2, range = {min = -2147483648, max = 2147483647},},
         accountDiamond = {type = 2, range = {min = 0, max = 9223372036854775807},},
         wheelAmount = {type = 5, range = {min = 0, max = 256}, value = {type = 2, range = {min = 0, max = 9223372036854775807},},},

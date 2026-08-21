@@ -46,6 +46,7 @@ export default class Audio extends cc.Component {
     Go: cc.AudioSource = null;
 
     audioOn: boolean = true;
+    private readonly bgmMaxVolume: number = 0.7;
 
     static get Instance() {
         return cc.find("Audio").getComponent(Audio);
@@ -60,33 +61,35 @@ export default class Audio extends cc.Component {
         this.startCountDown.stop();
     }
     playRun() {
-        if (this.audioOn)
+        if (this.audioOn && !(<any>window).gameHide)
             this.run.play();
     }
 
     playFinal() {
-        if (this.audioOn)
+        if (this.audioOn && !(<any>window).gameHide)
             this.final.play();
     }
 
     playClick() {
-        if (this.audioOn)
+        if (this.audioOn && !(<any>window).gameHide)
             this.click.play();
     }
     playstartRun() {
-        if (this.audioOn)
+        if (this.audioOn && !(<any>window).gameHide)
             this.startRun.play();
     }
     StopstartRun() {
         this.startRun.stop();
     }
     playstartCountDown() {
-        if (this.audioOn)
+        if (this.audioOn && !(<any>window).gameHide)
             this.startCountDown.play();
     }
     playbgm() {
-        if (this.audioOn)
+        if (this.audioOn && !(<any>window).gameHide) {
             cc.audioEngine.playMusic(this.bgm.clip, true);
+            cc.audioEngine.setMusicVolume(this.bgmMaxVolume);
+        }
         else
             cc.audioEngine.stopMusic();
     }
@@ -94,53 +97,54 @@ export default class Audio extends cc.Component {
         cc.audioEngine.pauseMusic();
     }
     StartBGM() {
-        if (this.audioOn) {
+        if (this.audioOn && !(<any>window).gameHide) {
+            cc.audioEngine.setMusicVolume(this.bgmMaxVolume);
             cc.audioEngine.resumeMusic();
         }
     }
     playbet() {
-        if (this.audioOn)
+        if (this.audioOn && !(<any>window).gameHide)
             this.bet.play();
     }
     playchangebet() {
-        if (this.audioOn)
+        if (this.audioOn && !(<any>window).gameHide)
             this.changebet.play();
     }
     playfly() {
-        if (this.audioOn)
+        if (this.audioOn && !(<any>window).gameHide)
             this.fly.play();
     }
     playstopRun() {
-        if (this.audioOn)
+        if (this.audioOn && !(<any>window).gameHide)
             this.stopRun.play();
     }
     playWinGold() {
-        if (this.audioOn)
+        if (this.audioOn && !(<any>window).gameHide)
             this.winGold.play();
     }
     carAmation() {
-        if (this.audioOn)
+        if (this.audioOn && !(<any>window).gameHide)
             this.CarAmation.play();
     }
     playsendBet() {
-        if (this.audioOn)
+        if (this.audioOn && !(<any>window).gameHide)
             this.sendBet.play();
     }
 
     CountDown() {
-        if (this.audioOn)
+        if (this.audioOn && !(<any>window).gameHide)
             this.countDown.play();
     }
     CountDownEnd() {
-        if (this.audioOn)
+        if (this.audioOn && !(<any>window).gameHide)
             this.countDownEnd.play();
     }
     ready() {
-        if (this.audioOn)
+        if (this.audioOn && !(<any>window).gameHide)
             this.Ready.play();
     }
     go() {
-        if (this.audioOn)
+        if (this.audioOn && !(<any>window).gameHide)
             this.Go.play();
     }
 

@@ -37,26 +37,25 @@ let hideStopAuto: (config) => boolean = (config) => config?.appExtra?.hideNoAuto
 
 let curScene: cc.Scene
 let allAu: cc.AudioSource[] = [];
+let pausedAu: cc.AudioSource[] = [];
 
 function onGameHide(config) {
     console.log("Hide");
+    (<any>window).gameHide = true;
     lastHideTime = Date.now();
     // console.log(cc.game.EVENT_HIDE);
-    if (config?.appExtra?.hidekeepSound) {//隐藏后台时继续保持声音？
-
-    }
-    else {
-        console.log("pause all sound");
-        cc.audioEngine.pauseAll();
-        if (curScene != cc.director.getScene()) {
-            curScene = cc.director.getScene();
-            allAu = cc.director.getScene().getComponentsInChildren(cc.AudioSource);
-        }
-        for (let au of allAu) {
+    console.log("pause all sound");
+    cc.audioEngine.pauseAll();
+    curScene = cc.director.getScene();
+    allAu = curScene ? curScene.getComponentsInChildren(cc.AudioSource) : [];
+    pausedAu = [];
+    for (let au of allAu) {
+        if (au && au.isValid && au.isPlaying) {
+            pausedAu.push(au);
             au.pause();
         }
-        (<any>window).hideAllSounds?.();
     }
+    (<any>window).hideAllSounds?.();
     if (hideStopAuto(config)) {//切后台时是否停止自动
         (<any>window).stopAuto?.();
         (<any>window).StopAuto?.();
@@ -66,6 +65,7 @@ function onGameHide(config) {
 }
 function onGameShow(config) {
     console.log("Show");
+    (<any>window).gameHide = false;
     if (config?.appExtra?.showReload) {//从后台切回来是否重新加载游戏
         console.warn("come back reload");
         reload();
@@ -86,9 +86,12 @@ function onGameShow(config) {
     }
     else {
         cc.audioEngine.resumeAll();
-        for (let au of allAu) {
-            au.resume();
+        for (let au of pausedAu) {
+            if (au && au.isValid) {
+                au.resume();
+            }
         }
+        pausedAu = [];
         (<any>window).showAllSounds?.();
         actionRecord("show");
     }

@@ -602,7 +602,7 @@ function RankCommon:updateRankList(cb, uid, score, name, avatar)
     end
 
     cb()
-    log_info("RankCommon updateRankList uid = {}, score = {}", uid, score)
+    --log_info("RankCommon updateRankList uid = {}, score = {}", uid, score)
 end
 
 function RankCommon:initRankAwardDay(yesterdayKey)

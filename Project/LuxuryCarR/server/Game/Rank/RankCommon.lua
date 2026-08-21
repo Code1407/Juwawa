@@ -1,4 +1,5 @@
 require "GameBase.SvrSystemBase"
+require "Rank.RankCfgMgr"
 
 -- Local implementation used when the platform ranking service is unavailable.
 -- It is persisted by SvrSystemBase and has deterministic score/tie ordering.
@@ -107,8 +108,8 @@ function RankCommon:onNewDay()
     local yesterday = os.date("%Y-%m-%d", now - 24 * 60 * 60)
     self:finalize(yesterday, "day")
     self:canAwardStatis(false)
-    -- Monday starts a new ranking week; settle the week that ended yesterday.
-    if tonumber(os.date("%w", now)) == 1 then
+    -- Keep the same Sunday-Saturday ranking week as Seven7.
+    if tonumber(os.date("%w", now)) == 0 then
         self:finalize(yesterday, "week")
         self:canAwardStatis(true)
     end
@@ -121,6 +122,99 @@ local function sortRank(list)
         end
         return safeNumber(a.updateTime, 0) < safeNumber(b.updateTime, 0)
     end)
+end
+
+local function dateTime(dateStr)
+    local year, month, day = safeString(dateStr, ""):match("^(%d%d%d%d)%-(%d%d)%-(%d%d)$")
+    if not year then return nil end
+    return os.time({ year = tonumber(year), month = tonumber(month), day = tonumber(day), hour = 12 })
+end
+
+local function shiftDate(dateStr, dayOffset)
+    local time = dateTime(dateStr)
+    if not time then return nil end
+    return os.date("%Y-%m-%d", time + dayOffset * 24 * 60 * 60)
+end
+
+local function weekStartDate(dateStr)
+    local time = dateTime(dateStr)
+    if not time then return nil end
+    local weekDay = tonumber(os.date("%w", time)) or 0
+    return shiftDate(dateStr, -weekDay)
+end
+
+local function mergeRankMap(target, source)
+    for uid, item in pairs(source or {}) do
+        if type(item) == "table" then
+            local cleanUid = safeString(item.uid, safeString(uid, ""))
+            if cleanUid ~= "" then
+                local merged = target[cleanUid] or {
+                    uid = cleanUid, score = 0, name = "", avatar = "", updateTime = 0,
+                }
+                merged.score = safeNumber(merged.score, 0) + safeNumber(item.score, 0)
+                if safeNumber(item.updateTime, 0) >= safeNumber(merged.updateTime, 0) then
+                    merged.name = safeString(item.name, merged.name)
+                    merged.avatar = safeString(item.avatar, merged.avatar)
+                    merged.updateTime = safeNumber(item.updateTime, merged.updateTime)
+                end
+                target[cleanUid] = merged
+            end
+        end
+    end
+end
+
+local function buildRankList(map)
+    local out = {}
+    for _, item in pairs(map or {}) do
+        out[#out + 1] = normalizeRankItem(LCClone(item))
+    end
+    sortRank(out)
+    for i, item in ipairs(out) do item.rank = i end
+    return out
+end
+
+local function aggregateWeekMap(self, endDateStr)
+    local startDateStr = weekStartDate(endDateStr)
+    local out = {}
+    if not startDateStr then return out end
+    local currentDateStr = startDateStr
+    for _ = 1, 7 do
+        if currentDateStr > endDateStr then break end
+        mergeRankMap(out, self:getData().dates[currentDateStr])
+        currentDateStr = shiftDate(currentDateStr, 1)
+    end
+    return out
+end
+
+local function trimRankList(list, count)
+    local maxCount = math.max(0, math.floor(safeNumber(count, 100)))
+    while #list > maxCount do table.remove(list) end
+    return list
+end
+
+function RankCommon:getBonusTotal(rankList, isWeek)
+    local scoreTotal = 0
+    for _, item in pairs(rankList or {}) do
+        scoreTotal = scoreTotal + safeNumber(type(item) == "table" and item.score or item, 0)
+    end
+    local bonusRate = safeNumber(isWeek and RankCfgMgr.WeekBonusRate or RankCfgMgr.DayBonusRate, 0)
+    local maxBonusExchange = safeNumber(isWeek and RankCfgMgr.WeekMaxBonusExchange or RankCfgMgr.DayMaxBonusExchange, 0)
+    local fallbackMaxBonus = maxBonusExchange * 1000
+    local maxBonus = fallbackMaxBonus
+    if gApp and gApp.getCoins then
+        maxBonus = gApp:getCoins(maxBonusExchange * 100) or fallbackMaxBonus
+    end
+    return math.min(scoreTotal * bonusRate, maxBonus)
+end
+
+function RankCommon:applyRankBonus(rankList, isWeek)
+    local bonusTotal = self:getBonusTotal(rankList, isWeek)
+    local awardRates = type(RankCfgMgr.AwardRate) == "table" and RankCfgMgr.AwardRate or {}
+    for i, item in ipairs(rankList) do
+        item.bonus = i <= #awardRates and math.floor(bonusTotal * safeNumber(awardRates[i], 0) / 100) or 0
+        item.get = false
+    end
+    return rankList
 end
 function RankCommon:updateRankList(callback, uid, score, name, avatar)
     if callback ~= nil and type(callback) ~= "function" then
@@ -142,26 +236,64 @@ function RankCommon:getRankListByDateStrSync(dateStr, count)
     dateStr = safeString(dateStr, os.date("%Y-%m-%d"))
     if dateStr == "today" then
         dateStr = os.date("%Y-%m-%d")
+        return trimRankList(self:applyRankBonus(buildRankList(self:getData().dates[dateStr]), false), count or self.maxSize)
     end
-    local map, out = self:getData().dates[dateStr] or {}, {}
-    for _, item in pairs(map) do table.insert(out, normalizeRankItem(LCClone(item))) end
-    sortRank(out)
-    for i, item in ipairs(out) do item.rank = i end
-    while #out > safeNumber(count or self.maxSize, self.maxSize) do table.remove(out) end
-    return out
+    if dateStr == "thisWeek" then
+        local today = os.date("%Y-%m-%d")
+        return trimRankList(self:applyRankBonus(buildRankList(aggregateWeekMap(self, today)), true), count or self.maxSize)
+    end
+
+    local out = buildRankList(self:getData().dates[dateStr])
+    for _, item in ipairs(out) do
+        local award = self:getData().awards[awardKey("day", dateStr, item.uid)]
+        if award then
+            item.bonus = safeNumber(award.bonus, 0)
+            item.get = award.claimed == true
+        end
+    end
+    return trimRankList(out, count or self.maxSize)
 end
 function RankCommon:finalize(dateStr, kind)
+    kind = kind == "week" and "week" or "day"
     if not dateStr or self:getData().finalized and self:getData().finalized[kind .. ":" .. dateStr] then return end
-    local users, total = self:getRankListByDateStrSync(dateStr, self.maxSize), 0
-    for _, user in ipairs(users) do total = total + safeNumber(user.score, 0) end
-    local rate = kind == "week" and 0.0006 or 0.0008
-    local rates, pool = { 45,20,13,8,5,3,2,2,1,1 }, math.floor(total * rate)
+    if not RankCfgMgr:isRankConfigReady() then
+        log_error("RankCommon.finalize rank config not ready", kind, dateStr)
+        return
+    end
+    local rankMap = kind == "week" and aggregateWeekMap(self, dateStr) or self:getData().dates[dateStr]
+    local users = self:applyRankBonus(buildRankList(rankMap), kind == "week")
+    local rates = type(RankCfgMgr.AwardRate) == "table" and RankCfgMgr.AwardRate or {}
     self:getData().finalized = self:getData().finalized or {}
     self:getData().finalized[kind .. ":" .. dateStr] = true
     for i = 1, math.min(#users, #rates) do
-        local user, bonus = users[i], math.floor(pool * rates[i] / 100)
-        self:getData().awards[awardKey(kind, dateStr, user.uid)] = { kind = kind, uid = user.uid, rank = i, score = user.score, bonus = bonus, claimed = false, date = dateStr }
+        local user = users[i]
+        self:getData().awards[awardKey(kind, dateStr, user.uid)] = {
+            kind = kind, uid = user.uid, rank = i, score = user.score,
+            bonus = user.bonus, claimed = false, date = dateStr,
+        }
     end
+end
+
+function RankCommon:getAwardRankUsers(kind, dateStr, count)
+    kind = kind == "week" and "week" or "day"
+    local sourceMap = kind == "week" and aggregateWeekMap(self, dateStr) or self:getData().dates[dateStr]
+    local sourceUsers = sourceMap or {}
+    local out = {}
+    for _, award in pairs(self:getData().awards or {}) do
+        if award.kind == kind and award.date == dateStr then
+            local item = normalizeRankItem(LCClone(award))
+            local source = sourceUsers[item.uid]
+            if source then
+                item.name = safeString(source.name, "")
+                item.avatar = safeString(source.avatar, "")
+                item.updateTime = safeNumber(source.updateTime, 0)
+            end
+            item.get = award.claimed == true
+            out[#out + 1] = item
+        end
+    end
+    table.sort(out, function(a, b) return safeNumber(a.rank, 0) < safeNumber(b.rank, 0) end)
+    return trimRankList(out, count or self.maxSize)
 end
 function RankCommon:getRankListByDateStr(callback, dateStr)
     if type(callback) ~= "function" then
@@ -173,12 +305,12 @@ function RankCommon:getTodayRealTimeRankUsers(callback)
     if type(callback) ~= "function" then
         return log_error("RankCommon.getTodayRealTimeRankUsers callback invalid")
     end
-    callback(self:getRankListByDateStrSync(os.date("%Y-%m-%d"), self.maxSize))
+    callback(self:getRankListByDateStrSync("today", self.maxSize))
 end
 
 function RankCommon:getTodayRealTimeRankByUid(uid)
     uid = safeString(uid, "")
-    for _, item in ipairs(self:getRankListByDateStrSync(os.date("%Y-%m-%d"), self.maxSize)) do
+    for _, item in ipairs(self:getRankListByDateStrSync("today", self.maxSize)) do
         if safeString(item.uid, "") == uid then
             return item
         end

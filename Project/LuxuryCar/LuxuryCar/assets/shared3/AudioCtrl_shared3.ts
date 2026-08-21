@@ -80,7 +80,9 @@ export default class AudioCtrl extends cc.Component {
             console.error("audio clip", `"${clip}"`, "not found");
             return;
         }
-        au.play();
+        if (!isGameHide()) {
+            au.play();
+        }
         await new Promise((res, rej) => {
             cc.tween(au).delay(au.clip.duration + awaitOffset).call(() => {
                 res(0);

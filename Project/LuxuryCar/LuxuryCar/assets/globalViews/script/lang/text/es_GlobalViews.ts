@@ -46,3 +46,7 @@ text.path35 = `reanudar`;
 
 text.path36 = `Advertencia: por favor, siga las reglas del juego.`
 text.path37= `reanudar`;
+
+text.path38 = `El servidor del juego está en mantenimiento y no se puede jugar temporalmente.
+Por favor, inténtalo de nuevo más tarde.`;
+text.path39 =  "Salida";

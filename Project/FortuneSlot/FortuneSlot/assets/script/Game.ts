@@ -13,7 +13,7 @@ import PlayerAccount from "./PlayerAccount";
 import Views from "./Views";
 import Audio from "./Audio";
 import { afterLoad } from "../lang/afterLoad";
-import { sdk } from "../shared/Common";
+import { getQuery, sdk } from "../shared/Common";
 import { checkTradeCode, setDisconnectView2 } from "../shared2/GlobalViewsLoader";
 import SlotsFortuneSlot from "./Slot_FortuneSlot";
 import ResultView from "./view/ResultView";
@@ -133,6 +133,7 @@ export default class Game extends cc.Component {
         }else{
             SpinFortune.Instance.isClicked = false;
             checkTradeCode(msg.code);
+            SlotsFortuneSlot.Instance.stopAuto();
         }
     }
 
@@ -239,6 +240,9 @@ export default class Game extends cc.Component {
                     AmountSelectorUI.Instance.BetAmountIndex = enterGameResp.playerSettings.lastBetAmountButton || 0;
                 }
                 gGameData.soundVol = enterGameResp.playerSettings?.soundVol || 0;
+                if(getQuery("noAudio")!=undefined&&getQuery("noAudio")!=""){
+                    gGameData.soundVol=getQuery("noAudio")=="1"?0:1;
+                }
                 Audio.Instance.audioOn = gGameData.soundVol > 0;
                 Audio.Instance.volume = gGameData.soundVol;
                 this.slotsFortuneSlot.QuickMode = enterGameResp.playerSettings?.isSpeed || false;

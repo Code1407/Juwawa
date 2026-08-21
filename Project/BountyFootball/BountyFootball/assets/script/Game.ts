@@ -184,11 +184,22 @@ export default class Game extends cc.Component {
         this.player.initPlayerAccount(enterGameResp);
         //this.player.notedWheel = JSON.parse(JSON.stringify(enterGameResp.wheelAmount));
 
-        if (enterGameResp.playerSettings) {
-            gGameData.soundVol = enterGameResp.playerSettings.soundVol;
-            Audio.Instance.audioOn = enterGameResp.playerSettings.soundVol > 0;
+        gGameData.betAmountIndex = enterGameResp.lastBetAmountButton
+        const serverSoundVol = enterGameResp.playerSettings?.soundVol;
+        let targetSoundVol = serverSoundVol === undefined ? gGameData.soundVol : serverSoundVol;
+        const noAudio = String((<any>window).user?.noAudio ?? "");
+        const hasAudioOverride = isFirstCall && (noAudio === "0" || noAudio === "1");
+        if (hasAudioOverride) {
+            targetSoundVol = noAudio === "1" ? 0 : 1;
         }
+        gGameData.soundVol = targetSoundVol;
+        Audio.Instance.audioOn = targetSoundVol > 0;
         cc.find("Canvas/Game/Popups/TopBar/Menu/Setting/tb_sy").getComponent(cc.Sprite).spriteFrame = Audio.Instance.audioOn ? ImageCache.Instance.soundSprite[0] : ImageCache.Instance.soundSprite[1];
+        if (hasAudioOverride && serverSoundVol !== targetSoundVol) {
+            this.player.updateSettings({
+                soundVol: targetSoundVol
+            });
+        }
         Audio.Instance.playbgm();
 
         this.results.assignValue(enterGameResp.historyResults);
@@ -198,7 +209,6 @@ export default class Game extends cc.Component {
         if (enterGameResp.rankList?.length >= 1) {
             this.poppusViewUI.setRankListNo1Value(enterGameResp.rankList[0]);
         }
-        gGameData.betAmountIndex = enterGameResp.lastBetAmountButton
         BetAmountSelector.Instance.swichBetAmountButton();
 
         gGameData.totalWheelAmount = enterGameResp.totalWheelAmount;
@@ -493,8 +503,11 @@ export default class Game extends cc.Component {
 
     async start() {
         cc.view.enableAutoFullScreen(false);
+        BetAmountSelector.Instance.waitForConfig();
         (<any>window).stopGame = () => {
             //当出现不允许用户再继续玩游戏的问题时(维护、断开、异常)，会调用此方法，需要停止游戏运行
+            (<any>window).breakRoundStep = true;
+            this.changeGameStatus(EGameStatus.stop);
         };
 
         let autoStatus = false;
@@ -513,7 +526,10 @@ export default class Game extends cc.Component {
         };
         (<any>window).window.onReconnect = async () => {
             //当网络重连成功后，需要登录游戏
+            if ((<any>window).isAutoQuitLocked) return;
+            (<any>window).breakRoundStep = false;
             let enterGameResp = await this.player.enterGame();
+            if (!enterGameResp?.roundStep) return;
             this.initPlayerData(enterGameResp, false);
         }
         (<any>window).hideAutoButton = () => {
@@ -538,19 +554,16 @@ export default class Game extends cc.Component {
             return;
         }
         setDisconnectView2(false);
+        BetAmountSelector.Instance.showDefaultConfigWhenOffline();
         let config = (<any>window).config;
         if (config) {
             if (config.gameExtra) {//内测专属Auto
                 this.NCautoBetUI.node.active = config.gameExtra.isAuto;
             }
         }
-        cc.find("Canvas/Game/BetAmountSelector").active = true;
-
         this.chips = (<any>window).betGrade;
         this.registerSdk();
         await this.initGame();
-        // AuthGame has now applied the server costs to window.betGrade.
-        BetAmountSelector.Instance.refreshFromConfig();
         if ((<any>window).jsnet) MailModel.getInstance().mail_system_init((<any>window).jsnet);
         let __this = this;
         cc.game.on(cc.game.EVENT_HIDE, () => {
@@ -609,8 +622,17 @@ export default class Game extends cc.Component {
 (<any>window).rechargeSuccess = function () {
     (<any>window).updateBalance();
 };
-(<any>window).updateBalance = function () {
-    Game.Instance.synchronize();
+(<any>window).updateBalance = async function () {
+    const msgRouter = (<any>window).msgRouter;
+    if (msgRouter?.request) {
+        try {
+            await msgRouter.request("CsPlayerBaseDataReq", {});
+            return;
+        } catch (error) {
+            console.error("CsPlayerBaseDataReq failed", error);
+        }
+    }
+    await Game.Instance.synchronize();
 };
 
 

@@ -55,6 +55,9 @@ export default class ClientScene implements ISceneListen {
         this.msgRouter.on('onAccountDiamondUpdate', function (data) {
             __this.onAccountDiamondUpdate(data);
         });
+        this.msgRouter.on("SvrNotifyMsg",function(){
+            (<any>window).closeServerView.active = true
+        });
     }
 
     timeoutDisconnect(second: number) {

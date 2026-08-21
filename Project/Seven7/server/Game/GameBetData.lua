@@ -120,11 +120,11 @@ function GameBetData:getScPlayerBetData(pid)
 end
 
 function GameBetData:getPlayerBetTotal(pid)
-    return self.playerBetData[pid].betTotal or 0
+    return self.playerBetData and self.playerBetData[pid] and self.playerBetData[pid].betTotal or 0
 end
 
 function GameBetData:getPlayerBetMap(pid)
-    return self.playerBetData[pid] and self.playerBetData[pid].betMap or {} 
+    return self.playerBetData and self.playerBetData[pid] and self.playerBetData[pid].betMap or {} 
 end
 
 function GameBetData:getPlayerBetRewards(pid)

@@ -13,58 +13,51 @@ const codeText = langInCodes[lang] = new LangInCode;
 
 
 
+text.game.autoPlay= `خودکار
+بیٹا
+خاص`;
+text.game.stopAuto =`خودکار
+بیٹا
+خاص`;
+text.game.players = "کھلاڑی";
+text.game.balance = "رقم :";
+text.game.todayRound = "دور:";
+text.game.totalCost = "کل لاگت:";
+text.game.myTotalCost = "میری کل لاگت:";
+text.game.finalRoundResult = "دور:";
+text.game.finalRoundWin = "آپ جیت گئے: ";
+text.game.finalRoundCost = "اس دور کی لاگت: ";
+text.game.finalRoundRankTitle = "اس دور کے سب سے اوپر کے فاتحین";
+text.game.card1Pot = "برتن:";
+text.game.card1Mine = "میرا:";
+text.game.card2Pot = "برتن:";
+text.game.card2Mine = "میرا:";
+text.game.card3Pot = "برتن:";
+text.game.card3Mine = "میرا:";
 
-text.game.autoPlay= `Auto
-内测
-专用`;
-text.game.stopAuto =`Auto
-内测
-专用`;
-text.game.players = "players";
-text.game.card1Pot = "Pot:";
-text.game.card1Mine = "Mine:";
-text.game.card2Pot = "Pot:";
-text.game.card2Mine = "Mine:";
-text.game.card3Pot = "Pot:";
-text.game.card3Mine = "Mine:";
+text.ready.content = "تیاری کا وقت";
+text.gameHistory.title = "کھیل کی تاریخ";
 
-text.ready.content = "Ready Time";
-text.gameHistory.title = "Game History";
-
-text.help.title = "How to play";
+text.help.title = "قاعدہ";
 text.help.content = 
-`
-Each fruit symbol has two possibilities. If there is an "x2" below the winning symbol, the payout amount is calculated based on the number in that symbol; otherwise, it is calculated based on the default payout rate.  
-x2 Apple  
-x2 Banana  
-x2 Lemon  
-x2 Watermelon  
+`1. ڈراو سے پہلے جس ٹیم کو جلایا جائے گا اس کی پیش گوئی کریں۔
 
-Default Fruit Payouts  
-x3 Grand Apple  
-x6 Grand Banana  
-x8 Grand Lemon  
-x12 Grand Watermelon  
-x30 Bar  
+2. ڈراو کے بعد جو ٹیم جلتی ہے وہ جیتنے والی ٹیم ہے۔
 
-Special Rewards :
-1、Rainbow Luck (two scenarios):  
-Each reward in the upper half-circle section wins once.  
-(Apple Time) Until an Apple wins!  
+3. اگر آپ کی پیش گوئی درست ہے تو آپ کو متعلقہ مشکلات کے مطابق انعام ملے گا۔`
 
-2、Yellow Luck (two scenarios):  
-Each reward in the lower half-circle section wins once.  
-All fruits win once!  
+text.betLimit.content = "آپ ہر دور میں صرف 500,000 سے زیادہ خرچ نہیں کر سکتے!";
 
-However, please note: Both lucky states have a certain probability of entering "Bad Luck Time," during which there are no rewards.
-`
+codeText.pokerLevel.highCard = "اعلی کارڈ"
+codeText.pokerLevel.pair = "جوڑا";
+codeText.pokerLevel.straight = "سیدھا";
+codeText.pokerLevel.flush = "فلش";
+codeText.pokerLevel.straightFlush = "سیدھا فلش";
+codeText.pokerLevel.fullHouse = "تین ایک جیسے";
+codeText.globalContent.round =  "دور: "
 
-text.betLimit.content = "You can only cost no more than 500,000 per round!";
-
-codeText.pokerLevel.highCard = "high card"
-codeText.pokerLevel.pair = "pair";
-codeText.pokerLevel.straight = "straight";
-codeText.pokerLevel.flush = "flush";
-codeText.pokerLevel.straightFlush = "straight flush";
-codeText.pokerLevel.fullHouse = "three of a king";
-codeText.globalContent.round =  "round: "
+text.history.title = "میری تاریخ";
+text.history.columnName1 = "لاگت کا وقت";
+text.history.columnName2 = "لاگت کی تفصیلات";
+text.history.columnName3 = "انعام کی تفصیلات";
+text.history.round = "دور:";

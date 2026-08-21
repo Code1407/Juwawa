@@ -77,6 +77,7 @@ export default class AutoBetUI extends cc.Component {
     async tryAutoBetNow() {
         if (!this.autoBet || this.autoBetting) return;
         if (gGameData.status != EGameStatus.bet) return;
+        if (gGameData.roundStep.remainSecond <= 3) return;
         if (gGameData.roundStep.todayRound < this.autoBetStartRound) return;
 
         let player = PlayerAccount.Instance;
@@ -138,8 +139,13 @@ export default class AutoBetUI extends cc.Component {
     }
 
     switchButton() {
+        (<any>window).isAutoBetActive = this.autoBet;
         cc.find("Button/bg1", this.node).active = !this.autoBet;
         cc.find("Button/bg2", this.node).active = this.autoBet;
+    }
+
+    onDestroy() {
+        (<any>window).isAutoBetActive = false;
     }
 
     // LIFE-CYCLE CALLBACKS:

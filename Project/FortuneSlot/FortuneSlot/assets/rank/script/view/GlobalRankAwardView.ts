@@ -32,7 +32,7 @@ export default class GlobalRankAwardView extends cc.Component {
             let avatarUrl = user.avatar ?? user.avator;
             if (avatarUrl) {
                 avatarUrl = decodeURI(avatarUrl);
-                avatarUrl += `?timestamp=${Date.now()}`;
+                avatarUrl += `${avatarUrl.includes('?') ? '&' : '?'}timestamp=${Date.now()}`;
             }
             console.log(user.name);
             console.log(avatarUrl);
@@ -42,10 +42,9 @@ export default class GlobalRankAwardView extends cc.Component {
             }
             this.userNames[i].string = user.name;
             if (avatarUrl) {
-                cc.loader.load({ url: avatarUrl, type: 'image' }, (error, texture) => {
-                    var frame = new cc.SpriteFrame(texture);
-                    sp.spriteFrame?.destroy();
-                    sp.spriteFrame = frame;
+                cc.assetManager.loadRemote<cc.Texture2D>(avatarUrl, { ext: '.png' }, (err, texture) => {
+                    if (err || !texture || !sp.isValid) return;
+                    sp.spriteFrame = new cc.SpriteFrame(texture);
                 });
             }
         }

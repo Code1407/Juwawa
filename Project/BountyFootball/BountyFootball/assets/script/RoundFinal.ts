@@ -134,7 +134,12 @@ export default class RoundFinal extends cc.Component {
         let sumEarnings = calculateRevenue(wheelAmount, roundResult);
         let sumBet = arraySum(wheelAmount);
 
-        this.roundNumber.string = "Round:  {Number}".replace("{Number}", gGameData.roundStep.todayRound.toString());
+        let langContent = (<any>window).langContent;
+        let roundPrefix = "Round:  ";
+        if (langContent && langContent.game && langContent.game.finalRoundResult) {
+            roundPrefix = langContent.game.finalRoundResult + "  ";
+        }
+        this.roundNumber.string = roundPrefix + gGameData.roundStep.todayRound.toString();
         this.resultGoodsL.spriteFrame = ImageCache.Instance.goods[roundResult];
         this.resultGoodsS.spriteFrame = ImageCache.Instance.goods[roundResult];
 
@@ -198,14 +203,11 @@ export default class RoundFinal extends cc.Component {
 
         let moveTo = this.node.position;
         moveTo.y = -400;    //-170
-        const __this = this;
         let allEarnings = player.toDayRevenue + sumEarnings;
-        let accountDiamond = player.accountDiamond + sumEarnings;
         setTimeout(() => {
             cc.tween(this.node).to(0.5, { position: moveTo }).call(() => {
                 if (sumEarnings > 0) {
-                    const split = 10;
-                    player.addTodayRevenue(allEarnings, accountDiamond, sumEarnings);
+                    player.addTodayRevenue(allEarnings, sumEarnings);
                 }
             }).start();
 

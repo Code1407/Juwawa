@@ -66,6 +66,11 @@ export default class MyHistoryView extends cc.Component {
         myHistoryItem.timestamp.string =getTimeString2(JSON.stringify(historyItem.timestamp));
         myHistoryItem.roundNumber.string = historyItem.round.toString();
 
+        let langContent = (<any>window).langContent;
+        if (langContent && langContent.history) {
+            myHistoryItem.setRoundLabel(langContent.history.round || "Round:");
+        }
+
         let height = myHistoryItem.addDetailsItem(historyItem.betDatails);
         myHistoryItemNode.height = height;
         cc.find("MyHistoryItem/bgSprite",myHistoryItemNode).height = height;

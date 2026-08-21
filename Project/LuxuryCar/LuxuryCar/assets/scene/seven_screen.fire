@@ -19498,7 +19498,7 @@
         "__id__": 438
       }
     ],
-    "_active": true,
+    "_active": false,
     "_components": [
       {
         "__id__": 502
@@ -36357,7 +36357,7 @@
       "__type__": "TypedArray",
       "ctor": "Float64Array",
       "array": [
-        0,
+        46.985,
         0,
         0,
         0,
@@ -36419,7 +36419,7 @@
       "__type__": "TypedArray",
       "ctor": "Float64Array",
       "array": [
-        29.427,
+        -13.472,
         -9.364,
         0,
         0,
@@ -36516,8 +36516,8 @@
       "__type__": "TypedArray",
       "ctor": "Float64Array",
       "array": [
-        2.842170943040401e-14,
-        8.526512829121202e-14,
+        -42.899,
+        0,
         0,
         0,
         0,
@@ -36782,7 +36782,7 @@
       "__type__": "TypedArray",
       "ctor": "Float64Array",
       "array": [
-        73.667,
+        30.768,
         -43.184,
         0,
         0,
@@ -36882,7 +36882,7 @@
       "__type__": "TypedArray",
       "ctor": "Float64Array",
       "array": [
-        -70.744,
+        -113.643,
         38.31,
         0,
         0,

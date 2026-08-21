@@ -146,8 +146,7 @@ export default class PoppusViewUI extends cc.Component {
                 Audio.Instance.resumeAllSounds();
             }
             let playerSettings = {
-                soundVol: gGameData.soundVol,
-                lastBetAmountButton: gGameData.betAmountIndex
+                soundVol: gGameData.soundVol
             }
             Game.Instance.player.updateSettings(playerSettings);
         });

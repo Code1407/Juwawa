@@ -17,10 +17,8 @@ function Seven7Main:ctor__()
     SvrSystemBase.ctor__(self, "Seven7Main")
 
     self.delayTimeDefault = 8
-
     self.gameState = GameState.NONE
-    self.orderIds = {} --每局游戏订单记录
-
+    self.roundOrders = {} --每局游戏订单记录
     self.settlemenTimerId = nil
     self.prepareTimerId = nil
     self.dalayPrepareTimerId = nil
@@ -39,15 +37,12 @@ end
 function Seven7Main:onLoad(data)
     if not data then
         data = {
-            curGameInfo = {
-                round = 0,
-                prepareTime = 0,
-                roundId = 0
-            },
+            curGameInfo = {round = 0, prepareTime = 0, roundId = 0},
             resultHistory = {},
             resetRoundTime = 0
         }
     end
+
     SvrSystemBase.onLoad(self, data)
     self:resetRound()
 end
@@ -59,7 +54,7 @@ function Seven7Main:cfgConstantInit()
 end
 
 function Seven7Main:clearData()
-    self.orderIds = {}
+    self.roundOrders = {}
     self.gameBetData = nil
 
     if self.settlemenTimerId then
@@ -111,7 +106,7 @@ end
 
 --------------------------------------------
 
-function Seven7Main: playerEnterOrLeave(state)
+function Seven7Main:playerEnterOrLeave(state)
     if state == 1 then    --有玩家进入
         if self.gameState == GameState.NONE then
             self:betPrepare()
@@ -119,8 +114,15 @@ function Seven7Main: playerEnterOrLeave(state)
     end
 end
 
-function Seven7Main: betPrepare()
-    self:clearData()  
+function Seven7Main:betPrepare()
+    self:clearData()
+    
+    if gApp:isWaitClosing() then
+        gApp:finishClosing()
+        log_info("服务器在更新关闭过程中,停止下一局押注")
+        return
+    end
+
     if not gWorld:hasPlayer() then
         self.gameState = GameState.NONE
         self:clearData()
@@ -151,7 +153,6 @@ end
 
 --10s倒计时结束(开奖、结算)
 function Seven7Main:countDownEndCallback()
-    self.gameState = GameState.OPENREWARD
     self:checkHaveSdkOrderId(function ()
         self:betSettlement()
     end)
@@ -159,7 +160,7 @@ end
 
 --判断sdk是否还有订单未处理
 function Seven7Main:checkHaveSdkOrderId(callback)
-    if next(self.orderIds) ~= nil then
+    if next(self.roundOrders) ~= nil then
         gTimer:addOnceTimer(2000, function ()
             callback()
         end)
@@ -178,8 +179,9 @@ end
 
 --押注结算
 function Seven7Main:betSettlement()
+    self.gameState = GameState.OPENREWARD
     local gamedata = self:getData()
-    self.orderIds = {}
+    self.roundOrders = {}
 
     if not self.gameBetData then
         self:dealyPrepare()
@@ -189,9 +191,8 @@ function Seven7Main:betSettlement()
     --获取游戏结果
     local gameAnalyData = GameAnalyData(self.gameBetData, gamedata.curGameInfo.roundId)
     local result = gameAnalyData:get_game_result()
-    -- result.zhuanPanId = 6
-    -- result.rewardId = 2
-    -- result.jpId = 2
+    log_info("第{0}局开奖结果:rewardId:{1} jpId:{2}", gamedata.curGameInfo.round, result.rewardId, result.jpId or 0)
+
     if not result or not result.zhuanPanId or not result.rewardId then
         self:dealyPrepare()
         return log_error("gameAnalyData:get_game_result nil")
@@ -263,6 +264,8 @@ function Seven7Main:betSettlement()
                     log_error("betSettlement-cfgReward data is nil:{0}", id)
                 end
             end
+
+            log_info("结算时玩家[{0}] 总计押注:{1}, 押注详情:{2}", playerUid, betTotal, log_view(betMap))
 
             self.gameBetData:updatePlayerRewardMap(pid, presult)
 
@@ -422,7 +425,7 @@ function Seven7Main:saveGameResult(rewardId, jpRewards)
     local data = self:getData()
 
     --结果存系统
-    table.insert( data.resultHistory, {
+    table.insert(data.resultHistory, {
             round = data.curGameInfo.roundId, 
             time =  data.curGameInfo.prepareTime,
             resultID = rewardId,
@@ -500,7 +503,7 @@ function Seven7Main:checkChipIsValid(betList, uid, round)
     local chipValueArr = {}
     local cfg = gApp:getProjCommon()
     if not cfg or not cfg.Costs or #cfg.Costs <= 0 then
-        log_error("jsNet costs cfg is nil")
+        log_info("jsNet costs cfg is nil")
 
         --启用默认配置
         local cfgChips =  Seven7CfgMgr:getCfgConstantValue(EConstantKey.BetChips)
@@ -547,6 +550,81 @@ function Seven7Main:checkBetCountIsValid(pid)
     return palyerCount < max
 end
 
+--获取延时下注
+function Seven7Main:getDelayRewardCoins(uid, roundId, betMap)
+    local round = GenDayIncrId(roundId)
+    local gamedata = self:getData()
+    if not gamedata.resultHistory or #gamedata.resultHistory > 0 then
+        return 0
+    end
+
+    if not betMap then
+        log_error("玩家[{0}]在{1}局延时发奖betMap为nil", uid, round)
+        return 0
+    end
+
+    local cfgReward = gConfigMgr:getBaseConfig("Reward")
+    local reward = 0 
+    for _, item in pairs(gamedata.resultHistory) do
+        if roundId == item.round then
+            local openRewards = {item.rewardId}
+            if item.jpRewards then
+                for _, id in ipairs(item.jpRewards) do
+                    table.insert(openRewards, id)
+                end
+            end
+
+            for _, id in pairs(openRewards) do
+                if cfgReward[id] and cfgReward[id].Multiple and betMap[id] and betMap[id] > 0 then
+                    local add = cfgReward[id].Multiple * betMap[id]
+                    reward = reward + add
+                end
+            end
+        end
+    end
+    return reward
+end
+
+--下注延时情记录
+function Seven7Main:delayRewardRecord(roundId, orderId, betMsg, uid, oddsType, changeType, subCoins, gameExt, player)
+    if not player then
+        log_error("下注延时情记录player{0}为nil", uid)
+        return
+    end
+
+    if not betMsg then
+        log_error("下注延时情记录betMsg{0}为nil", uid)
+        return
+    end
+
+    local round = GenDayIncrId(roundId)
+    local betMap = {}
+    local betIdStr = nil
+    for _, value in pairs(betMsg.betList) do
+        local rewardId = value.rewardID
+        local chipValue = value.chipValue
+        local chipCount = value.chipCount
+        local betNum = chipValue * chipCount
+        if not betMap[rewardId] then
+            betMap[rewardId] = 0
+        end
+
+        local betStr = tostring(rewardId)
+        betMap[rewardId] = betMap[rewardId] + betNum
+        if not betIdStr then
+            betIdStr = betStr
+        else
+            betIdStr = betIdStr .. "," .. betStr
+        end
+    end
+
+    local reward = self:getDelayRewardCoins(uid, roundId, betMap)
+    if reward > 0 then
+        player:subCoinsDelayReward(roundId, betIdStr, orderId, oddsType, changeType, subCoins, reward, gameExt)
+        log_info("玩家{0}下注延时中奖统计: round:{1} betIdStr:{2} orderId:{3} subCoins:{4} reward:{5}", uid, round, betIdStr, orderId, subCoins, reward)
+    end
+end
+
 --------------------Msg------------------------
 function Seven7Main:csCurGameInfoReq(pid)
     local gamedata = self:getData() 
@@ -588,17 +666,18 @@ function Seven7Main:csBetReq(pid, msg)
 
     local curTime = app__:utc_s()
     local curRoundId = gamedata.curGameInfo.roundId
-    local orderPid = pid
+    local curRound = gamedata.curGameInfo.round
+    local curBetMsg = msg
 
     --检查SDK
     if not curPlayer:checkSdkIsValid() then
-        log_error("round:{0}局中{1}sdk状态不对",curRoundId, playerUid)
+        log_error("round:{0}局中{1}sdk状态不对",curRound, playerUid)
         backMsg.errorCode = GameError.GE_SdkCoinsError
         return Router.Client.CsBetResp(backMsg, curPlayer)
     end
 
     --检查筹码
-    if not self:checkChipIsValid(msg.betList, playerUid, curRoundId) then
+    if not self:checkChipIsValid(msg.betList, playerUid, curRound) then
         backMsg.errorCode = GameError.GE_ChipError
         return Router.Client.CsBetResp(backMsg, curPlayer)
     end
@@ -606,13 +685,13 @@ function Seven7Main:csBetReq(pid, msg)
     --检查押注次数
     if not self:checkBetCountIsValid(pid) then
         backMsg.errorCode = GameError.GE_BetCountOver
-        log_error("round:{0}局中{1}游戏押注次数超出次数",curRoundId, playerUid)
+        log_error("round:{0}局中{1}游戏押注次数超出次数",curRound, playerUid)
         return Router.Client.CsBetResp(backMsg, curPlayer)
     end
 
     --检查下注时游戏状态
     if self.gameState ~= GameState.PREPARE then
-        log_error("round:{0}局中{1}押注时游戏状态不对:{2}",curRoundId, playerUid, self.gameState)
+        log_error("round:{0}局中{1}押注时游戏状态不对:{2}",curRound, playerUid, self.gameState)
         backMsg.errorCode = GameError.GE_BetTimeError
         return Router.Client.CsBetResp(backMsg, curPlayer)
     end
@@ -620,7 +699,7 @@ function Seven7Main:csBetReq(pid, msg)
     --检查下注水果数量
     local canBet = self:checkFruitCountValid(pid, msg.betList)
     if not canBet then
-        log_error("round:{0}局中{1}游戏押注水果数量超出限制",curRoundId, playerUid)
+        log_error("round:{0}局中{1}游戏押注水果数量超出限制",curRound, playerUid)
         backMsg.errorCode = GameError.GE_FruitCountOver
         return Router.Client.CsBetResp(backMsg, curPlayer)
     end
@@ -630,7 +709,7 @@ function Seven7Main:csBetReq(pid, msg)
     local moneyEnough = curPlayer:coinsEnough(betAllNum)
     
     if not moneyEnough or betAllNum <= 0 then
-        log_error("round:{0}局中{1}押注钱不够:当前Coins:{2}-押注Coins:{3}",curRoundId, playerUid, playerMoney, betAllNum)
+        log_error("round:{0}局中{1}押注钱不够:当前Coins:{2}-押注Coins:{3}",curRound, playerUid, playerMoney, betAllNum)
         backMsg.errorCode = GameError.GE_MoneyNotEnough
         return Router.Client.CsBetResp(backMsg, curPlayer)
     end
@@ -639,20 +718,28 @@ function Seven7Main:csBetReq(pid, msg)
     --扣钱
     local orderId = curPlayer:subCoins(curRoundId, ECoinsOperateType.BetSub, betAllNum, function (errorCode, orderID, backPlayer)
         if orderID then
-            self.orderIds[orderID] = nil
-        end  
+            self.roundOrders[orderID] = nil
+        end
 
         if not backPlayer then
-            log_error("扣钱回调找不到玩家:uid:{0} 押注总额:{1} orderID:{2} errorCode:{3} roundId:{4}", playerUid, betAllNum, orderID, errorCode, curRoundId)
+            log_error("扣钱回调找不到玩家:uid:{0} 押注总额:{1} orderID:{2} errorCode:{3} round:{4}", playerUid, betAllNum, orderID, errorCode, curRound)
             return
         end
 
         if errorCode ~= 0 then
-            log_error("扣钱回调有错:uid:{0} 押注总额:{1} orderID:{2} errorCode:{3} roundId:{4}", playerUid, betAllNum, orderID, errorCode, curRoundId)
+            log_error("扣钱回调有错:uid:{0} 押注总额:{1} orderID:{2} errorCode:{3} round:{4}", playerUid, betAllNum, orderID, errorCode, curRound)
             backMsg.errorCode = errorCode
             return Router.Client.CsBetResp(backMsg, backPlayer)
         end
 
+        --下注回调状态不为游戏准备状态
+        if self.gameState ~= GameState.PREPARE or curRoundId ~= gamedata.curGameInfo.roundId then
+            log_info("下注Sdk回调超时, 状态不对: uid:{0} orderID:{1}, betAllNum:{2}, round_bet:{3}, round_now:{4} betInfo:{5}", playerUid, orderID, betAllNum, curRound, gamedata.curGameInfo.round, log_view(curBetMsg.betList or {}))
+            self:delayRewardRecord(curRoundId, orderID, curBetMsg, playerUid, 0, ECoinsOperateType.BetSub, betAllNum, patformData, backPlayer)
+            return
+        end
+
+        --排行榜
         local rankPSys = backPlayer:getSystem("RankPSystem")
         if rankPSys then
             rankPSys:updateRankList(betAllNum)
@@ -672,7 +759,7 @@ function Seven7Main:csBetReq(pid, msg)
             self.gameBetData:updateBetValue(pid, rewardID, chipNum)
             self.gameBetData:updatePlayerBetCount(pid)
             table.insert(betInfo.betList, value)
-            log_info("玩家押注: uid:{0} 期数:{1} 押注奖励ID:{2} 筹码大小:{3} 筹码数量:{4} ", playerUid, curRoundId, rewardID, chipValue, chipCount)
+            log_info("玩家押注: uid:{0} 期数:{1} 押注奖励ID:{2} 筹码大小:{3} 筹码数量:{4} ", playerUid, curRound, rewardID, chipValue, chipCount)
         end
         --保存押注数据到玩家
         local pBetMap = self.gameBetData:getPlayerBetMap(pid)
@@ -687,11 +774,11 @@ function Seven7Main:csBetReq(pid, msg)
         backMsg.money = playerMoney
         backMsg.betList = msg.betList
         Router.Client.CsBetResp(backMsg, backPlayer)
-        log_info("玩家该次押注数据合并: uid:{0} 押注总额:{1} 时间:{2} 期数:{3}", playerUid, betAllNum, curTime, curRoundId)
+        log_info("玩家该次押注数据合并: uid:{0} 押注总额:{1} 时间:{2} 期数:{3}", playerUid, betAllNum, curTime, curRound)
     end, patformData)
 
     if orderId then
-        self.orderIds[orderId] = true
+        self.roundOrders[orderId] = true
     end 
 end
 
@@ -791,6 +878,20 @@ function Seven7Main:syncStatisPlayerData(roundId, player, pid, playerUid)
         return
     end
 
+    local gamedata = self:getData()
+    if not gamedata.curGameInfo or not gamedata.curGameInfo.roundId then
+        return
+    end
+
+    if roundId ~= gamedata.curGameInfo.roundId then
+        log_error("syncStatisPlayerData roundId 不一致")
+        return
+    end
+    
+    if self.gameBetData:getPlayerBetTotal(pid) <= 0 then
+        return
+    end
+
     local payData = {}
     local rewardData = {}
 
@@ -799,7 +900,8 @@ function Seven7Main:syncStatisPlayerData(roundId, player, pid, playerUid)
     rewardData.rewardMap = self.gameBetData:getPlayerRewardMap(pid)
     rewardData.rewardTotal = self.gameBetData:getPlayerRewardTotal(pid)
 
+    local round = GenDayIncrId(roundId)
     player:statisGameRound(roundId, payData, rewardData)
-    log_info("玩家数据统计:uid:{0} ServerIndex:{1} round:{2} 总投注:{3} 总奖励:{4}",playerUid, gApp:getServerIndex(), roundId, payData.betTotal, rewardData.rewardTotal)
+    log_info("玩家数据统计:uid:{0} ServerIndex:{1} round:{2} 总投注:{3} 总奖励:{4}",playerUid, gApp:getServerIndex(), round, payData.betTotal, rewardData.rewardTotal)
 end
 

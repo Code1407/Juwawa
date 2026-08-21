@@ -290,32 +290,67 @@ end
 -- 选择最符合单控目标的结果。每次重随机的Jackpot池操作是事务性的。
 -- gamePlayer: 平台层的GamePlayer对象
 -- roundId:    回合ID
-function FruitSlotsMachine:generateControlledResults(betAmount, jackpot, freeWinAmount, freeCount, gamePlayer, roundId)
-    -- 调用平台单控分析获取控制策略
-    local analy = { analyType = EAnalyType.NoLimit, rewardMax = 0, oddsType = 0, rerandomMax = 1, rerandomRate = 0 }
-    if gAnaly and gAnaly.singleAnaly and gamePlayer then
-        local ok, value = pcall(gAnaly.singleAnaly, gAnaly, gamePlayer, roundId)
-        if ok and type(value) == "table" then
-            analy = value
-        else
-            log_error("FruitSlots singleAnaly failed, roundId:{0}", roundId)
-        end
+local function logAnalyResult(analy, roundId)
+    if type(analy) ~= "table" then
+        log_info("FruitSlots singleAnaly result, roundId:{0}, analy:{1}",
+            tostring(roundId), tostring(analy))
+        return
     end
 
+    local fields = {}
+    for key, value in pairs(analy) do
+        table.insert(fields, tostring(key) .. "=" .. tostring(value))
+    end
+    table.sort(fields)
+    log_info("调控结果--FruitSlots singleAnaly result, roundId:{0}, analy:{{{1}}}",
+        tostring(roundId), table.concat(fields, ", "))
+end
+
+-- 构造一个无连线、无Jackpot、无新增免费次数的零奖励结果。
+-- 当所有重随机结果都超过硬性奖励上限时使用，避免把超限奖励提交给平台。
+local function buildZeroRewardResult(betAmount, freeWinAmount, freeCount, poolBefore)
+    local results = {}
+    for index = 1, 15 do
+        -- 同一列使用相同符号、相邻列使用不同符号；标准线路无法形成3连。
+        results[index] = (index - 1) % 5
+    end
+
+    return {
+        betAmount = FRRoundInt(betAmount or 0),
+        results = results,
+        lineSames = {},
+        multiple = 0,
+        multiples = {},
+        freeWinAmount = FRRoundInt(freeWinAmount or 0),
+        freeCount = math.max(0, (tonumber(freeCount) or 0) - 1),
+        jackpotAmount = 0,
+        jackpotAmountPool = FRCloneTable(poolBefore),
+    }
+end
+
+function FruitSlotsMachine:generateControlledResults(betAmount, jackpot, freeWinAmount, freeCount, gamePlayer, roundId)
+    -- 调用平台单控分析获取控制策略
+    local analy = gAnaly:singleAnaly(gamePlayer, roundId)
+    logAnalyResult(analy, roundId) --打印日志
     local maxTimes = math.max(1, math.floor(tonumber(analy.rerandomMax) or 1))     -- 最大尝试次数
     local analyType = tonumber(analy.analyType) or EAnalyType.NoLimit               -- 控制类型
-    local rewardMax = math.max(0, tonumber(analy.rewardMax) or 0)                   -- 奖励上限
+    local rawRewardMax = tonumber(analy.rewardMax) or 0                            -- 平台原始奖励上限
+    -- rewardMax=0沿用平台的“未设置”语义；负数表示本局已无可派奖额度，上限必须为0。
+    local hasRewardLimit = rawRewardMax ~= 0
+    local rewardMax = math.max(0, rawRewardMax)
     local rerandomRate = math.max(0, tonumber(analy.rerandomRate) or 0)             -- 提前退出概率
     local poolBefore = FRCloneTable(self.scene:getAllJackpotPool())                 -- 备份奖池状态
     local rewardRateMax = math.max(0, tonumber(analy.rewardRateMax) or 0)
     local waterRuler = math.max(0, tonumber(analy.waterRuler) or 0)
     local rateLimit = rewardRateMax > 0
         and FRRoundInt((betAmount or 0) * FRLineCount * rewardRateMax / 10000) or 0
-    if rewardMax <= 0 or (rateLimit > 0 and rateLimit < rewardMax) then
+    if rateLimit > 0 and (not hasRewardLimit or rateLimit < rewardMax) then
         rewardMax = rateLimit
+        hasRewardLimit = true
     end
-    if rewardMax <= 0 or (waterRuler > 0 and waterRuler < rewardMax) then
+    if waterRuler > 0 and (not hasRewardLimit or waterRuler < rewardMax) then
         rewardMax = waterRuler
+        hasRewardLimit = true
     end
     local selected, selectedPool, selectedReward, sawWin
 
@@ -334,11 +369,11 @@ function FruitSlotsMachine:generateControlledResults(betAmount, jackpot, freeWin
             better = better or reward < selectedReward
         elseif analyType == EAnalyType.PlayerWin then
             -- 控赢：选在rewardMax内奖励最大的
-            local within = rewardMax <= 0 or reward <= rewardMax
-            local oldWithin = selectedReward and (rewardMax <= 0 or selectedReward <= rewardMax)
+            local within = not hasRewardLimit or reward <= rewardMax
+            local oldWithin = selectedReward and (not hasRewardLimit or selectedReward <= rewardMax)
             better = better or (within and (not oldWithin or reward > selectedReward)) or
                 (not within and not oldWithin and reward < selectedReward)
-        elseif rewardMax > 0 then
+        elseif hasRewardLimit then
             better = better or (reward <= rewardMax and selectedReward > rewardMax) or
                 (reward > rewardMax and selectedReward > rewardMax and reward < selectedReward)
         end
@@ -352,16 +387,29 @@ function FruitSlotsMachine:generateControlledResults(betAmount, jackpot, freeWin
         -- 3. 随机概率触发停止
         local randomStop = rerandomRate > 0 and FRRandomInt(1, 10000) > rerandomRate
         if (analyType == EAnalyType.PlayerLoss and selectedReward == 0) or
-            (analyType == EAnalyType.PlayerWin and selectedReward > 0 and (rewardMax <= 0 or selectedReward <= rewardMax)) or
+            (analyType == EAnalyType.PlayerWin and selectedReward > 0 and
+                (not hasRewardLimit or selectedReward <= rewardMax)) or
             randomStop then
             break
         end
     end
 
+    local exceededRewardLimit = hasRewardLimit and selectedReward and selectedReward > rewardMax
+    if exceededRewardLimit then
+        -- 重随机次数耗尽仍没有合法结果时，硬性上限优先，回退为零奖励。
+        self.scene:getData().jackpotAmountPool = FRCloneTable(poolBefore)
+        selected = buildZeroRewardResult(betAmount, freeWinAmount, freeCount, poolBefore)
+        selectedPool = FRCloneTable(poolBefore)
+        selectedReward = 0
+    end
+
     -- 提交最终选中的奖池状态
     self.scene:getData().jackpotAmountPool = selectedPool or poolBefore
     local gameResult = EGameOddsResult.Success
-    if analyType == EAnalyType.PlayerWin and (not selectedReward or selectedReward <= 0) then
+    if exceededRewardLimit or
+        (analyType == EAnalyType.PlayerWin and hasRewardLimit and rewardMax <= 0) then
+        gameResult = EGameOddsResult.RulerMax
+    elseif analyType == EAnalyType.PlayerWin and (not selectedReward or selectedReward <= 0) then
         gameResult = sawWin and EGameOddsResult.RulerMax or EGameOddsResult.RerandomMax
     end
     return selected, tonumber(analy.oddsType) or 0, gameResult

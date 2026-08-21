@@ -45,5 +45,9 @@ text.path33 = `Due to idle for too long, the line will be disconnected after the
 text.path34 = `Oops! You haven't played for a long time~ Please re-enter the game and show off your skills!`;
 text.path35 = `resume`;
 
-text.path36 = `Warning, please follow the game rules!`
+text.path36 = `Warning, please follow the game rules!`;
 text.path37 = `resume`;
+
+text.path38 = `The game server is under maintenance and cannot be played temporarily. 
+Please try again later.`;
+text.path39 =  `Exit`;

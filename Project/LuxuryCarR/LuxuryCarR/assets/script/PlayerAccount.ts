@@ -135,15 +135,13 @@ export default class PlayerAccount extends ClientPlayer {
         this.sdkState = value;
     }
 
-    addTodayRevenue(earnings: number, nowAccount: number, roundEarnings: number): number {
+    addTodayRevenue(earnings: number, roundEarnings: number): number {
         this.toDayRevenue = earnings;
-        this.accountDiamond = nowAccount;
         let split = 10;
         let sumEarningsSplit = roundEarnings / split;
         for (let i = 0; i < split; i++) {
             setTimeout(() => {
                 this.account.setTodayRevenue((earnings - roundEarnings) + (i + 1) * sumEarningsSplit);
-                this.account.setAccountDiamond((nowAccount - roundEarnings) + (i + 1) * sumEarningsSplit);
             }, 500 + 200 * i);
         }
         return this.toDayRevenue;
@@ -151,11 +149,19 @@ export default class PlayerAccount extends ClientPlayer {
 
     async enterGame(): Promise<IEnterGameResp> {
         let enterGameResp = await super.enterGame();
+        if (!enterGameResp?.account) {
+            console.error("enterGame failed:", enterGameResp);
+            setDisconnectView2(true);
+            return enterGameResp;
+        }
         enterGameResp.account.nickname = decodeURI(enterGameResp.account.nickname);
         return this.initPlayerAccount(enterGameResp);
     }
 
     async bet(todayRound: number, betGradeIndex: number[], betGradeNum: number[][]): Promise<IBetResp> {
+        if ((<any>window).breakRoundStep || gGameData.roundStep.remainSecond <= 3) {
+            return null;
+        }
         //this.notedWheel[which] += amount;
         let betGrade = (<any>window).betGrade;
         let needDiamon: number = 0;
@@ -242,6 +248,11 @@ export default class PlayerAccount extends ClientPlayer {
 
     async synchronize(): Promise<IEnterGameResp> {
         let enterGameResp = await super.synchronize();
+        if (!enterGameResp?.account) {
+            console.error("synchronize failed:", enterGameResp);
+            setDisconnectView2(true);
+            return enterGameResp;
+        }
         enterGameResp.account.nickname = decodeURI(enterGameResp.account.nickname);
         return this.initPlayerAccount(enterGameResp);
     }

@@ -31,6 +31,16 @@ export default class MyHistoryViewItem extends cc.Component {
     @property(cc.Label)
     timestamp: cc.Label = null;
 
+    setRoundLabel(text: string) {
+        let labelNode = cc.find("BetTime/Round/Label", this.node);
+        if (labelNode) {
+            let label = labelNode.getComponent(cc.Label);
+            if (label) {
+                label.string = text;
+            }
+        }
+    }
+
     addDetailsItem(betDetails: number[]): number {
         let k = 0;
         for (let i = 0; i < betDetails.length; ++i) {

@@ -89,8 +89,8 @@ function RankPSystem:pushSelfRankInfo(data)
     self:removePullRankDataTimer()
 end
 function RankPSystem:updateRankList(score)
-    -- Keep the game-local turnover board in sync for the LuxuryCar scene, then
-    -- mirror the same successful wager to the cross-game platform board.
+    -- 为 LuxuryCar 场景保持游戏本地的流水榜同步，然后将
+    -- 同一笔成功投注镜像到跨游戏平台排行榜。
     SvrSystem.RankCommon.updateRankList(function()
             local game = self.player:getSystem(LuxuryCarConst.gameName)
             if game and game.scene then
@@ -150,7 +150,7 @@ function RankPSystem:_pushAward(kind, route)
     local common = self:getRankCommon()
     local award = common.getAward(kind, self.player:getUid())
     if not award then return end
-    local list = common.getRankListByDateStrSync(award.date, 5)
+    local list = common.getAwardRankUsers(kind, award.date, 5)
     Router.Client[route]({ uid = award.uid, rank = award.rank, bonus = award.bonus, score = award.score, rankUsers = list }, self.player)
 end
 

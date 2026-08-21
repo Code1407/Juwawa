@@ -259,11 +259,17 @@ function LuxuryCarRMachine:selectControlledResult(playerSystems, analy, roundId)
     --   1) 总赔付不超过 rewardCap
     --   2) 赔付比例不超过 rateMax（reward / bet <= rateMax / 10000）
     local function withinLimits(info)
-        if rewardCap > 0 and info.totalReward > rewardCap then return false end
+        -- 0 表示不限制；负数表示当前没有正向派彩空间，按 0 上限处理。
+        local effectiveRewardCap = math.max(0, rewardCap)
+        if rewardCap ~= 0 and info.totalReward > effectiveRewardCap then return false end
         -- Seven7 的 rewardRateMax 是整局总赔付/整局总下注上限，
         -- 即使指定了 analyPlayer，也不能只计算目标玩家自身的倍率。
-        return rateMax <= 0 or info.totalBet <= 0 or
-            info.totalReward * 10000 <= info.totalBet * rateMax
+        local effectiveRateMax = math.max(0, rateMax)
+        if rateMax ~= 0 and info.totalBet > 0 and
+            info.totalReward * 10000 > info.totalBet * effectiveRateMax then
+            return false
+        end
+        return true
     end
 
     -- 判断是否为"让赢"结果（有玩家中奖）
@@ -306,18 +312,15 @@ function LuxuryCarRMachine:selectControlledResult(playerSystems, analy, roundId)
 
     -- ---------- 保底逻辑 ----------
     -- 当多轮筛选都找不到合格结果时使用：
-    --   1) 优先在"庄家不亏"的候选中按配置权重随机
-    --   2) 若没有则选总赔付最小的结果
-    --   3) 最后兜底：重新随机一次
+    --   1) 若仍有满足赔付约束的候选，则按配置权重随机
+    --   2) 若完全没有合法候选，则选择总赔付最小的结果
+    --   3) 候选配置为空时才重新随机
     local function fallbackResult()
-        local constrained, safe = {}, {}
+        local constrained = {}
         local minimum = nil
         for _, info in ipairs(allCandidates) do
             if withinLimits(info) then
                 constrained[#constrained + 1] = info
-            end
-            if info.totalReward <= info.totalBet then
-                safe[#safe + 1] = info
             end
             if not minimum or info.totalReward < minimum.totalReward then
                 minimum = info
@@ -326,7 +329,7 @@ function LuxuryCarRMachine:selectControlledResult(playerSystems, analy, roundId)
         local legal = weightedResult(constrained, resultWeights)
         if legal ~= nil then return legal end
         log_error("LuxuryCarR payout limits have no legal result. roundId:{0} rewardMax:{1} rewardRateMax:{2}", roundId, rewardCap, rateMax)
-        return weightedResult(safe, resultWeights) or (minimum and minimum.result) or randomResult()
+        return (minimum and minimum.result) or randomResult()
     end
 
     -- ---------- 分支1：无限制模式 ----------

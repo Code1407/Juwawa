@@ -29,3 +29,7 @@ text.path35 = `resume`;
 
 text.path36 = `Peringatan, harap patuhi aturan permainan.`
 text.path37 = `resume`;
+
+text.path38 = `Server game sedang dalam perbaikan dan tidak dapat dimainkan untuk sementara waktu.
+Silakan coba lagi nanti.`;
+text.path39 =  `berhenti`;

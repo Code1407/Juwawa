@@ -143,9 +143,20 @@ export class UISeven7Main extends GameComponent {
         this.rewardsCtrl.init_rewards(this.onClickRewardItem.bind(this));
         this.game.init();
         this.refresh_bet_fruit_max();
-        this.offAudioNode.active = !GameGlobal.SoundOpen;
         GameModelMgr.seven7Model.cs_cur_game_info_req();
         GameModelMgr.seven7Model.cs_game_history_req();
+        this.initAudioState();
+    }
+
+    private initAudioState(){
+        let noAudio = Utils.getQuery("noAudio");
+        if(noAudio == "1"){
+            GameGlobal.SoundOpen = false;
+        }else if(noAudio == "0"){
+            GameGlobal.SoundOpen = true;
+        }
+
+        this.offAudioNode.active = !GameGlobal.SoundOpen;
     }
 
     /****************Event********************/

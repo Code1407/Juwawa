@@ -68,8 +68,8 @@ export default class Network implements ISchedulable {
             oops.gui.showCommonConfirmUI({ content: "sdk init failed" });
             return;
         }
-        this.jsNet = this.client.getNet()
-        let uId = this.jsSdk.getUid()
+        this.jsNet = this.client.getNet();
+        let uId = this.jsSdk.getUid();
         if (!uId) {
             oops.gui.showCommonConfirmUI({ content: "uId is nil" });
             return console.log("uId is nil");
@@ -81,25 +81,25 @@ export default class Network implements ISchedulable {
             return console.log("serverAdress is nil");
         }
 
-        let platId = this.jsSdk.getPlatId()
+        let platId = this.jsSdk.getPlatId();
         if (!platId || platId <= 0) {
             oops.gui.showCommonConfirmUI({ content: `platId ${platId} invalid ` });
             return console.error(`platId ${platId} invalid `);
         }
 
-        let platkey = this.jsSdk.getPlatKey()
+        let platkey = this.jsSdk.getPlatKey();
         if (!platkey) {
             oops.gui.showCommonConfirmUI({ content: "platkey is nil" });
             return console.log("platkey is nil");
         }
 
-        let token = this.jsSdk.getToken()
+        let token = this.jsSdk.getToken();
         if (!token) {
             oops.gui.showCommonConfirmUI({ content: "token is nil" });
             return console.log("token is nil");
         }
 
-        let gameId = this.jsSdk.getGameId()
+        let gameId = this.jsSdk.getGameId();
         if (!gameId || gameId <= 0) {
             oops.gui.showCommonConfirmUI({ content: `gameId ${gameId} invalid ` });
             return console.error(`gameId ${gameId} invalid `);
@@ -127,6 +127,10 @@ export default class Network implements ISchedulable {
 
         this.jsNet.listenMsg(FrameNetMsg.SC_KICK_OUT_PUSH, (msg) => {
             this.onKickOut(msg);
+        });
+
+        this.jsNet.listenMsg("SvrNotifyMsg", (msg) => {
+            this.onSvrNotifyMsg(msg);
         });
     }
 
@@ -251,6 +255,13 @@ export default class Network implements ISchedulable {
         this.kickout = true;
         this.jsNet.disconnect();
         console.log(`kickout:${reason}`);
+    }
+
+    private onSvrNotifyMsg(msg){
+        let msgCode = msg.msgCode || 0;
+        let seconds = msg.msgData && msg.msgData.stopSeconds || 0;
+        this.clientError(`onSvrNotifyMsg:msgCode:${msgCode}, seconds:${seconds}`);
+        oops.gui.showMaintaintUI();
     }
 
     async onSyncTime() {

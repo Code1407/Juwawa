@@ -21,9 +21,9 @@ Player = class__(PlayerBase)
 -- 使 Player 同时拥有豪车、排行榜、邮件等多套业务能力
 function Player:ctor__(...)
     PlayerBase.ctor__(self, ...) -- 先执行父类构造，初始化玩家基础数据
-    -- Compatibility with Common/GameBase/PlayerSdk.lua.  Some Common.zip
-    -- versions do not create this table before guessCoins calls
-    -- popSubCoinType during the first addCoins request.
+    -- 为了兼容 Common/GameBase/PlayerSdk.lua。某些 Common.zip
+    -- 版本在 guessCoins 调用 popSubCoinType 之前
+    -- 在首次 addCoins 请求期间并未创建该表。
     self.subCoinTypeTimeout = self.subCoinTypeTimeout or {}
     LuxuryCarPlayer(self)        -- 挂载豪华车子系统，为玩家添加豪车相关的属性与方法
     RankPSystem(self)            -- 挂载排行榜子系统，为玩家添加排行榜相关的属性与方法
@@ -74,7 +74,11 @@ end
 function Player:onCoinChanged()
     PlayerBase.onCoinChanged(self)
     if self:isOnline() then
-        Router.Client.ScCoinsUpdatePush({coins = self:getCoins()}, self)
+        local uid = self.getUid and self:getUid() or "nil"
+        local pid = self.getPid and self:getPid() or "nil"
+        local coins = self:getCoins()
+        log_info("[BalanceTrace] LuxuryCar ScCoinsUpdatePush send: uid:{0} pid:{1} coins:{2}", tostring(uid), tostring(pid), coins)
+        Router.Client.ScCoinsUpdatePush({coins = coins}, self)
     end
 end
 

@@ -36,6 +36,7 @@ export default class AutoBetUI extends cc.Component {
         }, coolDownTime);
     }
     async onClick(e: cc.Event) {//连续自动下注
+        (<any>window).updateAutoQuit?.();
         if ([EGameStatus.stop].includes(gGameData.status)) return;
         if (gGameData.coolDown || gGameData.roundBetCount > roundBetCountMax) return;
 
@@ -153,6 +154,7 @@ export default class AutoBetUI extends cc.Component {
     }
 
     switchButton() {//Repeat按钮
+        (<any>window).isAutoBetActive = this.NcAuto || this.autoBet;
         if (this.NCAutoBg2.active == true) {
             console.log("请不要开启(内测AUTO),再来使用这个Repeat!!");
             return;
@@ -178,6 +180,11 @@ export default class AutoBetUI extends cc.Component {
 
     switchNcButton() {
         this.NCAutoBg2.active = this.NcAuto;
+        (<any>window).isAutoBetActive = this.NcAuto || this.autoBet;
+    }
+
+    onDestroy() {
+        (<any>window).isAutoBetActive = false;
     }
     ////////////////////////////////////////////////////////////////////
     // LIFE-CYCLE CALLBACKS:

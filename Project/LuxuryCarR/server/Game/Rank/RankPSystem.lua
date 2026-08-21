@@ -150,7 +150,7 @@ function RankPSystem:_pushAward(kind, route)
     local common = self:getRankCommon()
     local award = common.getAward(kind, self.player:getUid())
     if not award then return end
-    local list = common.getRankListByDateStrSync(award.date, 5)
+    local list = common.getAwardRankUsers(kind, award.date, 5)
     Router.Client[route]({ uid = award.uid, rank = award.rank, bonus = award.bonus, score = award.score, rankUsers = list }, self.player)
 end
 

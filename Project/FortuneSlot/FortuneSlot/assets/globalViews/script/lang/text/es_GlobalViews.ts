@@ -44,5 +44,9 @@ text.path33 = `Debido a que estará inactiva durante demasiado tiempo, la línea
 text.path34 = `¡Ups! Hace mucho que no juegas. Vuelve a ingresar al juego y demuestra tus habilidades.`;
 text.path35 = `reanudar`;
 
-text.path36 = `Advertencia: por favor, siga las reglas del juego.`
+text.path36 = `Advertencia: por favor, siga las reglas del juego.`;
 text.path37= `reanudar`;
+
+text.path38 = `El servidor del juego está en mantenimiento y no se puede jugar temporalmente.
+Por favor, inténtalo de nuevo más tarde.`;
+text.path39 =  "Salida";

@@ -148,3 +148,21 @@ function FortuneSlotScene:onMaintenance(uid, msg)
         self:sendToUid("onMaintenance", playerUid, msg or {})
     end
 end
+
+function FortuneSlotScene:GameOnclose()
+    --当处于isWaitClosing
+    if gApp:isWaitClosing() then
+        --判断处于
+        local gameToClose=true
+        for uid, _ in pairs(self.playerList) do
+            local playerSys = self.playerList[uid]
+            if playerSys and (not playerSys:GameOnclose()) then
+               gameToClose=false
+               break
+            end
+        end
+        if gameToClose then
+            gApp:finishClosing()
+        end
+    end
+end

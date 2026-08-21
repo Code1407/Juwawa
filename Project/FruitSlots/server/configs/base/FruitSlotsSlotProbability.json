@@ -1,0 +1,57 @@
+{
+  "1": {
+    "reelIndex": 0,
+    "symbol0": 0.2,
+    "symbol1": 0.2,
+    "symbol2": 0.2,
+    "symbol3": 0.1,
+    "symbol4": 0.1,
+    "symbol5": 0.1,
+    "symbol6": 0.1,
+    "symbol7": 0
+  },
+  "2": {
+    "reelIndex": 1,
+    "symbol0": 0.1,
+    "symbol1": 0.1,
+    "symbol2": 0.1,
+    "symbol3": 0.1,
+    "symbol4": 0.1,
+    "symbol5": 0.05,
+    "symbol6": 0.05,
+    "symbol7": 0.4
+  },
+  "3": {
+    "reelIndex": 2,
+    "symbol0": 0.1,
+    "symbol1": 0.1,
+    "symbol2": 0.1,
+    "symbol3": 0.1,
+    "symbol4": 0.1,
+    "symbol5": 0.05,
+    "symbol6": 0.05,
+    "symbol7": 0.4
+  },
+  "4": {
+    "reelIndex": 3,
+    "symbol0": 0.2,
+    "symbol1": 0.2,
+    "symbol2": 0.2,
+    "symbol3": 0.1,
+    "symbol4": 0.1,
+    "symbol5": 0.05,
+    "symbol6": 0.05,
+    "symbol7": 0.1
+  },
+  "5": {
+    "reelIndex": 4,
+    "symbol0": 0.2,
+    "symbol1": 0.2,
+    "symbol2": 0.2,
+    "symbol3": 0.1,
+    "symbol4": 0.1,
+    "symbol5": 0.05,
+    "symbol6": 0.05,
+    "symbol7": 0.1
+  }
+}

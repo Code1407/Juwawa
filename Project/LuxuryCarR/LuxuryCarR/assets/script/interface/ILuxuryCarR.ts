@@ -3,11 +3,11 @@ import { ELang } from "../../lang/langEnum";
 
 export let gConst = {
     wheelMulti: [100, 5, 8, 2, 50, 30, 20, 18, 88, 2, 30, 18, 66, 20, 8, 5],
-    gameName: "LuxuryCar"
+    gameName: "LuxuryCarR"
 }
 
 export function ErrorLog(msg: any)  {
-    console.error("[LuxuryCar GameError:]" + msg);
+    console.error("[LuxuryCarR GameError:]" + msg);
 }
 
 export function getDayString(saveTime:string,type:string = ""):string{
@@ -136,7 +136,6 @@ export interface IPlayerUpdate {
 }
 export interface IPlayerSettings {
     soundVol?: number;
-    lastBetAmountButton?: number;
 }
 
 export interface IPlayerBetList {
@@ -164,6 +163,7 @@ export interface IEnterGameResp {
 }
 
 export interface IBetResp {
+    requestId: number;
     code: number; // 0 成功， -1 余额不足, -2 错过下注时间, -3 平台sdk不通
     accountDiamond: number;
     wheelAmount: number[];
@@ -176,6 +176,7 @@ export interface IBetListResp{
     num:number[][]
 }
 export interface ICountDownPlayerUpdate {
+    uid: string;
     todayRound: number;
     diamond: number;
     itemAmount: number[];

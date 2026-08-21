@@ -69,7 +69,7 @@ function Player:enterGame(msg) return game(self):enterGame(msg) end
 --   - betGradeNumArr  下注等级对应数量数组
 --   - betDiamonList   钻石下注列表
 function Player:bet(msg)
-    return game(self):bet(msg.todayRound, msg.betGradeArr, msg.betGradeNumArr, msg.betDiamonList)
+    return game(self):bet(msg.todayRound, msg.betGradeArr, msg.betGradeNumArr, msg.betDiamonList, msg.requestId)
 end
 
 --- 路由：设置下注金额按钮

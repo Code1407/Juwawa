@@ -29,3 +29,7 @@ text.path35 = `geçmiş`;
 
 text.path36 = `Uyarı, lütfen oyun kurallarına uyun.`;
 text.path35 = `geçmiş`;
+
+text.path38 = `Oyun sunucusu bakımda olduğundan geçici olarak oynanamaz.
+Lütfen daha sonra tekrar deneyin.`;
+text.path39 = `Çıkış`;

@@ -35,6 +35,8 @@ export default class GlobalViews extends cc.Component {
     maintenanceView: cc.Node;
     @property(cc.Node)
     rechargeView: cc.Node;
+    @property(cc.Node)
+    closeServerView: cc.Node;
     @property(TradeError)
     tradeError: TradeError;
     @property(cc.Node)
@@ -59,6 +61,10 @@ export default class GlobalViews extends cc.Component {
         (<any>window).userStatusErrorView = this.userStatusErrorView;
         (<any>window).maintenanceView = this.maintenanceView;
         (<any>window).rechargeView = this.rechargeView;
+        (<any>window).closeServerView = this.closeServerView;
+        if ((<any>window).pendingCloseServerView && this.closeServerView) {
+            this.closeServerView.active = true;
+        }
         (<any>window).cheatWarningView = this.cheatWarningView;
         (<any>window).isGlobalViewsLoaded = true;
 

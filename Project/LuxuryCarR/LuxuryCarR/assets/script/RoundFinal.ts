@@ -203,15 +203,11 @@ export default class RoundFinal extends cc.Component {
 
         let moveTo = this.node.position;
         moveTo.y = -114;    //-170
-        const __this = this;
         let allEarnings = player.toDayRevenue + sumEarnings;
-        let accountDiamond = player.accountDiamond + sumEarnings;
         setTimeout(() => {
             cc.tween(this.node).to(0.5, { position: moveTo }).call(() => {
                 if (sumEarnings > 0) {
-                    const split = 10;
-                    //Effect.FlyDiamond(__this.earnings.node, Game.Instance.account.myDiamond.node, split); 
-                    player.addTodayRevenue(allEarnings, accountDiamond, sumEarnings);
+                    player.addTodayRevenue(allEarnings, sumEarnings);
                 }
             }).start();
 

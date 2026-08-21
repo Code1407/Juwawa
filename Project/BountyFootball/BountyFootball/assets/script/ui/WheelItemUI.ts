@@ -26,6 +26,7 @@ export default class WheelItemUI extends cc.Component {
     buttonIndex: number = 0;
 
     onClick(e: cc.Event, eventData: string) {
+        (<any>window).updateAutoQuit?.();
         if (gGameData.status != EGameStatus.bet) return;
         if(gGameData.status==EGameStatus.bet&&gGameData.roundStep.remainSecond<=3)return;
         this.playerBet(this.buttonIndex);
@@ -90,14 +91,13 @@ export default class WheelItemUI extends cc.Component {
         }
         if (player.accountDiamond >= needDiamon) {//做一次余额判断。余额本来不需要放里面的。
             Audio.Instance.playsendBet();
+            Effect.FlyDiamond2(ChipMoveNodeUI.Instance.mineNode[gGameData.betAmountIndex], ChipMoveNodeUI.Instance.items[this.buttonIndex], gGameData.betAmountIndex, this.buttonIndex, true, 2000);
             //player.setNotedBatCount(betGrade);
             let waitresp = await player.bet(gGameData.roundStep.todayRound, betGradeIndex, betGradeNum);
 
             //console.log(JSON.stringify(_player.wheelAmount));
             if (waitresp?.code == ETradeCode.success) {
 
-                Effect.FlyDiamond2(ChipMoveNodeUI.Instance.mineNode[gGameData.betAmountIndex], ChipMoveNodeUI.Instance.items[this.buttonIndex], gGameData.betAmountIndex, this.buttonIndex, true, 2000);
-    
                 if (Game.Instance.player.accountDiamond >= Game.Instance.balanceNum) {
                     for (let i = 0; i < Game.Instance.bettingBox.myBetNum.length; i++) {
                         Game.Instance.bettingBox.myBetNum[this.buttonIndex].active = true;

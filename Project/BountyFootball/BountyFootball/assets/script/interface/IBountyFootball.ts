@@ -160,6 +160,7 @@ export interface IEnterGameResp {
 }
 
 export interface IBetResp {
+    requestId: number;
     code: number; // 0 成功， -1 余额不足, -2 错过下注时间, -3 平台sdk不通
     accountDiamond: number;
     wheelAmount: number[];
@@ -172,6 +173,7 @@ export interface IBetListResp {
     num: number[][]
 }
 export interface ICountDownPlayerUpdate {
+    uid: string;
     todayRound: number;
     diamond: number;
     itemAmount: number[];
@@ -181,7 +183,6 @@ export interface IAllBetResp {
 }
 export interface IPlayerSettings {
     soundVol?: number;
-    lastBetAmountButton?: number;
 }
 export interface IPlayer {
     enterGame(): Promise<IEnterGameResp>;

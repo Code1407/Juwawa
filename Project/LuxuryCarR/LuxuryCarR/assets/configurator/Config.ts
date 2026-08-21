@@ -44,6 +44,7 @@ export class Config {
     static async init(key: ConfigKey): Promise<boolean> {
         //user信息
         let user = (<any>window).user || {};
+       
         user.lang = user.lang || getQuery("lang");
         user.uid = user.uid || getQuery("uid");
         user.token = user.token || getQuery("token");

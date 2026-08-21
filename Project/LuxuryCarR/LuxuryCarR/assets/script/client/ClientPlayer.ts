@@ -12,8 +12,18 @@ export default class ClientPlayer implements IPlayer {
     uid: string = null;
     accountDiamond = 0;
     traceTime: number = new Date().getTime() - 10000;
+    private betRequestSeq = 0;
+    private pendingBets: Map<number, { resolve: (resp: IBetResp) => void, timer: any }> = new Map();
     
     constructor(protected msgRouter: MessageRouter) {
+        this.msgRouter.on("betResp", (resp: IBetResp) => this.finishPendingBet(resp?.requestId, resp));
+    }
+    private finishPendingBet(requestId: number, resp: IBetResp) {
+        const pending = this.pendingBets.get(requestId);
+        if (!pending) return;
+        clearTimeout(pending.timer);
+        this.pendingBets.delete(requestId);
+        pending.resolve(resp);
     }
     private delayRecord(action: string, queryTime: number, extra: string) {
         let responseTime = new Date().getTime();
@@ -57,7 +67,9 @@ export default class ClientPlayer implements IPlayer {
         console.log("sending enterGame request:", JSON.stringify(user));
         let timeQuery = new Date().getTime();
         let resp = await this.msgRouter.request("enterGame", user);
-        this.delayRecord("enterGame", timeQuery, navigator.userAgent);
+        if (resp?.account) {
+            this.delayRecord("enterGame", timeQuery, navigator.userAgent);
+        }
 
         console.log("enterGame resp: ", resp);
         
@@ -65,7 +77,18 @@ export default class ClientPlayer implements IPlayer {
     }
 
     async bet(todayRound: number, betGradeArr: number[], betGradeNumArr: number[][],betDiamonList:number[]): Promise<IBetResp> {
-        return this.msgRouter.request("bet",{todayRound: todayRound, betGradeArr: betGradeArr, betGradeNumArr: betGradeNumArr,betDiamonList:betDiamonList});
+        this.betRequestSeq = this.betRequestSeq % 2147483646 + 1;
+        const requestId = this.betRequestSeq;
+        return new Promise<IBetResp>(async resolve => {
+            const timer = setTimeout(() => this.finishPendingBet(requestId, null), 10000);
+            this.pendingBets.set(requestId, { resolve, timer });
+            try {
+                const accepted = await this.msgRouter.request("bet", { todayRound, betGradeArr, betGradeNumArr, betDiamonList, requestId });
+                if (!accepted || accepted.code !== 0) this.finishPendingBet(requestId, accepted);
+            } catch (_) {
+                this.finishPendingBet(requestId, null);
+            }
+        });
     }
 
     async setBetAmountButton(betAmountButtonIndex: number) {

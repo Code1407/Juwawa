@@ -6,7 +6,6 @@
 //  - https://docs.cocos.com/creator/manual/en/scripting/life-cycle-callbacks.html
 
 import { sdk } from "../../shared/Common";
-import Game from "../Game";
 
 const {ccclass, property} = cc._decorator;
 
@@ -24,9 +23,18 @@ export default class RechargeView extends cc.Component {
     // onLoad () {}
 
     start () {
-        this.reconnectButton.on(cc.Node.EventType.TOUCH_START, () => {
-            Game.Instance.start();
-            this.node.active = false; 
+        this.reconnectButton.on(cc.Node.EventType.TOUCH_START, async () => {
+            if (!this.reconnectButton.active) return;
+            this.reconnectButton.active = false;
+            try {
+                const success = await (<any>window).HotGameReconnect?.();
+                if (success) this.node.active = false;
+            }
+            finally {
+                if (this.node && this.node.isValid) {
+                    this.reconnectButton.active = true;
+                }
+            }
         });
         this.exitButton.on(cc.Node.EventType.TOUCH_START, () => {
             sdk.quit(); 

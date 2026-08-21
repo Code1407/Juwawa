@@ -24,7 +24,6 @@ Account {
 // 玩家本地设置：保存在客户端的个性化配置
 PlayerSettings {
     int32 soundVol              // 音效音量（0-100）
-    int32 lastBetAmountButton   // 上次使用的下注档位按钮索引
     bool isSpeed                // 是否开启加速模式
 }
 
@@ -95,10 +94,12 @@ bet {
     array<uint32> betGradeArr           // 各下注区启用的筹码档位（10个下注区，0表示不下注）
     array<array<uint32>> betGradeNumArr // 各下注区各档位下注数量（二维数组）
     array<uint64> betDiamonList         // 各下注区下注钻石总数（汇总）
+    uint64 requestId                    // 客户端下注请求唯一标识
 }
 
 // 下注响应：服务端处理下注后返回
 betResp {
+    uint64 requestId                        // 对应下注请求标识
     int32 code                              // 错误码（0表示成功，非0表示失败原因）
     uint64 accountDiamond                   // 下注后账户剩余钻石数
     array<uint64> wheelAmount               // 更新后的各下注区累计下注额

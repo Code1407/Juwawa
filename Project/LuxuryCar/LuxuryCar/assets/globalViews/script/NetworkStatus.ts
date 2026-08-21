@@ -23,7 +23,7 @@ export let secTimeoutDisconnect = () => {
     return 10;
 };
 
-let loopShowInterval = -1;
+let loopShowInterval: any = -1;
 
 export let curDisconnectType: EDisconnectType = EDisconnectType.none;
 export let isSocketClose = false;
@@ -81,8 +81,22 @@ export function setDisconnectTypeBase(type: EDisconnectType) {
     setActive(GlobalViews.Instance?.disconnectView2, type == EDisconnectType.networkError, "disconnectView2");
     setActive(GlobalViews.Instance?.disconnectView, type == EDisconnectType.loginOther, "disconnectView");
     setActive(GlobalViews.Instance?.autoQuitView, type == EDisconnectType.autoQuit, "autoQuitView");
-    setActive(GlobalViews.Instance?.maintenanceView, type == EDisconnectType.maintenance, "maintenanceView");
+    // Maintenance can also be opened by checkTradeCode(sdkDisconnect), so it
+    // should not be closed by an unrelated network heartbeat (`type == none`).
+    // Close it through its own confirm button or setMaintenanceView(false).
+    if (type == EDisconnectType.maintenance) {
+        setActive(GlobalViews.Instance?.maintenanceView, true, "maintenanceView");
+    }
 }
+
+export function resetDisconnectType() {
+    clearInterval(loopShowInterval);
+    loopShowInterval = -1;
+    curDisconnectType = EDisconnectType.none;
+    setDisconnectTypeBase(EDisconnectType.none);
+}
+
+(<any>window).resetDisconnectType = resetDisconnectType;
 
 export function onLoginOther() {
     setDisconnectType(EDisconnectType.loginOther);

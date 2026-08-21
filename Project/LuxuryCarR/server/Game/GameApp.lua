@@ -70,3 +70,72 @@ function GameApp:onProjConfig()
     -- 排行榜模块：在所有排行榜相关配置都就位后，执行最终的排行榜数据准备工作
     RankCfgMgr:onProjRankCfgMgr()
 end
+
+
+--[[
+    ## 游戏服务器App
+    一般情况下需要在GameApp.lua文件里定义GameApp类（模板已处理），此类会有一个全局对像，`gApp`。
+    `GameApp`类中有一些回调和函数可以使用：
+    - `onLoadConfig(tag, name, tab)`，加载配置的回调，在服务器启动时，或配置热更时会回调，`tag`为标签名（可同时存在多套表，以标签名区分），`name`为表名，`tab`为配置数据（以id为key的表）。如果对游戏逻辑需要对配置表做二次处理，则必须定义此回调，并在回调里做二次处理，否则热更配置时数据不会刷新。
+    - `onProjConfig()`，加载项目配置的回调，在服务器启动时，或后台修改项目配置时会回调。如果对游戏逻辑需要对项目配置做二次处理，则必须定义此回调，并在回调里做二次处理，否则后台修改项目配置时数据不会刷新。
+    - `getProjCommon()`，返回发布项目的项目公共配置，如果后台发布时没有配置任何配置则会是个空表。后台可能会配置`{Costs = {{Coins = 1, CostUrl = "http://127.0.0.1/1.png"}}, Custom = {}}`，指定档位。
+    - `getProjServer()`，返回发布项目的服务器配置，可能会配置`{Custom = {}}`。
+    - `onClosing()`，服务器正在关闭的回调，默认此回调过后50秒服务器将会关闭，如果清理工作已完成可调用`gApp:finishClosing()`来提前关闭。
+    - `finishClosing()`，通知清理工作已完成，服务器会在5秒内关闭。
+    - `isWaitClosing()`，判断当前是否处于关闭过程中。
+
+    当服务器关闭时，会向所有在线玩家发送消息SvrNotifyMsg,数据结构为
+    {
+        msgCode = 1, --消息码，1为关服
+        msgData = {
+            stopSeconds = 50, --距离关服时间，秒
+        }
+    }
+    同时服务器会拒绝所有的扣款操作，在调用扣款接口时会返回错误，并且再次发送消息SvrNotifyMsg，消息码为1。
+    适配流程：
+    1. 在onClosing()回调中，判断游戏是否还有未结算的对局，如果没有则直接调用gApp:finishClosing()。
+    2. 服务器在开完奖后调用gApp:isWaitClosing()判断是否处于关闭过程，如果处理关闭过程中，则不再开启下一轮抽奖，并且调用gApp:finishClosing()。
+    3. 客户端则监听SvrNotifyMsg消息，并做出提示，建议做tips提示即可。
+
+]]
+
+-- 服务器开始关闭：没有待结算下注时立即结束；否则让当前局完成开奖、结算。
+function GameApp:onClosing()
+    local sceneSystem = SvrSystem and SvrSystem.LuxuryCarR
+    local scene = sceneSystem and sceneSystem.getScene and sceneSystem:getScene() or nil
+    if not scene then
+        log_info("LuxuryCarR closing: scene unavailable, finish immediately")
+        return self:finishClosing()
+    end
+
+    local needSettle = scene:prepareServerClosing()
+    log_info("LuxuryCarR closing: needSettle:{0}", needSettle and 1 or 0)
+    if not needSettle then
+        self:finishClosing()
+    end
+end
+
+-- 保存框架原始实现；自定义 finishClosing 广播完成后必须继续调用它，
+-- 否则覆盖同名方法会导致进程无法进入真正的 5 秒关服阶段。
+local frameworkFinishClosing = GameAppBase and GameAppBase.finishClosing
+
+-- 服务器清理工作已完成：通知客户端刷新为 5 秒倒计时，再交还框架关服。
+function GameApp:finishClosing()
+    if self._finishClosingRequested then return end
+    self._finishClosingRequested = true
+
+    local sceneSystem = SvrSystem and SvrSystem.LuxuryCarR
+    local scene = sceneSystem and sceneSystem.getScene and sceneSystem:getScene() or nil
+    if scene and scene.broadcast then
+        scene:broadcast("SvrNotifyMsg", {
+            msgCode = 1,
+            msgData = { stopSeconds = 5 },
+        })
+    end
+    log_info("LuxuryCarR closing: notify clients, stop in 5 seconds")
+
+    if frameworkFinishClosing then
+        return frameworkFinishClosing(self)
+    end
+    log_error("LuxuryCarR closing: framework finishClosing unavailable")
+end

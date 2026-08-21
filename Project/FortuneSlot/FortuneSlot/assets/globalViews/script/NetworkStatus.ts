@@ -81,7 +81,7 @@ export function setDisconnectTypeBase(type: EDisconnectType) {
     setActive(GlobalViews.Instance?.disconnectView2, type == EDisconnectType.networkError, "disconnectView2");
     setActive(GlobalViews.Instance?.disconnectView, type == EDisconnectType.loginOther, "disconnectView");
     setActive(GlobalViews.Instance?.autoQuitView, type == EDisconnectType.autoQuit, "autoQuitView");
-    setActive(GlobalViews.Instance?.maintenanceView, type == EDisconnectType.maintenance, "maintenanceView");
+    //setActive(GlobalViews.Instance?.maintenanceView, type == EDisconnectType.maintenance, "maintenanceView");
 }
 
 export function onLoginOther() {

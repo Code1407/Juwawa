@@ -13,58 +13,51 @@ const codeText = langInCodes[lang] = new LangInCode;
 
 
 
+text.game.autoPlay= `تلقائي
+الاختبار الداخلي
+خاص`;
+text.game.stopAuto =`تلقائي
+الاختبار الداخلي
+خاص`;
+text.game.players = "اللاعبون";
+text.game.balance = "الرصيد :";
+text.game.todayRound = "جولة:";
+text.game.totalCost = "إجمالي التكلفة:";
+text.game.myTotalCost = "إجمالي تكلفتي:";
+text.game.finalRoundResult = "جولة:";
+text.game.finalRoundWin = "لقد فزت: ";
+text.game.finalRoundCost = "تكلفة هذه الجولة: ";
+text.game.finalRoundRankTitle = "الفائزون الأوائل في هذه الجولة";
+text.game.card1Pot = "الصندوق:";
+text.game.card1Mine = "أنا:";
+text.game.card2Pot = "الصندوق:";
+text.game.card2Mine = "أنا:";
+text.game.card3Pot = "الصندوق:";
+text.game.card3Mine = "أنا:";
 
-text.game.autoPlay= `Auto
-内测
-专用`;
-text.game.stopAuto =`Auto
-内测
-专用`;
-text.game.players = "players";
-text.game.card1Pot = "Pot:";
-text.game.card1Mine = "Mine:";
-text.game.card2Pot = "Pot:";
-text.game.card2Mine = "Mine:";
-text.game.card3Pot = "Pot:";
-text.game.card3Mine = "Mine:";
+text.ready.content = "وقت الاستعداد";
+text.gameHistory.title = "سجل اللعبة";
 
-text.ready.content = "Ready Time";
-text.gameHistory.title = "Game History";
-
-text.help.title = "How to play";
+text.help.title = "القاعدة";
 text.help.content = 
-`
-Each fruit symbol has two possibilities. If there is an "x2" below the winning symbol, the payout amount is calculated based on the number in that symbol; otherwise, it is calculated based on the default payout rate.  
-x2 Apple  
-x2 Banana  
-x2 Lemon  
-x2 Watermelon  
+`1. توقع الفريق الذي سيضيء قبل السحب.
 
-Default Fruit Payouts  
-x3 Grand Apple  
-x6 Grand Banana  
-x8 Grand Lemon  
-x12 Grand Watermelon  
-x30 Bar  
+2. الفريق الذي يضيء بعد السحب هو الفريق الفائز.
 
-Special Rewards :
-1、Rainbow Luck (two scenarios):  
-Each reward in the upper half-circle section wins once.  
-(Apple Time) Until an Apple wins!  
+3. إذا كان توقعك صحيحاً، ستحصل على جائزة بناءً على الاحتمالات المقابلة.`
 
-2、Yellow Luck (two scenarios):  
-Each reward in the lower half-circle section wins once.  
-All fruits win once!  
+text.betLimit.content = "يمكنك فقط أن تنفق لا أكثر من 500,000 في كل جولة!";
 
-However, please note: Both lucky states have a certain probability of entering "Bad Luck Time," during which there are no rewards.
-`
+codeText.pokerLevel.highCard = "بطاقة عالية"
+codeText.pokerLevel.pair = "زوج";
+codeText.pokerLevel.straight = "تسلسل";
+codeText.pokerLevel.flush = "تدفق";
+codeText.pokerLevel.straightFlush = "تسلسل تدفق";
+codeText.pokerLevel.fullHouse = "ثلاثة من نوع واحد";
+codeText.globalContent.round =  "جولة: "
 
-text.betLimit.content = "You can only cost no more than 500,000 per round!";
-
-codeText.pokerLevel.highCard = "high card"
-codeText.pokerLevel.pair = "pair";
-codeText.pokerLevel.straight = "straight";
-codeText.pokerLevel.flush = "flush";
-codeText.pokerLevel.straightFlush = "straight flush";
-codeText.pokerLevel.fullHouse = "three of a king";
-codeText.globalContent.round =  "round: "
+text.history.title = "تاريخي";
+text.history.columnName1 = "وقت التكلفة";
+text.history.columnName2 = "تفاصيل التكلفة";
+text.history.columnName3 = "تفاصيل المكافأة";
+text.history.round = "جولة:";

@@ -580,13 +580,13 @@ export default class GlobalRankView extends cc.Component {
 
         avatarUrl = decodeURI(avatarUrl);
         if (updateHead)
-            avatarUrl += `?timestamp=${Date.now()}`;
+            avatarUrl += `${avatarUrl.includes('?') ? '&' : '?'}timestamp=${Date.now()}`;
 
         this.enqueueAvatarLoad(() => {
-            cc.loader.load({ url: avatarUrl, type: 'image' }, (error, texture) => {
+            cc.assetManager.loadRemote<cc.Texture2D>(avatarUrl, { ext: '.png' }, (err, texture) => {
                 this.finishAvatarLoad();
                 if (gen !== this.loadGeneration || !item.node.isValid || (<any>item).__rankUid !== rankInfo.uid) return;
-                if (error || texture == null) {
+                if (err || texture == null) {
                     if (cached == null)
                         item.resetAvatar();
                     return;

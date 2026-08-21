@@ -28,3 +28,7 @@ text.path35 = `Hồi phục`;
 
 text.path36 = `Cảnh báo, vui lòng tuân thủ luật chơi.`
 text.path37 = `Hồi phục`;
+
+text.path38 = `Máy chủ trò chơi đang được bảo trì và tạm thời không thể chơi được.
+Vui lòng thử lại sau.`;
+text.path39 = "Thoát";

@@ -21,6 +21,14 @@ text.game.stopAuto =`Auto
 内测
 专用`;
 text.game.players = "players";
+text.game.balance = "Balance :";
+text.game.todayRound = "Round:";
+text.game.totalCost = "TotalCost:";
+text.game.myTotalCost = "My TotalCost:";
+text.game.finalRoundResult = "Round:";
+text.game.finalRoundWin = "You Win: ";
+text.game.finalRoundCost = "This Round' Cost: ";
+text.game.finalRoundRankTitle = "The top victors of this round";
 text.game.card1Pot = "Pot:";
 text.game.card1Mine = "Mine:";
 text.game.card2Pot = "Pot:";
@@ -31,33 +39,13 @@ text.game.card3Mine = "Mine:";
 text.ready.content = "Ready Time";
 text.gameHistory.title = "Game History";
 
-text.help.title = "How to play";
+text.help.title = "Rule";
 text.help.content = 
-`
-Each fruit symbol has two possibilities. If there is an "x2" below the winning symbol, the payout amount is calculated based on the number in that symbol; otherwise, it is calculated based on the default payout rate.  
-x2 Apple  
-x2 Banana  
-x2 Lemon  
-x2 Watermelon  
+`1. Predict the team that lights up before the draw.
 
-Default Fruit Payouts  
-x3 Grand Apple  
-x6 Grand Banana  
-x8 Grand Lemon  
-x12 Grand Watermelon  
-x30 Bar  
+2. The team that lights up after the draw is the winning team.
 
-Special Rewards :
-1、Rainbow Luck (two scenarios):  
-Each reward in the upper half-circle section wins once.  
-(Apple Time) Until an Apple wins!  
-
-2、Yellow Luck (two scenarios):  
-Each reward in the lower half-circle section wins once.  
-All fruits win once!  
-
-However, please note: Both lucky states have a certain probability of entering "Bad Luck Time," during which there are no rewards.
-`
+3. If your prediction is correct, you'll receive a prize based on the corresponding odds.`
 
 text.betLimit.content = "You can only cost no more than 500,000 per round!";
 
@@ -68,3 +56,8 @@ codeText.pokerLevel.flush = "flush";
 codeText.pokerLevel.straightFlush = "straight flush";
 codeText.pokerLevel.fullHouse = "three of a king";
 codeText.globalContent.round =  "round: "
+
+text.history.title = "My History";
+text.history.columnName1 = "Cost Time";
+text.history.columnName2 = "Cost Details";
+text.history.columnName3 = "Reward Details";

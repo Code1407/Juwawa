@@ -13,58 +13,51 @@ const codeText = langInCodes[lang] = new LangInCode;
 
 
 
-
-text.game.autoPlay= `Auto
-内测
-专用`;
-text.game.stopAuto =`Auto
-内测
-专用`;
-text.game.players = "players";
+text.game.autoPlay= `Tự động
+Beta
+Đặc biệt`;
+text.game.stopAuto =`Tự động
+Beta
+Đặc biệt`;
+text.game.players = "Người chơi";
+text.game.balance = "Số dư :";
+text.game.todayRound = "Vòng:";
+text.game.totalCost = "Tổng chi phí:";
+text.game.myTotalCost = "Tổng chi phí của tôi:";
+text.game.finalRoundResult = "Vòng:";
+text.game.finalRoundWin = "Bạn thắng: ";
+text.game.finalRoundCost = "Chi phí vòng này: ";
+text.game.finalRoundRankTitle = "Những người chiến thắng hàng đầu của vòng này";
 text.game.card1Pot = "Pot:";
-text.game.card1Mine = "Mine:";
+text.game.card1Mine = "Của tôi:";
 text.game.card2Pot = "Pot:";
-text.game.card2Mine = "Mine:";
+text.game.card2Mine = "Của tôi:";
 text.game.card3Pot = "Pot:";
-text.game.card3Mine = "Mine:";
+text.game.card3Mine = "Của tôi:";
 
-text.ready.content = "Ready Time";
-text.gameHistory.title = "Game History";
+text.ready.content = "Thời gian sẵn sàng";
+text.gameHistory.title = "Lịch sử trò chơi";
 
-text.help.title = "How to play";
+text.help.title = "Quy tắc";
 text.help.content = 
-`
-Each fruit symbol has two possibilities. If there is an "x2" below the winning symbol, the payout amount is calculated based on the number in that symbol; otherwise, it is calculated based on the default payout rate.  
-x2 Apple  
-x2 Banana  
-x2 Lemon  
-x2 Watermelon  
+`1. Dự đoán đội nào sẽ được chiếu sáng trước khi rút thăm.
 
-Default Fruit Payouts  
-x3 Grand Apple  
-x6 Grand Banana  
-x8 Grand Lemon  
-x12 Grand Watermelon  
-x30 Bar  
+2. Đội được chiếu sáng sau khi rút thăm là đội chiến thắng.
 
-Special Rewards :
-1、Rainbow Luck (two scenarios):  
-Each reward in the upper half-circle section wins once.  
-(Apple Time) Until an Apple wins!  
+3. Nếu dự đoán của bạn là chính xác, bạn sẽ nhận được phần thưởng dựa trên tỷ lệ tương ứng.`
 
-2、Yellow Luck (two scenarios):  
-Each reward in the lower half-circle section wins once.  
-All fruits win once!  
+text.betLimit.content = "Bạn chỉ có thể chi tiêu không quá 500.000 mỗi vòng!";
 
-However, please note: Both lucky states have a certain probability of entering "Bad Luck Time," during which there are no rewards.
-`
+codeText.pokerLevel.highCard = "Lá cao"
+codeText.pokerLevel.pair = "Đôi";
+codeText.pokerLevel.straight = "Sảnh";
+codeText.pokerLevel.flush = "Đồng chất";
+codeText.pokerLevel.straightFlush = "Sảnh đồng chất";
+codeText.pokerLevel.fullHouse = "Ba lá cùng loại";
+codeText.globalContent.round =  "vòng: "
 
-text.betLimit.content = "You can only cost no more than 500,000 per round!";
-
-codeText.pokerLevel.highCard = "high card"
-codeText.pokerLevel.pair = "pair";
-codeText.pokerLevel.straight = "straight";
-codeText.pokerLevel.flush = "flush";
-codeText.pokerLevel.straightFlush = "straight flush";
-codeText.pokerLevel.fullHouse = "three of a king";
-codeText.globalContent.round =  "round: "
+text.history.title = "Lịch sử của tôi";
+text.history.columnName1 = "Thời gian chi phí";
+text.history.columnName2 = "Chi phí chi tiết";
+text.history.columnName3 = "Chi tiết phần thưởng";
+text.history.round = "Vòng:";

@@ -175,13 +175,20 @@ export default class Game extends cc.Component {
         gGameData.betAmountIndex = enterGameResp.lastBetAmountButton;
         BetAmountSelector.Instance.swichBetAmountButton();
 
-        if (enterGameResp.playerSettings) {
-            // console.log("enterGameResp.playerSettings====================" + JSON.stringify(enterGameResp.playerSettings.soundVol));
-            gGameData.soundVol = enterGameResp.playerSettings.soundVol;
-            Audio.Instance.audioOn = enterGameResp.playerSettings.soundVol > 0;
-            this.poppusViewUI.soundSprite.spriteFrame = Audio.Instance.audioOn ? ImageCache.Instance.soundSprite[0] : ImageCache.Instance.soundSprite[1];
-        } else {
-            this.poppusViewUI.soundSprite.spriteFrame = gGameData.soundVol > 0 ? ImageCache.Instance.soundSprite[0] : ImageCache.Instance.soundSprite[1];
+        const serverSoundVol = enterGameResp.playerSettings?.soundVol;
+        let targetSoundVol = serverSoundVol === undefined ? gGameData.soundVol : serverSoundVol;
+        const noAudio = String((<any>window).user?.noAudio ?? "");
+        const hasAudioOverride = isFirstCall && (noAudio === "0" || noAudio === "1");
+        if (hasAudioOverride) {
+            targetSoundVol = noAudio === "1" ? 0 : 1;
+        }
+        gGameData.soundVol = targetSoundVol;
+        Audio.Instance.audioOn = targetSoundVol > 0;
+        this.poppusViewUI.soundSprite.spriteFrame = Audio.Instance.audioOn ? ImageCache.Instance.soundSprite[0] : ImageCache.Instance.soundSprite[1];
+        if (hasAudioOverride && serverSoundVol !== targetSoundVol) {
+            this.player.updateSettings({
+                soundVol: targetSoundVol
+            });
         }
         Audio.Instance.playbgm();
         gGameData.totalWheelAmount = enterGameResp.totalWheelAmount;
@@ -387,7 +394,6 @@ export default class Game extends cc.Component {
             this.todayRoundNode.getComponent(cc.Layout).paddingRight=30;
             this.todayRoundNode.getComponent(cc.Layout).spacingX=-50;
 
-
         }else{
             this.todayRoundNode.getComponent(cc.Layout).horizontalDirection=cc.Layout.HorizontalDirection.LEFT_TO_RIGHT;
             this.roundFinal.EarningsNode.getComponent(cc.Layout).horizontalDirection=cc.Layout.HorizontalDirection.LEFT_TO_RIGHT;
@@ -405,11 +411,15 @@ export default class Game extends cc.Component {
         cc.view.enableAutoFullScreen(false);
         (<any>window).stopGame = () => {
             //当出现不允许用户再继续玩游戏的问题时(维护、断开、异常)，会调用此方法，需要停止游戏运行
-            gGameData.status = EGameStatus.stop;
+            (<any>window).breakRoundStep = true;
+            this.changeGameStatus(EGameStatus.stop);
         }
         (<any>window).window.onReconnect = async () => {
             //当网络重连成功后，需要登录游戏
+            if ((<any>window).isAutoQuitLocked) return;
+            (<any>window).breakRoundStep = false;
             let enterGameResp = await this.player.enterGame();
+            if (!enterGameResp?.roundStep) return;
             this.initPlayerData(enterGameResp, false);
             this.changeGameStatus(enterGameResp.roundStep.status);
         }
@@ -471,8 +481,17 @@ export default class Game extends cc.Component {
     }
 }
 
-(<any>window).updateBalance = function () {
-    Game.Instance.synchronize();
+(<any>window).updateBalance = async function () {
+    const msgRouter = (<any>window).msgRouter;
+    if (msgRouter?.request) {
+        try {
+            await msgRouter.request("CsPlayerBaseDataReq", {});
+            return;
+        } catch (error) {
+            console.error("CsPlayerBaseDataReq failed", error);
+        }
+    }
+    await Game.Instance.synchronize();
 };
 
 (<any>window).showDisconnectView = function () {
@@ -480,7 +499,7 @@ export default class Game extends cc.Component {
 };
 
 (<any>window).rechargeSuccess = function () {
-    Game.Instance.synchronize();
+    return (<any>window).updateBalance();
 };
 
 (<any>window).invisibleNodes = function () {

@@ -70,3 +70,42 @@ function GameApp:onProjConfig()
     -- 排行榜模块：在所有排行榜相关配置都就位后，执行最终的排行榜数据准备工作
     RankCfgMgr:onProjRankCfgMgr()
 end
+
+-- 优雅关服：空局立即关闭；已有下注则等待当前局完成结算。
+function GameApp:onClosing()
+    local sceneSystem = SvrSystem and SvrSystem.LuxuryCar
+    local scene = sceneSystem and sceneSystem.getScene and sceneSystem:getScene() or nil
+    if not scene then
+        log_info("LuxuryCar closing: scene unavailable, finish immediately")
+        return self:finishClosing()
+    end
+    local needSettle = scene:prepareServerClosing()
+    log_info("LuxuryCar closing: needSettle:{0}", needSettle and 1 or 0)
+    if not needSettle then
+        self:finishClosing()
+    end
+end
+
+-- 保存框架原始实现；自定义 finishClosing 广播完成后必须继续调用它。
+local frameworkFinishClosing = GameAppBase and GameAppBase.finishClosing
+
+-- 清理完成后通知客户端刷新为 5 秒倒计时，再交还框架关服。
+function GameApp:finishClosing()
+    if self._finishClosingRequested then return end
+    self._finishClosingRequested = true
+
+    local sceneSystem = SvrSystem and SvrSystem.LuxuryCar
+    local scene = sceneSystem and sceneSystem.getScene and sceneSystem:getScene() or nil
+    if scene and scene.broadcast then
+        scene:broadcast("SvrNotifyMsg", {
+            msgCode = 1,
+            msgData = { stopSeconds = 5 },
+        })
+    end
+    log_info("LuxuryCar closing: notify clients, stop in 5 seconds")
+
+    if frameworkFinishClosing then
+        return frameworkFinishClosing(self)
+    end
+    log_error("LuxuryCar closing: framework finishClosing unavailable")
+end

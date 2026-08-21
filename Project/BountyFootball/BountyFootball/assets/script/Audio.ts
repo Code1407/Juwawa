@@ -67,34 +67,34 @@ export default class Audio extends cc.Component {
         this.forceStopControlledAudios();
     }
     playshow_result() {
-        if (this.audioOn)
+        if (this.audioOn && !(<any>window).gameHide)
             this.show_result.play();
     }
 
     playFinal() {
-        if (this.audioOn)
+        if (this.audioOn && !(<any>window).gameHide)
             this.final.play();
     }
 
     playClick() {
-        if (this.audioOn)
+        if (this.audioOn && !(<any>window).gameHide)
             this.click.play();
     }
     playstartRun() {
-        if (this.audioOn)
+        if (this.audioOn && !(<any>window).gameHide)
             this.startRun.play();
     }
     StopstartRun() {
         this.startRun.stop();
     }
     playstop_selection() {
-        if (this.audioOn) {
+        if (this.audioOn && !(<any>window).gameHide) {
             const audioID = this.stop_selection.play();
             this.controlledAudioIDs.push(audioID);
         }
     }
     playbgm() {
-        if (this.audioOn)
+        if (this.audioOn && !(<any>window).gameHide)
             cc.audioEngine.playMusic(this.bgm.clip, true);
         else
             cc.audioEngine.stopMusic();
@@ -103,51 +103,51 @@ export default class Audio extends cc.Component {
         cc.audioEngine.pauseMusic();
     }
     StartBGM() {
-        if (this.audioOn) {
+        if (this.audioOn && !(<any>window).gameHide) {
             cc.audioEngine.resumeMusic();
         }
     }
     playbet() {
-        if (this.audioOn)
+        if (this.audioOn && !(<any>window).gameHide)
             this.bet.play();
     }
     playchangebet() {
-        if (this.audioOn)
+        if (this.audioOn && !(<any>window).gameHide)
             this.changebet.play();
     }
     playfly() {
-        if (this.audioOn)
+        if (this.audioOn && !(<any>window).gameHide)
             this.fly.play();
     }
     playstopRun() {
-        if (this.audioOn)
+        if (this.audioOn && !(<any>window).gameHide)
             this.stopRun.play();
     }
     playWinGold() {
-        if (this.audioOn)
+        if (this.audioOn && !(<any>window).gameHide)
             this.winGold.play();
     }
     StartSelect() {
-        if (this.audioOn) {
+        if (this.audioOn && !(<any>window).gameHide) {
             const audioID = this.startSelect.play();
             this.controlledAudioIDs.push(audioID);
         }
     }
     playsendBet() {
-        if (this.audioOn)
+        if (this.audioOn && !(<any>window).gameHide)
             this.sendBet.play();
     }
 
     CountDown() {
-        if (this.audioOn)
+        if (this.audioOn && !(<any>window).gameHide)
             this.countDown.play();
     }
     CountDownEnd() {
-        if (this.audioOn)
+        if (this.audioOn && !(<any>window).gameHide)
             this.countDownEnd.play();
     }
     ready() {
-        if (this.audioOn) {
+        if (this.audioOn && !(<any>window).gameHide) {
             const audioID = this.Ready.play();
             this.controlledAudioIDs.push(audioID);
         }

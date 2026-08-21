@@ -62,56 +62,56 @@ export default class Audio extends cc.Component {
     }
 
     playRun() {
-        if (this.audioOn)
+        if (this.audioOn && !(<any>window).gameHide)
             this.run.play();
     }
 
     playFinal() {
-        if (this.audioOn)
+        if (this.audioOn && !(<any>window).gameHide)
             this.final.play();
     }
 
     playClick() {
-        if (this.audioOn)
+        if (this.audioOn && !(<any>window).gameHide)
             this.click.play();
     }
     playstartRun() {
-        if (this.audioOn)
+        if (this.audioOn && !(<any>window).gameHide)
             this.startRun.play();
     }
     StopstartRun() {
         this.startRun.stop();
     }
     playstartCountDown() {
-        if (this.audioOn)
+        if (this.audioOn && !(<any>window).gameHide)
             this.startCountDown.play();
     }
     playbgm() {
-        if (this.audioOn)
+        if (this.audioOn && !(<any>window).gameHide)
             this.bgm.play();
     }
     playbet() {
-        if (this.audioOn)
+        if (this.audioOn && !(<any>window).gameHide)
             this.bet.play();
     }
     playchangebet() {
-        if (this.audioOn)
+        if (this.audioOn && !(<any>window).gameHide)
             this.changebet.play();
     }
     playfly() {
-        if (this.audioOn)
+        if (this.audioOn && !(<any>window).gameHide)
             this.fly.play();
     }
     playstopRun() {
-        if (this.audioOn)
+        if (this.audioOn && !(<any>window).gameHide)
             this.stopRun.play();
     }
     playWinGold() {
-        if (this.audioOn)
+        if (this.audioOn && !(<any>window).gameHide)
             this.winGold.play();
     }
     playsendBet() {
-        if (this.audioOn)
+        if (this.audioOn && !(<any>window).gameHide)
             this.sendBet.play();
     }
 

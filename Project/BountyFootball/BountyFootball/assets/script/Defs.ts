@@ -9,7 +9,6 @@ interface Account {
 
 interface PlayerSettings {
     soundVol: number
-    lastBetAmountButton: number
     isSpeed: boolean
 }
 
@@ -65,6 +64,7 @@ interface enterGameResp {
 }
 
 interface bet {
+    requestId: number
     todayRound: number
     betGradeArr: number[]
     betGradeNumArr: number[][]
@@ -72,6 +72,7 @@ interface bet {
 }
 
 interface betResp {
+    requestId: number
     code: number
     accountDiamond: number
     wheelAmount: number[]
@@ -334,5 +335,13 @@ interface CsMailRewardReceiveResp {
     errorCode: number
     mailId: number
     reward: ResourceData
+}
+
+// 即将关服消息
+interface SvrNotifyMsg {
+    msgCode: number
+    msgData: {
+        stopSeconds: number
+    }
 }
 

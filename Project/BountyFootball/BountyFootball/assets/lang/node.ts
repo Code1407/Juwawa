@@ -2,12 +2,28 @@ class Game {
     autoPlay: string;
     stopAuto: string;
     players: string;
+    balance: string;
+    todayRound: string;
+    totalCost: string;
+    myTotalCost: string;
+    finalRoundResult: string;
+    finalRoundWin: string;
+    finalRoundCost: string;
+    finalRoundRankTitle: string;
     card1Pot: string;
     card1Mine: string;
     card2Pot: string;
     card2Mine: string;
     card3Pot: string;
     card3Mine: string;
+};
+
+class History {
+    title: string;
+    columnName1: string;
+    columnName2: string;
+    columnName3: string;
+    round: string;
 };
 
 class View {
@@ -26,6 +42,7 @@ export class LangText {
     start = new Tips;
     gameHistory = {title: undefined};
     betLimit = new Tips;
+    history = new History;
 }
 
 class LangTexts {

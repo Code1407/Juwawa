@@ -136,20 +136,26 @@ export default class PlayerAccount extends ClientPlayer {
 
     addTodayRevenue(earnings: number): number {
         this.toDayRevenue += earnings;
-        this.accountDiamond += earnings;
         this.account.setTodayRevenue(this.toDayRevenue);
-        this.account.setAccountDiamond(this.accountDiamond);
 
         return this.toDayRevenue;
     }
 
     async enterGame(): Promise<IEnterGameResp> {
         let enterGameResp = await super.enterGame();
+        if (!enterGameResp?.account) {
+            console.error("enterGame failed:", enterGameResp);
+            setDisconnectView2(true);
+            return enterGameResp;
+        }
         enterGameResp.account.nickname = decodeURI(enterGameResp.account.nickname);
         return this.initPlayerAccount(enterGameResp);
     }
 
     async bet(todayRound: number, betGradeIndex: number[], betGradeNum: number[][]): Promise<IBetResp> {
+        if ((<any>window).breakRoundStep || gGameData.roundStep.remainSecond <= 3) {
+            return null;
+        }
         //this.notedWheel[which] += amount;
         let betGrade = (<any>window).betGrade;
         let needDiamon: number = 0;
@@ -239,6 +245,11 @@ export default class PlayerAccount extends ClientPlayer {
 
     async synchronize(): Promise<IEnterGameResp> {
         let enterGameResp = await super.synchronize();
+        if (!enterGameResp?.account) {
+            console.error("synchronize failed:", enterGameResp);
+            setDisconnectView2(true);
+            return enterGameResp;
+        }
         enterGameResp.account.nickname = decodeURI(enterGameResp.account.nickname);
         return this.initPlayerAccount(enterGameResp);
     }
@@ -257,6 +268,7 @@ export default class PlayerAccount extends ClientPlayer {
             this.lastWheelChipAmount = cloneChipAmount(sceneChipAmount);
         }
         //if (enterGameResp.roundStep.status == EGameStatus.bet) this.enterGameWheelAmount = enterGameResp.wheelAmount;
+      
         this.account.setAccountDiamond(this.accountDiamond);
         this.account.setTodayRevenue(this.toDayRevenue);
         //this.account.setMyName(enterGameResp.account.nickname);

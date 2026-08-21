@@ -37,6 +37,7 @@
     - [数据相关接口](#数据相关接口)
     - [多人游戏调控](#多人游戏调控)
     - [单人游戏调控](#单人游戏调控)
+    - [调控结果](#调控结果)
 
 ## 如何启动游戏服务器
 
@@ -232,6 +233,25 @@ Game.cfg配置格式为json，分为四个部分：
 - `onProjConfig()`，加载项目配置的回调，在服务器启动时，或后台修改项目配置时会回调。如果对游戏逻辑需要对项目配置做二次处理，则必须定义此回调，并在回调里做二次处理，否则后台修改项目配置时数据不会刷新。
 - `getProjCommon()`，返回发布项目的项目公共配置，如果后台发布时没有配置任何配置则会是个空表。后台可能会配置`{Costs = {{Coins = 1, CostUrl = "http://127.0.0.1/1.png"}}, Custom = {}}`，指定档位。
 - `getProjServer()`，返回发布项目的服务器配置，可能会配置`{Custom = {}}`。
+- `onClosing()`，服务器正在关闭的回调，默认此回调过后50秒服务器将会关闭，如果清理工作已完成可调用`gApp:finishClosing()`来提前关闭。
+- `finishClosing()`，通知清理工作已完成，服务器会在5秒内关闭。
+- `isWaitClosing()`，判断当前是否处于关闭过程中。
+
+服务器关闭相关信息：
+```
+当服务器关闭时，会向所有在线玩家发送消息SvrNotifyMsg,数据结构为
+{
+    msgCode = 1, --消息码，1为关服
+    msgData = {
+        stopSeconds = 50, --距离关服时间，秒
+    }
+}
+同时服务器会拒绝所有的扣款操作，在调用扣款接口时会返回错误，并且再次发送消息SvrNotifyMsg，消息码为1。
+适配流程：
+1. 在onClosing()回调中，判断游戏是否还有未结算的对局，如果没有则直接调用gApp:finishClosing()。
+2. 服务器在开完奖后调用gApp:isWaitClosing()判断是否处于关闭过程，如果处理关闭过程中，则不再开启下一轮抽奖，并且调用gApp:finishClosing()。
+3. 客户端则监听SvrNotifyMsg消息，并做出提示，建议做tips提示即可。
+```
 
 ## 游戏服务器消息路由
 
@@ -306,6 +326,7 @@ Router.Client.Name(data, target) --发送数据
 - `onCleanup()`，玩家从缓存移除回调，必须调用基类方法`PlayBase.onCleanup(self)`。
 - `onCoinChanged()`，玩家积分发生变化的回调。
 - `onSdkChanged()`，玩家sdk状态发生变化时回调。
+- `subCoinsDelayReward(roundId, betId, orderId, oddsType, changeType, subCoins, rewardCoins, gameExt)`，玩家扣钱回调在开奖之后需要调用的接口。`roundId`局数（唯一id）。`betId`扣款时的下注id。`orderId`订单id，扣款的订单id。`oddsType`开奖时的货币操作类型。`changeType`开奖时的加钱类型。`subCoins`扣款金额。`rewardCoins`扣款对应的中奖金额。`gameExt`加钱时的扩展参数。
 
 ### 玩家系统模块
 
@@ -386,7 +407,10 @@ Router.Client.Name(data, target) --发送数据
 全服系统模块有一些已经定义的接口可以使用，其中以on开头的方法为回调方法，如果定义的系统模块实现了该方法，必须在方法里调用基类`SvrSystemBase`的该方法。具体接口：
 
 - `getData()`，获取系统数据，可任意读写，数据会自动保存。
-- `resetData(data)`，重置需要保存的数据，参数`data`为需要保存的数据
+- `resetData(data)`，重置需要保存的数据，参数`data`为需要保存的数据。
+- `getHashData(key, cb)`，获取系统键值为`key`的散列数据。数据通过`cb`回调函数返回，`cb(err, data)`，第一参数为错误码（非0即有错误），第二参数为数据。`data`可任意读写，数据会自动保存。注意此接口用于处理数据量比较大的数据。
+- `getHashDatas(keyArr, cb)`，获取系统多个键值的散列数据。`keyArr`为键值数组。数据通过`cb`回调函数返回，`cb(err, data)`，第一参数为错误码（非0即有错误），第二参数为数据。`data`为返回数据表，以键值为key，数据为value，value可任意读写，数据会自动保存。注意此接口用于处理数据量比较大的数据。
+- `resetHashData(key, data)`，重置系统键值为`key`的散列数据。
 - `onLoad(data)`，系统数据加载回调，参数`data`为加载的数据，为nil时，说明系统第一次加载。注意，必须要调用基类的方法`SvrSystemBase.onLoad(self, data)`，才能将数据挂载到系统上。
 - `onOClock(hour)`，整点回调，参数`hour`为点数，必须调用基类的方法`SvrSystemBase.onOClock(self, hour)`。
 - `onClose()`，服务器关闭回调，必须调用基类的方法`SvrSystemBase.onClose(self)`。
@@ -578,8 +602,18 @@ Router.Client.Name(data, target) --发送数据
         game_id = gameId, --string 游戏id
         save_time = nowTime, --number 保存时间
     }
+	
+	statisId = 10006，全局排行榜可以领取奖励，data = {
+        rank_type = isWeek and ERankType.rankWeek or ERankType.rankDay, --string 日榜还是周榜
+        day = _dateId(nowTime), --string 日期
+        uid = uid, --string 玩家uid
+        score = score, --number 玩家得分
+        bonus = 0, --number 玩家奖金
+        game_id = gameId, --string 游戏id
+        save_time = nowTime, --number 保存时间
+    }
 
-    statisId = 10006, 水果派对特殊奖励，data = {
+    statisId = 10012, 水果派对特殊奖励，data = {
         roundId， --number 局数
         betData = {[betId] = betAmount} --押注数据
         rewardData = {[rewardId] = rewardAmount} --奖励数据
@@ -611,6 +645,7 @@ Router.Client.Name(data, target) --发送数据
 ### 数据相关接口
 
 - `isPlayerProfit(player)`返回玩家是否在本游戏盈利
+- `isPlayerWater(player)`返回玩家是否处于放水状态
 
 ### 多人游戏调控
 
@@ -622,47 +657,18 @@ Router.Client.Name(data, target) --发送数据
     number analyType, --玩家调控类型（0：不限制，1：放水，2：收割）
     number oddsType, --货币操作类型，用于sdk操作货币参数
     number rerankType, --放水策略（0：无效，1：亏损玩家盈利金额和最大，2：亏损玩家盈利vip权重和最大，3：亏损玩家盈利数量最多）
-<<<<<<< HEAD
     number analyPlayer, --调控玩家（不为0时，调控仅针对该玩家）
     number waterRuler, --本局游戏放水上限
-=======
->>>>>>> master
     number rewardMax, --本局游戏能获得的奖励上限
     number rewardRateMax, --本局游戏中奖倍率上限（万分比）
     number jpPotStageMax, --jp或聚宝盆中奖时最大档位
     number jpAddRate, --jp概率增加（万分比）
     number potAddRate, --聚宝盆概率增加（万分比）
     number bigRewardAddRate， --大奖概率增加（万分比）
-<<<<<<< HEAD
-=======
-
-    table rocket {
-        number minRate, --最小重随倍率，为0时忽略（万分比）
-        number maxRate, --最大重随倍率，为0时忽略（万分比）
-        number rerandom, --重随概率（万分比）
-    }, --火箭配置，其它游戏为nil
->>>>>>> master
   }
   ```
 
 - `multiCommitAnaly(playerTab, rewardTab, roundId, result)` 提交结算数据。`playerTab`参数为参与本局游戏的玩家列表（`{[pid] = player}`）。`rewardTab`参数为参与本局游戏的奖励列表（`{[pid] = reward}`）。`roundId`参数为局数。`result`参数为调控结果。
-  ```
-    --调控结果
-    GameOddsResult = {
-        --未知
-        Unknown = 0,
-        --成功
-        Success = 1,
-        --由于超过随机次数失败
-        RerandomMax = 2,
-        --由于尺度限制失败
-        RulerMax = 3,
-        -- Slot占用
-        SlotBusy = 4,
-		--由于放水的人都是盈利状态失败
-		AllPlayerWin = 5
-    }
-  ```
 
 注意：以上两个接口必须成对出现，如果所有的方案都无法达成，则使用系统亏损最少方案。
 
@@ -676,10 +682,7 @@ Router.Client.Name(data, target) --发送数据
     number pId, --玩家的pid
     number analyType, --玩家调控类型（0：不限制，1：放水，2：收割）
     number oddsType, --货币操作类型，用于sdk操作货币参数
-<<<<<<< HEAD
     number waterRuler, --本局游戏放水上限
-=======
->>>>>>> master
     number rewardMax, --本局游戏能获得的奖励上限
     number rewardRateMax, --本局游戏中奖倍率上限（万分比）
     number jpPotStageMax, --jp或聚宝盆中奖时最大档位
@@ -691,22 +694,25 @@ Router.Client.Name(data, target) --发送数据
   ```
 
 - `singleCommitAnaly(player, reward, roundId, result)` 提交结算数据。`player`参数为玩家对像。`reward`参数为本次获得的奖励。`roundId`参数为局数。`result`参数为调控结果。
-  ```
-    --调控结果
-    GameOddsResult = {
-        --未知
-        Unknown = 0,
-        --成功
-        Success = 1,
-        --由于超过随机次数失败
-        RerandomMax = 2,
-        --由于尺度限制失败
-        RulerMax = 3,
-        -- Slot占用
-        SlotBusy = 4,
-		--由于放水的人都是盈利状态失败
-		AllPlayerWin = 5
-    }
-  ```
-
+  
 注意：以上两个接口必须成对出现。
+
+ ### 调控结果
+ ```
+ GameOddsResult = {
+	--未知
+	Unknown = 0,
+	--成功
+	Success = 1,
+	--由于超过随机次数失败
+	RerandomMax = 2,
+	--由于尺度限制失败
+	RulerMax = 3,
+	-- Slot占用
+	SlotBusy = 4,
+	--由于放水的人都是盈利状态失败
+	AllPlayerWin = 5
+	--和调控结果一致
+	SameWithAnaly = 6	
+}
+ ```

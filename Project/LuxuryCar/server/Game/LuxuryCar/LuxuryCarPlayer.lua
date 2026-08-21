@@ -194,24 +194,26 @@ end
 --      d. 通过场景广播 onBetListRound，通知其他玩家本玩家的下注动作（飞球动画等）
 --      e. 向客户端返回下注成功的确认包
 --   6. 立即返回一个"处理中"的成功响应（实际扣款结果以回调为准）
-function LuxuryCarPlayer:bet(todayRound, betGrades, chipCounts, requestedBets)
+function LuxuryCarPlayer:bet(todayRound, betGrades, chipCounts, requestedBets, requestId)
+    requestId = tonumber(requestId) or 0
     local step = self.scene:getRoundStep()
     local uid = self:getUid()
     -- 验证：场景已关闭
     if self.scene:isStop() then
         log_info("LuxuryCar bet rejected: scene stopped, uid:{0}", uid)
-        return { code = LCTradeCode.closeServer, accountDiamond = self:getDiamond() }
+        return { requestId = requestId, code = LCTradeCode.closeServer, accountDiamond = self:getDiamond(), wheelAmount = self:getData().bets, wheelChipAmount = self:getData().chipCounts }
     end
     -- 验证：不在下注阶段或回合号不匹配
     if step.status ~= LCGameStatus.bet or tonumber(todayRound) ~= step.todayRound then
         log_info("LuxuryCar bet rejected: invalid time, uid:{0} requestRound:{1} currentRound:{2} status:{3}", uid, todayRound, step.todayRound, step.status)
-        return { code = LCTradeCode.missTime, accountDiamond = self:getDiamond(), wheelAmount = self:getData().bets }
+        return { requestId = requestId, code = LCTradeCode.missTime, accountDiamond = self:getDiamond(), wheelAmount = self:getData().bets }
     end
     -- 服务端按公共档位配置重算下注金额；档位、数量、选中标记或金额不匹配时拒绝下注。
     local gradesValid, invalidReason = validateBetGrades(betGrades, chipCounts, requestedBets)
     if not gradesValid then
         log_error("LuxuryCar bet grade invalid: uid:{0} round:{1} reason:{2}", uid, step.todayRound, invalidReason)
         return {
+            requestId = requestId,
             code = LCTradeCode.fail,
             accountDiamond = self:getDiamond(),
             wheelAmount = self:getData().bets,
@@ -228,12 +230,16 @@ function LuxuryCarPlayer:bet(todayRound, betGrades, chipCounts, requestedBets)
     -- 验证：下注总额非法或余额不足
     if total <= 0 or not self:getPlayer():coinsEnough(total) then
         log_info("LuxuryCar bet rejected: insufficient, uid:{0} total:{1} balance:{2}", uid, total, self:getDiamond())
-        return { code = LCTradeCode.insufficient, accountDiamond = self:getDiamond(), wheelAmount = self:getData().bets }
+        return { requestId = requestId, code = LCTradeCode.insufficient, accountDiamond = self:getDiamond(), wheelAmount = self:getData().bets }
     end
-    local roundId = self.scene:getRoundId()
-    if not roundId then
-        log_error("LuxuryCar bet failed: roundId is nil, uid:{0} todayRound:{1}", uid, step.todayRound)
+    -- 捕获本局独立上下文；异步扣款回调始终使用这里固定的 roundId。
+    local roundContext = self.scene:getRoundContext()
+    local roundId = roundContext and roundContext.roundId or nil
+    if not roundId or roundContext.todayRound ~= step.todayRound then
+        log_error("LuxuryCar bet failed: round context mismatch, uid:{0} todayRound:{1} contextRound:{2} roundId:{3}",
+            uid, step.todayRound, roundContext and roundContext.todayRound or -1, roundId or -1)
         return {
+            requestId = requestId,
             code = LCTradeCode.fail,
             accountDiamond = self:getDiamond(),
             wheelAmount = self:getData().bets,
@@ -241,12 +247,19 @@ function LuxuryCarPlayer:bet(todayRound, betGrades, chipCounts, requestedBets)
         }
     end
 
-    log_info("LuxuryCar bet start: uid:{0} round:{1} roundId:{2} total:{3} bets:{4} balance:{5}",
-        uid, step.todayRound, roundId, total, tableToString(bets), self:getDiamond())
-
     -- 扣款（异步回调）：扣款成功后更新下注、广播、通知客户端
+    self.scene:beginPendingBet()
+    local selectedBetIds = {}
+    for index, selected in ipairs(betGrades) do
+        if (tonumber(selected) or 0) > 0 then
+            table.insert(selectedBetIds, tostring(index))
+        end
+    end
+    local betId = table.concat(selectedBetIds, ",")
     self:getPlayer():subCoins(roundId, ECoinsOperateType.BetSub, total, function(code, _orderId, backPlayer)
-        local system = backPlayer and backPlayer:getSystem(LuxuryCarConst.gameName)
+        self.scene:endPendingBet()
+        -- 玩家可能在 SDK 回调返回前断线；闭包中的 system 仍需记录已成功的扣款和下注。
+        local system = backPlayer and backPlayer:getSystem(LuxuryCarConst.gameName) or self
         if not system then
             log_error("LuxuryCar bet callback failed: system not found, uid:{0}", uid)
             return
@@ -259,27 +272,43 @@ function LuxuryCarPlayer:bet(todayRound, betGrades, chipCounts, requestedBets)
             if resultCode ~= -12 then
                 resultCode = -3
             end
-            Router.Client.onResultHandler({ code = resultCode, roundId = todayRound }, backPlayer)
-            return Router.Client.betResp({ code = code, accountDiamond = system:getDiamond() }, backPlayer)
+            if backPlayer then
+                Router.Client.onResultHandler({ code = resultCode, roundId = todayRound }, backPlayer)
+                return Router.Client.betResp({ requestId = requestId, code = code, accountDiamond = system:getDiamond(), wheelAmount = system:getData().bets, wheelChipAmount = system:getData().chipCounts }, backPlayer)
+            end
+            return
         end
 
         -- 验证：不在下注阶段或回合号不匹配
         local n_step = system.scene:getRoundStep()
-        if n_step.status ~= LCGameStatus.bet or tonumber(todayRound) ~= n_step.todayRound then
-             -- 合并已下注数据与新请求的下注数据
-            local respBets = LCClone(system:getData().bets or LCEmptyBets())
-            for i = 1, 10 do
-                respBets[i] = (respBets[i] or 0) + (bets[i] or 0)
+        if n_step.status ~= LCGameStatus.bet
+            or tonumber(todayRound) ~= n_step.todayRound
+            or system.scene:getRoundId() ~= roundId then
+            local outcome = system.scene:getRoundOutcome(roundId)
+            local result = outcome and outcome.result or nil
+            local oddsType = outcome and outcome.oddsType or 0
+            local rewardCoins = result and result >= 0 and LCRevenue(bets, result) or 0
+            local gameExt = { win_id = tostring(result or -1) }
+            local rewardPlayer = backPlayer or system:getPlayer()
+            if not rewardPlayer then
+                log_error("LuxuryCar late bet delay reward failed: player nil, uid:{0} roundId:{1} orderId:{2}", uid, roundId, _orderId)
+                return
             end
-            local respChipCounts = LCMergeChipCounts(system:getData().chipCounts, chipCounts)
-            -- 打印所有下注目标、每个目标下注金额、当局开奖目标
-            log_error("LuxuryCarR bet not in current round details: uid:{0} bets:{1} chipCounts:{2} resultPosition:{3} resultBetArea:{4}",
-                uid, tableToString(respBets), tableToString(respChipCounts),
-                n_step.result, (LCResultBetIndex or {})[n_step.result])
-            log_info("Players bets:{0} chipCounts:{1}", uid, todayRound, tableToString(respBets), tableToString(respChipCounts))
-            
-            log_error("LuxuryCar bet callback failed: not in current round, uid:{0} round:{1} currentRound:{2},timestamp:{3},status:{4},orderId:{5}", uid, n_step.todayRound, todayRound, app__:utc_milli_s(), n_step.status, _orderId)   
-            log_info("超时 : not in current round, uid:{0} round:{1} currentRound:{2}", uid, n_step.todayRound, todayRound)
+            rewardPlayer:subCoinsDelayReward(
+                roundId,
+                betId,
+                _orderId,
+                oddsType,
+                ECoinsOperateType.WinAdd,
+                total,
+                rewardCoins,
+                gameExt
+            )
+            log_error("LuxuryCar late bet delay reward: uid:{0} round:{1} roundId:{2} betId:{3} orderId:{4} result:{5} subCoins:{6} rewardCoins:{7} oddsType:{8}",
+                uid, todayRound, roundId, betId, _orderId, result or -1, total, rewardCoins, oddsType)
+            if backPlayer then
+                return Router.Client.betResp({ requestId = requestId, code = LCTradeCode.missTime, accountDiamond = system:getDiamond(), wheelAmount = system:getData().bets, wheelChipAmount = system:getData().chipCounts }, backPlayer)
+            end
             return
         end
 
@@ -290,30 +319,27 @@ function LuxuryCarPlayer:bet(todayRound, betGrades, chipCounts, requestedBets)
             data.bets[i] = (data.bets[i] or 0) + bets[i]
         end
         data.chipCounts = LCMergeChipCounts(data.chipCounts, chipCounts)
-        system.scene:recordRoundPlayer(system)
+        local callbackPlayer = backPlayer or system:getPlayer()
+        if not system.scene:recordRoundPlayer(system, callbackPlayer) then
+            log_error("LuxuryCar bet callback failed to record player identity: uid:{0} round:{1} roundId:{2}", uid, todayRound, roundId)
+            return
+        end
         -- 更新场景总池
         system.scene:addRoundBets(bets)
         -- 更新排行榜
-        local rank = backPlayer:getSystem("RankPSystem")
+        local rank = callbackPlayer and callbackPlayer:getSystem("RankPSystem")
         if rank then
             rank:updateRankList(total)
         end
         -- 广播下注动作（飞球动画等表现层）
         system.scene:broadcast("onBetListRound", { uid = system:getUid(), flyPlayerPos = 0, batIndex = betGrades or {}, num = chipCounts or {} })
 
-        log_info("LuxuryCar bet success: uid:{0} round:{1} total:{2} bets:{3} balance:{4}",
-            system:getUid(), step.todayRound, total, tableToString(bets), system:getDiamond())
-
         -- 向客户端返回成功确认
-        Router.Client.betResp({ code = LCTradeCode.success, accountDiamond = system:getDiamond(), wheelAmount = data.bets, wheelChipAmount = data.chipCounts }, backPlayer)
+        if backPlayer then
+            Router.Client.betResp({ requestId = requestId, code = LCTradeCode.success, accountDiamond = system:getDiamond(), wheelAmount = data.bets, wheelChipAmount = data.chipCounts }, backPlayer)
+        end
     end)
-    -- 立即返回"处理中"的成功响应。客户端 request 会先拿到这里的返回，因此也要带上本次下注快照。
-    local respBets = LCClone(self:getData().bets or LCEmptyBets())
-    for i = 1, 10 do
-        respBets[i] = (respBets[i] or 0) + (bets[i] or 0)
-    end
-    local respChipCounts = LCMergeChipCounts(self:getData().chipCounts, chipCounts)
-    return { code = LCTradeCode.success, accountDiamond = self:getDiamond() - total, wheelAmount = respBets, wheelChipAmount = respChipCounts }
+    return { requestId = requestId, code = LCTradeCode.success, accountDiamond = self:getDiamond(), wheelAmount = self:getData().bets, wheelChipAmount = self:getData().chipCounts }
 end
 
 -- settleCurrentRound：回合结算核心方法。
@@ -329,12 +355,16 @@ end
 --   4. 调用 saveHistory 保存回合历史记录（含下注快照与开奖结果）
 --   5. 若 revenue > 0（中奖）：调用 addCoins 将赢奖金额加回玩家账户
 --      a. 加币成功后更新今日盈亏 todayRevenue
---      b. 广播 onPlayerUpdate 通知所有玩家该玩家的最新余额与下注信息（用于排行榜/UI 更新）
+--      b. 定向发送 onPlayerUpdate，同步该玩家自己的最新余额与下注信息
 --   6. 返回结算条目（包含玩家 UID、头像、昵称、盈亏金额）以及 revenue 供场景排行榜使用
-function LuxuryCarPlayer:settleCurrentRound(roundId, todayRound, result, oddsType)
+function LuxuryCarPlayer:settleCurrentRound(roundId, todayRound, result, oddsType, roundPlayerUid, roundPlayerPid)
     local bets = LCClone(self:getData().bets or LCEmptyBets())
     local total, revenue = LCArraySum(bets), LCRevenue(bets, result)
-    local uid = self:getUid()
+    local boundPlayer = self:getPlayer()
+    local uid = tostring(roundPlayerUid or self:getUid())
+    local pid = roundPlayerPid or (boundPlayer and boundPlayer.getPid and boundPlayer:getPid())
+    local identityPlayer = pid and gWorld:findAllPlayer(pid) or nil
+    identityPlayer = identityPlayer or boundPlayer
     -- 未参与下注，跳过结算
     if total <= 0 then
         return nil, nil
@@ -347,24 +377,56 @@ function LuxuryCarPlayer:settleCurrentRound(roundId, todayRound, result, oddsTyp
     self:saveHistory(todayRound, bets, result)
     -- 中奖派彩
     if revenue > 0 then
-        local rawPlayer = self:getPlayer()
+        -- 与 Seven7 一致：使用下注时固化的 pid，在派奖前重新从 gWorld 定位 Player。
+        local rawPlayer = pid and gWorld:findAllPlayer(pid) or nil
         if not rawPlayer then
-            log_error("LuxuryCar settle addCoins failed: player is nil, uid:{0} round:{1} revenue:{2}",
-                uid, todayRound, revenue)
+            log_error("LuxuryCar settle addCoins failed: player is nil, uid:{0} pid:{1} round:{2} revenue:{3}",
+                uid, tostring(pid), todayRound, revenue)
             return { uid = uid, profile = "", name = "", revenue = revenue, rank = 0 }, revenue
         end
-        -- Also initialize here so a hot-reloaded server fixes players that
-        -- were constructed before Player:ctor__ received the compatibility fix.
+        -- 在此同样进行初始化，以便热重载的服务器能修复那些
+        -- 在 Player:ctor__ 应用兼容性修复之前就已构造的玩家。
         rawPlayer.subCoinTypeTimeout = rawPlayer.subCoinTypeTimeout or {}
         local platformData = { win_id = tostring(result) }
+        local expectedUid = uid
+        local expectedPid = tostring(pid)
+        local rawUid = rawPlayer.getUid and tostring(rawPlayer:getUid()) or "nil"
+        local rawPid = rawPlayer.getPid and tostring(rawPlayer:getPid()) or "nil"
+        local beforeCoins = rawPlayer.getCoins and rawPlayer:getCoins() or -1
+        log_info("[BalanceTrace] LuxuryCar addCoins request: round:{0} roundId:{1} expectedUid:{2} systemUid:{3} rawUid:{4} rawPid:{5} revenue:{6} beforeCoins:{7} oddsType:{8} changeType:{9}",
+            todayRound, roundId, expectedUid, tostring(uid), rawUid, rawPid, revenue, beforeCoins, oddsType or 0, ECoinsOperateType.WinAdd)
+        if expectedUid ~= rawUid or expectedPid ~= rawPid then
+            log_error("[BalanceTrace] LuxuryCar addCoins request identity mismatch, payout blocked: round:{0} roundId:{1} expectedUid:{2} expectedPid:{3} rawUid:{4} rawPid:{5}",
+                todayRound, roundId, expectedUid, expectedPid, rawUid, rawPid)
+            return { uid = uid, profile = identityPlayer and identityPlayer:getAvatarUrl() or "", name = identityPlayer and identityPlayer:getName() or "", revenue = revenue, rank = 0 }, revenue
+        end
         rawPlayer:addCoins(roundId, oddsType or 0, ECoinsOperateType.WinAdd, revenue, function(code, orderId, backPlayer)
+            local backUid = backPlayer and backPlayer.getUid and tostring(backPlayer:getUid()) or "nil"
+            local backPid = backPlayer and backPlayer.getPid and tostring(backPlayer:getPid()) or "nil"
+            local backCoins = backPlayer and backPlayer.getCoins and backPlayer:getCoins() or -1
+            local rawCoinsAfter = rawPlayer.getCoins and rawPlayer:getCoins() or -1
+            log_info("[BalanceTrace] LuxuryCar addCoins callback identity: round:{0} roundId:{1} expectedUid:{2} systemUid:{3} rawUid:{4} rawPid:{5} backUid:{6} backPid:{7} orderId:{8}",
+                todayRound, roundId, expectedUid, tostring(uid), rawUid, rawPid, backUid, backPid, tostring(orderId))
+            log_info("[BalanceTrace] LuxuryCar addCoins callback balance: round:{0} roundId:{1} orderId:{2} code:{3} revenue:{4} beforeCoins:{5} rawCoinsAfter:{6} backCoins:{7}",
+                todayRound, roundId, tostring(orderId), code, revenue, beforeCoins, rawCoinsAfter, backCoins)
+            if backPlayer and (expectedUid ~= backUid or expectedPid ~= backPid) then
+                log_error("[BalanceTrace] LuxuryCar addCoins callback identity mismatch, player update blocked: round:{0} roundId:{1} expectedUid:{2} expectedPid:{3} backUid:{4} backPid:{5} orderId:{6} code:{7}",
+                    todayRound, roundId, expectedUid, expectedPid, backUid, backPid, tostring(orderId), code)
+                return
+            end
             if code == 0 and backPlayer then
+                local callbackSystem = backPlayer:getSystem(LuxuryCarConst.gameName) or self
+                if tostring(callbackSystem:getUid()) ~= expectedUid then
+                    log_error("[BalanceTrace] LuxuryCar callback system mismatch, player update blocked: round:{0} roundId:{1} expectedUid:{2} callbackSystemUid:{3} orderId:{4}",
+                        todayRound, roundId, expectedUid, tostring(callbackSystem:getUid()), tostring(orderId))
+                    return
+                end
                 -- 更新今日盈亏
-                self:getData().todayRevenue = (self:getData().todayRevenue or 0) + revenue
-                -- 广播玩家更新（通知其他玩家此玩家的最新状态）
-                self.scene:broadcast("onPlayerUpdate", { uid = uid, diamond = self:getDiamond(), itemAmount = self:getData().bets, todayRound = todayRound })
+                callbackSystem:getData().todayRevenue = (callbackSystem:getData().todayRevenue or 0) + revenue
+                -- 个人余额和个人下注只允许定向通知所属玩家，禁止广播给全桌。
+                Router.Client.onPlayerUpdate({ uid = uid, diamond = callbackSystem:getDiamond(), itemAmount = callbackSystem:getData().bets, todayRound = todayRound }, backPlayer)
                 log_info("LuxuryCar settle success: uid:{0} round:{1} revenue:{2} todayRevenue:{3} balance:{4}",
-                    uid, todayRound, revenue, self:getData().todayRevenue, self:getDiamond())
+                    uid, todayRound, revenue, callbackSystem:getData().todayRevenue, callbackSystem:getDiamond())
             else
                 log_error("LuxuryCar settle addCoins failed: uid:{0} round:{1} revenue:{2} orderId:{3} code:{4} playerNil:{5}",
                     uid, todayRound, revenue, orderId, code, backPlayer == nil)
@@ -372,7 +434,7 @@ function LuxuryCarPlayer:settleCurrentRound(roundId, todayRound, result, oddsTyp
         end, platformData)
     end
     -- 返回结算条目供场景排行榜汇总
-    return { uid = uid, profile = self:getPlayer():getAvatarUrl() or "", name = self:getPlayer():getName() or "", revenue = revenue, rank = 0 }, revenue
+    return { uid = uid, profile = identityPlayer and identityPlayer:getAvatarUrl() or "", name = identityPlayer and identityPlayer:getName() or "", revenue = revenue, rank = 0 }, revenue
 end
 
 -- setBetAmountButton：记录玩家最后选择的下注金额档位按钮索引，用于 UI 恢复。

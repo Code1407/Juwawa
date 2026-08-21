@@ -219,6 +219,7 @@ end
 
 function FortuneSlotPlayer:settleResult(roundId)
     local runningRound = self:endRound(roundId)
+    self.scene:GameOnclose()
     if not runningRound then
         return
     end
@@ -375,4 +376,11 @@ end
 function FortuneSlotPlayer:test(betAmount, calculateAmount, isExtra)
     self.machine:test(betAmount, calculateAmount, isExtra)
     return { code = 0 }
+end
+function FortuneSlotPlayer:GameOnclose()
+    local runningRounds = self:getData().runningRounds or {}
+    for roundId, runningRound in pairs(runningRounds) do
+        return false
+    end
+    return true
 end

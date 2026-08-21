@@ -13,7 +13,8 @@
         "PureEncrypt",
         "msg_read_from",
         "json",
-        "PureDb"
+        "PureDb",
+        "gRandom"
     ]
 
 }

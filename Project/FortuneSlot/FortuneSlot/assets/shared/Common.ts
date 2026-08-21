@@ -541,7 +541,25 @@ export namespace sdk {
         let sdkClient = getRuntimeSdkClient();
         if (sdkClient && sdkClient.recharge) sdkClient.recharge();
     }
-
+    export async function reconnect() {
+        console.log("sdk reconnect");
+        if ((<any>window).net) {
+            const table = serverConfig
+            let connectUrl = (table && table.serverAdress);
+            if (connectUrl) {
+                (<any>window).net.connect(connectUrl, {
+                    pingInterval: 3,
+                    pingOut: 8,
+                    retryInterval: 2,
+                    retryMaxCount: 10,
+                    compress: true
+                })
+            }
+        } else {
+            ((<any>window).sdk.reload && (<any>window).sdk.reload()) || window.location.reload();
+        }
+        (<any>window).updateAutoQuit?.()
+    }
     export function quit() {
         console.log("quit");
 
@@ -591,7 +609,7 @@ export let isGameHide = () => (<any>window).gameHide;
 
 (<any>window).HotGameRecharge = sdk.recharge;
 (<any>window).HotGameQuit = sdk.quit;
-
+(<any>window).HotGameReconnect = sdk.reconnect;
 export let DecimalUnit: {
 
     humanReadable(value: number, maxFractionDigits?: number, fractionDigits?: number): string
@@ -789,4 +807,17 @@ export function onBgScaler(node: cc.Node, log = true) {
         }
         res(0);
     })
+}
+
+export function loadAddressJson(configName: string): Promise<any | null> {
+    return new Promise((resolve) => {
+        let path = `${configName}`;
+        cc.resources.load(path, cc.JsonAsset, (err, asset: cc.JsonAsset) => {
+            if (err || !asset) {
+                if (err) console.error("[MessageRouter] resources load config/address:", err);
+                return resolve(null);
+            }
+            resolve(asset.json);
+        });
+    });
 }

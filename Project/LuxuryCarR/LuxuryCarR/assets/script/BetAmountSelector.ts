@@ -25,6 +25,28 @@ export default class BetAmountSelector extends cc.Component {
         return cc.find("Canvas/Game/BetAmountSelector").getComponent(BetAmountSelector);
     }
 
+    waitForConfig() {
+        this.node.active = false;
+        (<any>window).changedw = () => this.showAfterConfigLoaded();
+    }
+
+    showDefaultConfigWhenOffline() {
+        if (typeof navigator !== "undefined" && navigator.onLine === false) {
+            this.showAfterConfigLoaded();
+        }
+    }
+
+    private showAfterConfigLoaded() {
+        if (!this.node || !this.node.isValid) return;
+        const betGrade = (<any>window).betGrade;
+        if (!betGrade || !Array.isArray(betGrade.gradeAmounts) || betGrade.gradeAmounts.length === 0) {
+            this.node.active = false;
+            return;
+        }
+        this.node.active = true;
+        this.refreshConfiguredGrades();
+    }
+
     private applySelectedState() {
         for (let i = 0; i < this.items.length; ++i) {
             const item = this.items[i];
@@ -117,9 +139,7 @@ export default class BetAmountSelector extends cc.Component {
     // LIFE-CYCLE CALLBACKS:
 
     start() {
-        (<any>window).changedw = () => {
-            if (this.node && this.node.isValid) this.refreshConfiguredGrades();
-        };
+        (<any>window).changedw = () => this.showAfterConfigLoaded();
         let betGrade = (<any>window).betGrade;
         //let amountString = ["100", "1k", "10k", "100k"];
         for (let i = 0; i < this.items.length; ++i) {

@@ -74,8 +74,8 @@ FRFreeTimes = {0, 0, 0, 5, 8, 12}                       -- N个免费符号对�
 FRJackpotCountProbability012 = {0.5, 0.3, 0.2, 0, 0, 0} -- 普通模式下Jackpot符号数量分布
 FRJackpotCountProbability345 = {0, 0, 0, 0.7, 0.3, 0}   -- 命中模式下Jackpot符号数量分布
 FRJackpotPercentage = {0, 0, 0, 0.05, 0.15, 0.5}        -- N个Jackpot符号对应的奖池提取比例
-FRDefaultRateType = FRRateType.normal  -- 默认赔率类型
-FRBetAmounts = {100, 1000, 10000, 100000} -- 服务端权威单线下注档位
+FRDefaultRateType = FRRateType.normal       -- 默认赔率类型
+FRBetAmounts = {100, 1000, 10000, 100000}   -- 服务端权威单线下注档位
 
 function FruitSlotsGetBetAmounts()
     local commonConfig = gApp and gApp.getProjCommon and gApp:getProjCommon() or nil

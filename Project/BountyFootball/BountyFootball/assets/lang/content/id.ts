@@ -13,58 +13,51 @@ const codeText = langInCodes[lang] = new LangInCode;
 
 
 
-
-text.game.autoPlay= `Auto
-内测
-专用`;
-text.game.stopAuto =`Auto
-内测
-专用`;
-text.game.players = "players";
+text.game.autoPlay= `Otomatis
+Beta
+Khusus`;
+text.game.stopAuto =`Otomatis
+Beta
+Khusus`;
+text.game.players = "Pemain";
+text.game.balance = "Saldo :";
+text.game.todayRound = "Putaran:";
+text.game.totalCost = "Total Biaya:";
+text.game.myTotalCost = "Total Biaya Saya:";
+text.game.finalRoundResult = "Putaran:";
+text.game.finalRoundWin = "Anda Menang: ";
+text.game.finalRoundCost = "Biaya Putaran Ini: ";
+text.game.finalRoundRankTitle = "Pemenang teratas putaran ini";
 text.game.card1Pot = "Pot:";
-text.game.card1Mine = "Mine:";
+text.game.card1Mine = "Saya:";
 text.game.card2Pot = "Pot:";
-text.game.card2Mine = "Mine:";
+text.game.card2Mine = "Saya:";
 text.game.card3Pot = "Pot:";
-text.game.card3Mine = "Mine:";
+text.game.card3Mine = "Saya:";
 
-text.ready.content = "Ready Time";
-text.gameHistory.title = "Game History";
+text.ready.content = "Waktu Siap";
+text.gameHistory.title = "Riwayat Permainan";
 
-text.help.title = "How to play";
+text.help.title = "Aturan";
 text.help.content = 
-`
-Each fruit symbol has two possibilities. If there is an "x2" below the winning symbol, the payout amount is calculated based on the number in that symbol; otherwise, it is calculated based on the default payout rate.  
-x2 Apple  
-x2 Banana  
-x2 Lemon  
-x2 Watermelon  
+`1. Prediksikan tim yang akan menyala sebelum undian.
 
-Default Fruit Payouts  
-x3 Grand Apple  
-x6 Grand Banana  
-x8 Grand Lemon  
-x12 Grand Watermelon  
-x30 Bar  
+2. Tim yang menyala setelah undian adalah tim pemenang.
 
-Special Rewards :
-1、Rainbow Luck (two scenarios):  
-Each reward in the upper half-circle section wins once.  
-(Apple Time) Until an Apple wins!  
+3. Jika prediksi Anda benar, Anda akan menerima hadiah berdasarkan peluang yang sesuai.`
 
-2、Yellow Luck (two scenarios):  
-Each reward in the lower half-circle section wins once.  
-All fruits win once!  
+text.betLimit.content = "Anda hanya dapat menghabiskan tidak lebih dari 500.000 per putaran!";
 
-However, please note: Both lucky states have a certain probability of entering "Bad Luck Time," during which there are no rewards.
-`
+codeText.pokerLevel.highCard = "Kartu tinggi"
+codeText.pokerLevel.pair = "Pasangan";
+codeText.pokerLevel.straight = "Lurus";
+codeText.pokerLevel.flush = "Siram";
+codeText.pokerLevel.straightFlush = "Lurus Siram";
+codeText.pokerLevel.fullHouse = "Tiga sejenis";
+codeText.globalContent.round =  "putaran: "
 
-text.betLimit.content = "You can only cost no more than 500,000 per round!";
-
-codeText.pokerLevel.highCard = "high card"
-codeText.pokerLevel.pair = "pair";
-codeText.pokerLevel.straight = "straight";
-codeText.pokerLevel.flush = "flush";
-codeText.pokerLevel.straightFlush = "straight flush";
-codeText.pokerLevel.fullHouse = "three of a king";
-codeText.globalContent.round =  "round: "
+text.history.title = "Riwayat Saya";
+text.history.columnName1 = "Waktu Biaya";
+text.history.columnName2 = "Detail Biaya";
+text.history.columnName3 = "Detail Hadiah";
+text.history.round = "Putaran:";

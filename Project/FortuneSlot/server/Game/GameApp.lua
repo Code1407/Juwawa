@@ -29,3 +29,7 @@ end
 function GameApp:onProjConfig()
     RankCfgMgr:onProjRankCfgMgr()
 end
+function GameApp:onClosing()
+    local scenes=SvrSystem.FortuneSlot.getScene()
+    scenes:GameOnclose()
+end

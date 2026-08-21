@@ -17,7 +17,7 @@
       "uuid": "e44e2f41-d2cf-48f2-943d-b62c0916d962",
       "importer": "sprite-frame",
       "rawTextureUuid": "f39012e5-8cf6-444f-9298-e8e0951b35f0",
-      "trimType": "auto",
+      "trimType": "custom",
       "trimThreshold": 1,
       "rotated": false,
       "offsetX": 0,

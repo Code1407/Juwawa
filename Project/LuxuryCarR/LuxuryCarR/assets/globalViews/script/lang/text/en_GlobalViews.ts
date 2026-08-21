@@ -47,3 +47,7 @@ text.path35 = `resume`;
 
 text.path36 = `Warning, please follow the game rules!`
 text.path37 = `resume`;
+
+text.path38 = `The game server is under maintenance and cannot be played temporarily.
+Please try again later.`;
+text.path39 =  `Exit`;

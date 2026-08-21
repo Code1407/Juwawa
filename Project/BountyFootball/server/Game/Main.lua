@@ -18,57 +18,6 @@
     ============================================================================
 ]]
 
-
--- 将 table 安全地序列化为字符串，用于日志打印。
--- 支持循环引用、嵌套深度限制和稳定的键排序，避免调试日志本身引发异常。
-function tableToString(value, indent, visited, depth)
-    local valueType = type(value)
-    if valueType == "string" then
-        return string.format("%q", value)
-    end
-    if valueType ~= "table" then
-        local ok, text = pcall(tostring, value)
-        return ok and text or ("<" .. valueType .. ">")
-    end
-
-    indent = type(indent) == "string" and indent or ""
-    visited = type(visited) == "table" and visited or {}
-    depth = tonumber(depth) or 0
-    if visited[value] then
-        return "<cycle>"
-    end
-    if depth >= 8 then
-        return "<max-depth>"
-    end
-
-    visited[value] = true
-    local keys = {}
-    for key in pairs(value) do
-        keys[#keys + 1] = key
-    end
-    table.sort(keys, function(left, right)
-        local leftType, rightType = type(left), type(right)
-        if leftType == rightType and (leftType == "number" or leftType == "string") then
-            return left < right
-        end
-        if leftType ~= rightType then
-            return leftType < rightType
-        end
-        return tostring(left) < tostring(right)
-    end)
-
-    local parts = {"{"}
-    local childIndent = indent .. "  "
-    for _, key in ipairs(keys) do
-        local keyText = type(key) == "string" and key or ("[" .. tostring(key) .. "]")
-        parts[#parts + 1] = childIndent .. keyText .. " = " ..
-            tableToString(value[key], childIndent, visited, depth + 1)
-    end
-    parts[#parts + 1] = indent .. "}"
-    visited[value] = nil
-    return table.concat(parts, "\n")
-end
-
 -- 加载游戏应用主模块
 require "GameApp"
 

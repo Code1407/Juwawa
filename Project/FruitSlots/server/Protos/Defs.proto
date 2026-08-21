@@ -84,7 +84,7 @@ testResp {
 
 // 玩家设置（本地持久化，非服务端存储）
 PlayerSettings {
-    int32 soundVol            // 音量大小
+    float soundVol            // 音量大小（0.0-1.0）
     int32 lastBetAmountButton // 上次使用的下注按钮索引
     bool isSpeed              // 是否开启快速模式
 }

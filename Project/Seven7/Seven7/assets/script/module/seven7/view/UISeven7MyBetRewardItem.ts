@@ -16,7 +16,7 @@ export class UISeven7MyBetRewardItem extends GameComponent {
     init(rewardID: number, betNum: number) {
         const rewardPath = `texture/atlas/main/reward_${rewardID}`;
         super.setSprite(this.rewardIcon, rewardPath, BundleName.SkinDefault);
-        this.betNumLabel.string = betNum.toLocaleString();
+        this.betNumLabel.string = betNum.toLocaleString('en-US');
     }
 }
 

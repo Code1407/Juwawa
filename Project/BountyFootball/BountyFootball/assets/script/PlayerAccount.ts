@@ -128,15 +128,13 @@ export default class PlayerAccount extends ClientPlayer {
         this.account.setAccountDiamond(this.accountDiamond);
     }
 
-    addTodayRevenue(earnings: number, nowAccount: number, roundEarnings: number): number {
+    addTodayRevenue(earnings: number, roundEarnings: number): number {
         this.toDayRevenue = earnings;
-        this.accountDiamond = nowAccount;
         let split = 10;
         let sumEarningsSplit = roundEarnings / split;
         for (let i = 0; i < split; i++) {
             setTimeout(() => {
                 this.account.setTodayRevenue((earnings - roundEarnings) + (i + 1) * sumEarningsSplit);
-                this.account.setAccountDiamond((nowAccount - roundEarnings) + (i + 1) * sumEarningsSplit);
             }, 500 + 200 * i);
         }
         return this.toDayRevenue;
@@ -153,6 +151,9 @@ export default class PlayerAccount extends ClientPlayer {
     }
 
     async bet(todayRound: number, betGradeIndex: number[], betGradeNum: number[][]): Promise<IBetResp> {
+        if ((<any>window).breakRoundStep || gGameData.roundStep.remainSecond <= 3) {
+            return null;
+        }
         //this.notedWheel[which] += amount;
         let betGrade = (<any>window).betGrade;
         let needDiamon: number = 0;

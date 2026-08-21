@@ -43,4 +43,44 @@ function GameApp:onProjConfig()
     RankCfgMgr:onProjRankCfgMgr()
 end
 
+-- 优雅关服：停止接收新回合，并等待在线玩家的扣款、开奖和派彩完成。
+function GameApp:onClosing()
+    local sceneSystem = SvrSystem and SvrSystem.FruitSlots
+    local scene = sceneSystem and sceneSystem.getScene and sceneSystem:getScene() or nil
+    if not scene then
+        log_info("FruitSlots closing: scene unavailable, finish immediately")
+        return self:finishClosing()
+    end
+
+    local needSettle = scene:prepareServerClosing()
+    log_info("FruitSlots closing: needSettle:{0}", needSettle and 1 or 0)
+    if not needSettle then
+        self:finishClosing()
+    end
+end
+
+-- 保存框架原始实现；自定义 finishClosing 广播完成后必须继续调用它。
+local frameworkFinishClosing = GameAppBase and GameAppBase.finishClosing
+
+-- 清理完成后通知客户端刷新为 5 秒倒计时，再交还框架关服。
+function GameApp:finishClosing()
+    if self._finishClosingRequested then return end
+    self._finishClosingRequested = true
+
+    local sceneSystem = SvrSystem and SvrSystem.FruitSlots
+    local scene = sceneSystem and sceneSystem.getScene and sceneSystem:getScene() or nil
+    if scene and scene.broadcast then
+        scene:broadcast("SvrNotifyMsg", {
+            msgCode = 1,
+            msgData = { stopSeconds = 5 },
+        })
+    end
+    log_info("FruitSlots closing: notify clients, stop in 5 seconds")
+
+    if frameworkFinishClosing then
+        return frameworkFinishClosing(self)
+    end
+    log_error("FruitSlots closing: framework finishClosing unavailable")
+end
+
 

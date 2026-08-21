@@ -84,7 +84,7 @@ export default class GlobalRankUI extends cc.Component {
     @property(cc.Node)
     coinFxPrefab: cc.Node = null;
 
-    timerInterval = 0;
+    timerInterval:any = 0;
     ChangeToAwardButton() {
         if (!gNewRank) {
             this.awardButton.active = false;
