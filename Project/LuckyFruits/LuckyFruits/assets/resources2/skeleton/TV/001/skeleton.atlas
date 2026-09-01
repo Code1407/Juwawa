@@ -1,0 +1,62 @@
+
+skeleton.png
+size: 1024,1024
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+1/走马灯1
+  rotate: false
+  xy: 2, 781
+  size: 239, 183
+  orig: 248, 192
+  offset: 4, 5
+  index: -1
+1/走马灯2
+  rotate: false
+  xy: 243, 781
+  size: 239, 183
+  orig: 248, 192
+  offset: 4, 5
+  index: -1
+2/1
+  rotate: false
+  xy: 484, 781
+  size: 239, 183
+  orig: 248, 192
+  offset: 4, 5
+  index: -1
+2/2
+  rotate: false
+  xy: 725, 781
+  size: 239, 183
+  orig: 248, 192
+  offset: 4, 5
+  index: -1
+2/3
+  rotate: false
+  xy: 2, 596
+  size: 239, 183
+  orig: 248, 192
+  offset: 4, 5
+  index: -1
+2/4
+  rotate: false
+  xy: 243, 596
+  size: 239, 183
+  orig: 248, 192
+  offset: 4, 5
+  index: -1
+2/5
+  rotate: false
+  xy: 484, 596
+  size: 239, 183
+  orig: 248, 192
+  offset: 4, 5
+  index: -1
+2/6
+  rotate: false
+  xy: 725, 596
+  size: 239, 183
+  orig: 248, 192
+  offset: 4, 5
+  index: -1

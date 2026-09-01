@@ -1,0 +1,70 @@
+{
+"skeleton": {
+	"hash": "eZy8bJnCltK8jHajOxBfdRWpVIM",
+	"spine": "3.8.75",
+	"x": -101,
+	"y": -101,
+	"width": 202,
+	"height": 203,
+	"images": "./动画切图/",
+	"audio": ""
+},
+"bones": [
+	{ "name": "root" },
+	{ "name": "5/1", "parent": "root" }
+],
+"slots": [
+	{ "name": "5/2", "bone": "root", "attachment": "5/2" },
+	{ "name": "5/1", "bone": "5/1", "attachment": "5/1" },
+	{ "name": "5/0", "bone": "root", "attachment": "5/0" }
+],
+"skins": [
+	{
+		"name": "default",
+		"attachments": {
+			"5/0": {
+				"5/0": { "x": 0.5, "y": 8.19, "width": 147, "height": 147 }
+			},
+			"5/1": {
+				"5/1": { "y": 19.37, "width": 132, "height": 131 }
+			},
+			"5/2": {
+				"5/2": { "y": 0.5, "width": 202, "height": 203 }
+			}
+		}
+	}
+],
+"animations": {
+	"1": {
+		"slots": {
+			"5/0": {
+				"color": [
+					{ "color": "ffffff00" },
+					{ "time": 0.1, "color": "ffffff00" },
+					{ "time": 0.1667, "color": "ffffffff", "curve": "stepped" },
+					{ "time": 0.3333, "color": "ffffffff" },
+					{ "time": 0.4, "color": "ffffff00" }
+				]
+			}
+		},
+		"bones": {
+			"5/1": {
+				"translate": [
+					{ "x": 0.54 },
+					{ "time": 0.1667, "x": 0.54, "y": -7.63, "curve": "stepped" },
+					{ "time": 0.3333, "x": 0.54, "y": -7.63 },
+					{ "time": 0.5, "x": 0.54 }
+				]
+			}
+		},
+		"drawOrder": [
+			{
+				"offsets": [
+					{ "slot": "5/0", "offset": -2 }
+				]
+			},
+			{ "time": 0.1 }
+		]
+	}
+}
+}

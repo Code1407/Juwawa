@@ -79,15 +79,23 @@ function Start-ProcessWithTimeout {
     [string[]]$SuccessPatterns = @(),
     [string[]]$FailurePatterns = @(),
     [int]$SuccessExitGraceSeconds = 30,
-    [string]$DisplayName = "process"
+    [string]$DisplayName = "process",
+    [string]$WorkingDirectory = ""
   )
 
-  $proc = Start-Process -FilePath $FilePath `
-                        -ArgumentList $ArgumentList `
-                        -NoNewWindow `
-                        -PassThru `
-                        -RedirectStandardOutput $StdOutPath `
-                        -RedirectStandardError  $StdErrPath
+  $startArgs = @{
+    FilePath               = $FilePath
+    ArgumentList           = $ArgumentList
+    NoNewWindow            = $true
+    PassThru               = $true
+    RedirectStandardOutput = $StdOutPath
+    RedirectStandardError  = $StdErrPath
+  }
+  if (-not [string]::IsNullOrWhiteSpace($WorkingDirectory)) {
+    $startArgs.WorkingDirectory = $WorkingDirectory
+  }
+
+  $proc = Start-Process @startArgs
 
   Write-Host ("[RUNNING] {0}, PID={1}" -f $DisplayName, $proc.Id) -ForegroundColor DarkGray
   Write-Host ("[RUNNING] stdout log: {0}" -f $StdOutPath) -ForegroundColor DarkGray
@@ -156,6 +164,11 @@ function Start-ProcessWithTimeout {
 
       Start-Sleep -Seconds 2
     }
+  }
+
+  if (-not $timedOut) {
+    try { $proc.WaitForExit() | Out-Null } catch {}
+    try { $proc.Refresh() } catch {}
   }
 
   if (-not $failureDetected) {
@@ -409,6 +422,77 @@ function Compress-BuildOutput {
     return $zipPath
   } catch {
     Write-Host ("[ZIP FAILED] {0}" -f $_.Exception.Message) -ForegroundColor Red
+    return $null
+  }
+}
+
+function Compress-ResourceZip {
+  param(
+    [string]$OutputDir
+  )
+
+  if ([string]::IsNullOrWhiteSpace($OutputDir) -or -not (Test-Path -LiteralPath $OutputDir)) {
+    Write-Host ("[RESOURCE-ZIP FAILED] Output dir not found: {0}" -f $OutputDir) -ForegroundColor Red
+    return $null
+  }
+
+  $resourceZipPath = Join-Path $OutputDir "resource.zip"
+  try {
+    Remove-FileIfExists -Path $resourceZipPath
+    Write-Host ("[RESOURCE-ZIP] Compressing: {0}" -f $resourceZipPath) -ForegroundColor Cyan
+
+    Add-Type -AssemblyName System.IO.Compression
+    Add-Type -AssemblyName System.IO.Compression.FileSystem
+
+    $outputFull = [IO.Path]::GetFullPath($OutputDir)
+    $resourceZipFull = [IO.Path]::GetFullPath($resourceZipPath)
+    $files = @(Get-ChildItem -LiteralPath $OutputDir -Recurse -File -Force -ErrorAction Stop | Where-Object {
+      $full = [IO.Path]::GetFullPath($_.FullName)
+      if ($full.Equals($resourceZipFull, [System.StringComparison]::OrdinalIgnoreCase)) { return $false }
+
+      $relative = Get-RelativePathSafe -BasePath $outputFull -FullPath $full
+      return -not $relative.Equals("index.html", [System.StringComparison]::OrdinalIgnoreCase)
+    })
+
+    if ($files.Count -le 0) {
+      Write-Host ("[RESOURCE-ZIP FAILED] No resource files found: {0}" -f $OutputDir) -ForegroundColor Red
+      return $null
+    }
+
+    $totalFiles = $files.Count
+    $doneFiles = 0
+    $lastPercent = -1
+    Write-Host "[RESOURCE-ZIP] Progress:   0%" -NoNewline
+
+    $zipStream = [IO.File]::Open($resourceZipPath, [IO.FileMode]::CreateNew)
+    try {
+      $zip = New-Object IO.Compression.ZipArchive($zipStream, [IO.Compression.ZipArchiveMode]::Create, $false)
+      try {
+        foreach ($file in $files) {
+          $relativePath = Get-RelativePathSafe -BasePath $outputFull -FullPath $file.FullName
+          $entryName = $relativePath.Replace('\', '/')
+          [IO.Compression.ZipFileExtensions]::CreateEntryFromFile($zip, $file.FullName, $entryName, [IO.Compression.CompressionLevel]::Optimal) | Out-Null
+          $doneFiles++
+          $percent = [int][Math]::Floor(($doneFiles * 100.0) / $totalFiles)
+          if ($percent -ne $lastPercent) {
+            Write-Host ("`r[RESOURCE-ZIP] Progress: {0,3}%" -f $percent) -NoNewline
+            $lastPercent = $percent
+          }
+        }
+      } finally {
+        $zip.Dispose()
+      }
+    } finally {
+      $zipStream.Dispose()
+    }
+
+    Write-Host ""
+    $zipItem = Get-Item -LiteralPath $resourceZipPath -ErrorAction SilentlyContinue
+    $zipSizeMb = if ($null -ne $zipItem) { [Math]::Round($zipItem.Length / 1MB, 2) } else { 0 }
+    Write-Host ("[RESOURCE-ZIP SUCCESS] {0} ({1} MB)" -f $resourceZipPath, $zipSizeMb) -ForegroundColor Green
+    return $resourceZipPath
+  } catch {
+    Write-Host ("[RESOURCE-ZIP FAILED] {0}" -f $_.Exception.Message) -ForegroundColor Red
     return $null
   }
 }
@@ -1059,6 +1143,117 @@ function Merge-Logs {
   ($o + $e) | Set-Content -LiteralPath $AllPath -Encoding UTF8
 }
 
+function Get-JsonObjectPropertyCount {
+  param($Value)
+
+  if ($null -eq $Value) { return 0 }
+  return @($Value.PSObject.Properties | Where-Object { $_.MemberType -eq "NoteProperty" }).Count
+}
+
+function Test-ProjectNeedsNpmInstall {
+  param([string]$PackageJsonPath)
+
+  if ([string]::IsNullOrWhiteSpace($PackageJsonPath)) { return $false }
+  if (-not (Test-Path -LiteralPath $PackageJsonPath)) { return $false }
+
+  try {
+    $pkg = Get-Content -LiteralPath $PackageJsonPath -Raw -Encoding UTF8 | ConvertFrom-Json
+  } catch {
+    Write-Host ("[NPM] package.json parse failed, try npm install anyway: {0}" -f $PackageJsonPath) -ForegroundColor Yellow
+    return $true
+  }
+
+  foreach ($field in @("dependencies", "devDependencies", "optionalDependencies", "peerDependencies")) {
+    $prop = $pkg.PSObject.Properties[$field]
+    if ($null -ne $prop -and (Get-JsonObjectPropertyCount $prop.Value) -gt 0) {
+      return $true
+    }
+  }
+
+  $workspaces = $pkg.PSObject.Properties["workspaces"]
+  if ($null -ne $workspaces) {
+    if ($workspaces.Value -is [array] -and $workspaces.Value.Count -gt 0) { return $true }
+    if ((Get-JsonObjectPropertyCount $workspaces.Value) -gt 0) { return $true }
+  }
+
+  return $false
+}
+
+function Invoke-NpmInstallIfNeeded {
+  param(
+    [string]$ProjectPath,
+    [string]$ProjectName,
+    [string]$SafeName,
+    [string]$LogsDir,
+    [int]$TimeoutSeconds = 600
+  )
+
+  $packageJsonPath = Join-Path $ProjectPath "package.json"
+  if (-not (Test-Path -LiteralPath $packageJsonPath)) {
+    Write-Host ("[NPM] Skipped (package.json not found): {0}" -f $ProjectPath) -ForegroundColor DarkGray
+    return $true
+  }
+
+  if (-not (Test-ProjectNeedsNpmInstall -PackageJsonPath $packageJsonPath)) {
+    Write-Host ("[NPM] Skipped (no external dependencies): {0}" -f $packageJsonPath) -ForegroundColor DarkGray
+    return $true
+  }
+
+  $npmCmd = Get-Command npm.cmd -ErrorAction SilentlyContinue
+  if ($null -eq $npmCmd) {
+    $npmCmd = Get-Command npm -ErrorAction SilentlyContinue
+  }
+  if ($null -eq $npmCmd -or [string]::IsNullOrWhiteSpace([string]$npmCmd.Source)) {
+    Write-Host ("[NPM FAILED] npm not found in PATH, skip project: {0}" -f $ProjectName) -ForegroundColor Red
+    return $false
+  }
+
+  $ts = Get-Date -Format "yyyyMMdd_HHmmss"
+  $npmOut = Join-Path $LogsDir ("npm_{0}_{1}.out.log" -f $SafeName, $ts)
+  $npmErr = Join-Path $LogsDir ("npm_{0}_{1}.err.log" -f $SafeName, $ts)
+  $npmAll = Join-Path $LogsDir ("npm_{0}_{1}.log" -f $SafeName, $ts)
+
+  Write-Host ("[NPM] npm install: {0}" -f $ProjectPath) -ForegroundColor Cyan
+  $npmSuccessPatterns = @(
+    "added \d+ packages",
+    "up to date",
+    "audited \d+ packages",
+    "found 0 vulnerabilities"
+  )
+  $npmFailurePatterns = @(
+    "npm ERR!",
+    "ERR_PNPM_",
+    "error An unexpected error occurred"
+  )
+  $npmResult = Start-ProcessWithTimeout -FilePath ([string]$npmCmd.Source) `
+                                       -ArgumentList @("install") `
+                                       -StdOutPath $npmOut `
+                                       -StdErrPath $npmErr `
+                                       -TimeoutSeconds $TimeoutSeconds `
+                                       -SuccessLogPath $npmOut `
+                                       -SuccessPatterns $npmSuccessPatterns `
+                                       -FailurePatterns $npmFailurePatterns `
+                                       -DisplayName ("npm install {0}" -f $ProjectName) `
+                                       -WorkingDirectory $ProjectPath
+  Merge-Logs -OutPath $npmOut -ErrPath $npmErr -AllPath $npmAll
+
+  if ($npmResult.TimedOut) {
+    Write-Host ("[NPM TIMEOUT] {0}" -f $ProjectName) -ForegroundColor Red
+    Write-Host ("Check log: {0}" -f $npmAll) -ForegroundColor DarkGray
+    return $false
+  }
+
+  if ($npmResult.ExitCode -ne 0) {
+    Write-Host ("[NPM FAILED] {0}, npm exit code: {1}" -f $ProjectName, $npmResult.ExitCode) -ForegroundColor Red
+    Write-Host ("Check log: {0}" -f $npmAll) -ForegroundColor DarkGray
+    return $false
+  }
+
+  Write-Host ("[NPM SUCCESS] {0}" -f $ProjectName) -ForegroundColor Green
+  Write-Host ""
+  return $true
+}
+
 function Get-SdkConfigTemplatePath {
   param(
     [string]$ToolRoot,
@@ -1246,7 +1441,7 @@ function Apply-Creator24BuildTemplatesToProject {
   }
 
   $hasCustomBg = -not [string]::IsNullOrWhiteSpace($LoadingBg)
-  $bgDisplayName = if ($hasCustomBg) { $LoadingBg.Trim() } else { "loadingBg_seven.png" }
+  $bgDisplayName = if ($hasCustomBg) { $LoadingBg.Trim() } else { "loadingBg_seven.jpg" }
   if (-not $hasCustomBg) {
     $LoadingImagePath = Get-LoadingImagePath -ProjectPath $ProjectPath -LoadingBg $bgDisplayName -WarnMissing:$false
   }
@@ -1600,6 +1795,13 @@ if ($null -ne $cfg.common.buildTimeoutMinutes) {
 if ($buildTimeoutMinutes -lt 0) { $buildTimeoutMinutes = 0 }
 $buildTimeoutSeconds = $buildTimeoutMinutes * 60
 
+$npmInstallTimeoutMinutes = 10
+if ($null -ne $cfg.common.npmInstallTimeoutMinutes) {
+  $npmInstallTimeoutMinutes = [int]$cfg.common.npmInstallTimeoutMinutes
+}
+if ($npmInstallTimeoutMinutes -lt 0) { $npmInstallTimeoutMinutes = 0 }
+$npmInstallTimeoutSeconds = $npmInstallTimeoutMinutes * 60
+
 $projects = $cfg.projects
 if ($null -eq $projects -or $projects.Count -le 0) {
   Die "[ERROR] projects is empty."
@@ -1645,6 +1847,11 @@ if ($buildTimeoutMinutes -gt 0) {
   Write-Host ("BuildTimeout: {0} minutes" -f $buildTimeoutMinutes)
 } else {
   Write-Host "BuildTimeout: disabled"
+}
+if ($npmInstallTimeoutMinutes -gt 0) {
+  Write-Host ("NpmInstallTimeout: {0} minutes" -f $npmInstallTimeoutMinutes)
+} else {
+  Write-Host "NpmInstallTimeout: disabled"
 }
 if (-not [string]::IsNullOrWhiteSpace($configSdkConfig)) {
   Write-Host ("[SDK-CONFIG] config={0}" -f $configSdkConfig)
@@ -1822,6 +2029,11 @@ for ($i = 0; $i -lt $total; $i++) {
   Write-Host "=================================================="
   Write-Host ""
 
+  if (-not (Invoke-NpmInstallIfNeeded -ProjectPath $projectPath -ProjectName $name -SafeName $safeName -LogsDir $logsDir -TimeoutSeconds $npmInstallTimeoutSeconds)) {
+    $failed++
+    continue
+  }
+
   $loadingBgConfig = [string]$proj.cocosLoadingBg
   $loadingImagePath = $null
   if ($isCreator24) {
@@ -1829,7 +2041,7 @@ for ($i = 0; $i -lt $total; $i++) {
       $loadingImagePath = Get-LoadingImagePath -ProjectPath $projectPath -LoadingBg $loadingBgConfig -WarnMissing:$false
     }
   } else {
-    $loadingBgForLookup = if ([string]::IsNullOrWhiteSpace($loadingBgConfig)) { "loadingBg_seven.png" } else { $loadingBgConfig.Trim() }
+    $loadingBgForLookup = if ([string]::IsNullOrWhiteSpace($loadingBgConfig)) { "loadingBg_seven.jpg" } else { $loadingBgConfig.Trim() }
     $loadingImagePath = Get-LoadingImagePath -ProjectPath $projectPath -LoadingBg $loadingBgForLookup -WarnMissing:$false
     $projectTemplatesDir = Join-Path $projectPath "build-templates"
     if (-not (Test-Path -LiteralPath $projectTemplatesDir)) {
@@ -1993,6 +2205,15 @@ for ($i = 0; $i -lt $total; $i++) {
   if ($isCreator24) {
     Write-Host "[OBF] Skipped (Cocos Creator 2.x)" -ForegroundColor DarkGray
     Write-Host "[RES-ENC] Skipped (Cocos Creator 2.x)" -ForegroundColor DarkGray
+    if (-not $isSudBuild) {
+      $resourceZipPath = Compress-ResourceZip -OutputDir $realOutput
+      if ([string]::IsNullOrWhiteSpace($resourceZipPath)) {
+        $failed++
+        Write-Host ""
+        continue
+      }
+      Write-Host ""
+    }
     $archiveExtension = if ($isSudBuild) { ".sp" } else { ".zip" }
     $includeRootFolder = -not $isSudBuild
     $zipPath = Compress-BuildOutput -OutputDir $realOutput -PackageName $packageName -ArchiveExtension $archiveExtension -IncludeRootFolder $includeRootFolder
@@ -2092,6 +2313,15 @@ for ($i = 0; $i -lt $total; $i++) {
     Write-Host ""
   } else {
     Write-Host "[RES-ENC] Skipped (disabled in config)" -ForegroundColor DarkGray
+    Write-Host ""
+  }
+
+  if (-not $isSudBuild) {
+    $resourceZipPath = Compress-ResourceZip -OutputDir $realOutput
+    if ([string]::IsNullOrWhiteSpace($resourceZipPath)) {
+      $failed++
+      continue
+    }
     Write-Host ""
   }
 

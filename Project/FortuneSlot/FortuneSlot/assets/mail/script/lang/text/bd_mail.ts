@@ -2,7 +2,7 @@
 import { ELang } from "../../../../common/CommonDefine";
 import { textsMap, Path, MailLang, mailLangMap } from "../Path_Mail";
 
-let lang = ELang.bd;
+let lang = ELang.bn;
 let text = textsMap[lang] = new Path();
 let mailLang = mailLangMap[lang] = new MailLang();
 

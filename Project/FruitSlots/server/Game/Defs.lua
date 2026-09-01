@@ -144,6 +144,7 @@
         lastResult = {type = 7, obj = "Results"},
         playerSettings = {type = 7, obj = "PlayerSettings"},
         history = {type = 5, range = {min = 0, max = 256}, value = {type = 7, obj = "HistoryItem"},},
+        roundStep = {type = 7, obj = "RoundStep"},
     },},
     { name = "betNormal", type = 7, objs = {
         betAmount = {type = 2, range = {min = -2147483648, max = 2147483647},},
@@ -193,6 +194,7 @@
     },},
     { name = "sendBetAmountsResp", type = 7, objs = {
         code = {type = 2, range = {min = -2147483648, max = 2147483647},},
+        betAmounts = {type = 5, range = {min = 0, max = 256}, value = {type = 2, range = {min = -2147483648, max = 2147483647},},},
     },},
     { name = "dbmHeartbeat", type = 7, objs = {
     },},

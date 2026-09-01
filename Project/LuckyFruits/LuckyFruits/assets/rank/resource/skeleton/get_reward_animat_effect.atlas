@@ -1,0 +1,48 @@
+
+get_reward_animat_effect.png
+size: 512,512
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+333
+  rotate: false
+  xy: 156, 36
+  size: 118, 118
+  orig: 128, 128
+  offset: 5, 5
+  index: -1
+444
+  rotate: false
+  xy: 2, 156
+  size: 278, 278
+  orig: 284, 284
+  offset: 3, 3
+  index: -1
+777
+  rotate: false
+  xy: 2, 2
+  size: 152, 152
+  orig: 152, 152
+  offset: 0, 0
+  index: -1
+lb
+  rotate: false
+  xy: 276, 42
+  size: 123, 112
+  orig: 123, 112
+  offset: 0, 0
+  index: -1
+shan
+  rotate: true
+  xy: 324, 411
+  size: 23, 29
+  orig: 26, 31
+  offset: 1, 1
+  index: -1
+xx
+  rotate: true
+  xy: 282, 395
+  size: 39, 40
+  orig: 42, 44
+  offset: 1, 2
+  index: -1

@@ -626,6 +626,10 @@ class JsNetMessageRouter {
     isAuthed: boolean = false;
     needRunReconnectHandler: boolean = false;
     initPromise: Promise<void>;
+    reconnectPromise: Promise<boolean>;
+    private reconnectResolve: (success: boolean) => void;
+    private manualReconnectPending: boolean = false;
+    private manualReconnectFallbackTimer: any = null;
     connectConfig: IRuntimeConnectConfig;
     listenerMap: { [routeName: string]: MsgCallback[] } = {};
     listenerBound: { [routeName: string]: boolean } = {};
@@ -716,6 +720,79 @@ class JsNetMessageRouter {
         client.disconnect();
     }
 
+    async reconnect(): Promise<boolean> {
+        if (this.isAuthed && this.jsNet) {
+            hideDisconnectUi();
+            return true;
+        }
+        if (this.reconnectPromise) {
+            return this.reconnectPromise;
+        }
+        if (!this.jsNet || !this.connectConfig) {
+            try {
+                await this.init(this.gameName || _gameName || (<any>window).gameName);
+                return this.isAuthed;
+            }
+            catch (error) {
+                showDisconnectUi("manual_reconnect_failed", toErrorMessage(error));
+                return false;
+            }
+        }
+
+        this.needRunReconnectHandler = true;
+        showDisconnectUi("manual_reconnect", this.connectConfig.serverAdress);
+        this.reconnectPromise = new Promise<boolean>(resolve => {
+            this.reconnectResolve = resolve;
+        });
+
+        // PureClient 的 disconnect/onDisconnect 是异步的，旧连接关闭后再发起新连接。
+        this.authAttemptId++;
+        this.manualReconnectPending = true;
+        try {
+            this.jsNet.enableRetry?.(false);
+            this.jsNet.disconnect?.();
+        }
+        catch (error) {
+            console.warn("[JsNet] stop old connection before manual reconnect failed", error);
+            this.startManualConnect();
+        }
+        // 已关闭状态下 PureClient 可能不再回调 onDisconnect，留一个兜底。
+        this.manualReconnectFallbackTimer = setTimeout(() => this.startManualConnect(), 1000);
+        return this.reconnectPromise;
+    }
+
+    private startManualConnect() {
+        if (!this.manualReconnectPending || !this.jsNet || !this.connectConfig) {
+            return;
+        }
+        this.manualReconnectPending = false;
+        if (this.manualReconnectFallbackTimer) {
+            clearTimeout(this.manualReconnectFallbackTimer);
+            this.manualReconnectFallbackTimer = null;
+        }
+        this.jsNet.enableRetry?.(true);
+        this.jsNet.connect(this.connectConfig.serverAdress, {
+            pingInterval: 3,
+            pingOut: 8,
+            retryInterval: 2,
+            retryMaxCount: 10,
+            compress: true
+        });
+    }
+
+    private finishReconnect(success: boolean) {
+        this.manualReconnectPending = false;
+        if (this.manualReconnectFallbackTimer) {
+            clearTimeout(this.manualReconnectFallbackTimer);
+            this.manualReconnectFallbackTimer = null;
+        }
+        if (this.reconnectResolve) {
+            this.reconnectResolve(success);
+        }
+        this.reconnectResolve = null;
+        this.reconnectPromise = null;
+    }
+
     private async ensureJsSdk(gameName: string, initOptions?: any) {
         if (this.jsSdk) {
             return;
@@ -731,6 +808,7 @@ class JsNetMessageRouter {
         let sdk = client.getSdk()
         this.jsSdk = sdk;
         this.jsNet = client.getNet();
+        (<any>window).net = this.jsNet;
         if (sdk.addEvent) {
             sdk.addEvent("onQueryUser", (...args: any[]) => {
                 logJsNet("onQueryUser", args && args.length > 0 ? args : undefined);
@@ -855,10 +933,14 @@ class JsNetMessageRouter {
                 isAuthed: this.isAuthed
             });
             this.isAuthed = false;
+            if (this.manualReconnectPending) {
+                this.startManualConnect();
+                return;
+            }
             if (wasAuthed) {
                 this.needRunReconnectHandler = true;
             }
-            if (this.jsNet.enableRetry) {
+            if (this.jsNet && this.jsNet.enableRetry) {
                 this.jsNet.enableRetry(true);
             }
             showDisconnectUi("disconnected", cfg.serverAdress);
@@ -978,7 +1060,9 @@ class JsNetMessageRouter {
             }
             if (this.needRunReconnectHandler && typeof (<any>window).onReconnect === "function") {
                 this.needRunReconnectHandler = false;
-                await (<any>window).onReconnect();
+                if (!(<any>window).isAutoQuitLocked) {
+                    await (<any>window).onReconnect();
+                }
             }
             (<any>window).__lastJsNetStage = "auth_game_success";
             logJsNet("AuthGame success", {
@@ -988,13 +1072,20 @@ class JsNetMessageRouter {
             });
             let gameConfig = (<any>window).betGrade || {};
             const element:GameCommonConfig = this.jsNet.getCommonConfig()
-            if(element.costs){
-                gameConfig.gradeAmounts=[]
-                for (let index = 0; index < element.costs.length; index++) {
-                    const element1 = element.costs[index];
-                    gameConfig.gradeAmounts[index]=element1.coins
+            if (element && Array.isArray(element.costs) && element.costs.length > 0) {
+                const remoteAmounts = element.costs.map(cost => Number(cost && cost.coins));
+                const isValid = remoteAmounts.every(amount => Number.isFinite(amount)
+                    && amount > 0
+                    && Math.floor(amount) === amount);
+                if (isValid) {
+                    // 不能替换数组：游戏模块已经持有 gradeAmounts 的引用。
+                    if (!Array.isArray(gameConfig.gradeAmounts)) gameConfig.gradeAmounts = [];
+                    gameConfig.gradeAmounts.length = 0;
+                    for (const amount of remoteAmounts) gameConfig.gradeAmounts.push(amount);
+                    (<any>window).changedw?.();
+                } else {
+                    console.error("[JsNet] ignore invalid remote bet amounts", remoteAmounts);
                 }
-                (<any>window).changedw?.()
             }
             if(element.custom){
                 const ele:any=element.custom
@@ -1028,6 +1119,7 @@ class JsNetMessageRouter {
                     (<any>window).config.gameCoin=spriteFrame
                 });
             }
+            this.finishReconnect(true);
             resolve();
         }
         catch (error) {
@@ -1050,6 +1142,7 @@ class JsNetMessageRouter {
                 request: (<any>window).__lastJsNetAuthRequest
             });
             showDisconnectUi("auth_failed", toErrorMessage(error));
+            this.finishReconnect(false);
 
             reject(error);
             if (this.jsNet) {
@@ -1093,6 +1186,8 @@ class JsNetMessageRouter {
 }
 
 const compatRouter = new JsNetMessageRouter();
+
+(<any>window).HotGameReconnect = () => compatRouter.reconnect();
 
 function buildGameRoute(gameName: string, routeName: string): string {
     return `${serverConfig.routerPath}.${gameName}.${routeName}`;

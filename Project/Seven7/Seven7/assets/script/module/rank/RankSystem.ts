@@ -2,7 +2,6 @@ import { oops } from "db://oops-framework/core/Oops";
 import IMvc from "../mvc/IMvc";
 import GameProxyMgr from "../mvc/GameProxyMgr";
 import { EventMessage } from 'db://oops-framework/core/common/event/EventMessage';
-import { RegexUtil } from "db://oops-framework/core/utils/RegexUtil";
 
 export default class RankSystem extends IMvc {
 

@@ -1,0 +1,41 @@
+
+bx_dh.png
+size: 559,114
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+1
+  rotate: true
+  xy: 467, 15
+  size: 97, 90
+  orig: 97, 90
+  offset: 0, 0
+  index: -1
+2
+  rotate: false
+  xy: 368, 15
+  size: 97, 97
+  orig: 97, 97
+  offset: 0, 0
+  index: -1
+3
+  rotate: false
+  xy: 253, 7
+  size: 113, 105
+  orig: 117, 105
+  offset: 2, 0
+  index: -1
+4
+  rotate: false
+  xy: 128, 4
+  size: 123, 108
+  orig: 124, 108
+  offset: 1, 0
+  index: -1
+5
+  rotate: false
+  xy: 2, 2
+  size: 124, 110
+  orig: 126, 110
+  offset: 1, 0
+  index: -1

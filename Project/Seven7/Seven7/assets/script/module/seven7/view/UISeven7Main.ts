@@ -564,11 +564,6 @@ export class UISeven7Main extends GameComponent {
             return false;
         }
 
-        if (!GameModelMgr.playerModel.check_sdk_valid()) {
-            oops.gui.showAccounErrortUI();
-            return false;
-        }
-
         if (this._gameState != GameState.PREPARE) {
             if (this._gameState == GameState.NONE) {
                 oops.gui.toast("common_wait", true);
@@ -601,6 +596,14 @@ export class UISeven7Main extends GameComponent {
                 return false;
             }
         }
+
+        if (!GameModelMgr.playerModel.check_sdk_valid()) {
+            //oops.gui.showAccounErrortUI();
+            oops.gui.toast("common_bet_error", true)
+            return false;
+        }
+
+
         return true;
     }
 

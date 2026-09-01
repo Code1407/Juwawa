@@ -15,7 +15,7 @@ export default class LangManager extends cc.Component {
     @property()
     findTextNode = false;
     async start() {
-        (<any>window).ongetUserLang = async() => {
+    (<any>window).ongetUserLang = async() => {
         if (this.findTextNode) {
             setTimeout(() => {
                 this.DepthFind();
@@ -42,7 +42,7 @@ export default class LangManager extends cc.Component {
             console.log("langD", lang);
             this.SetLang(lang);
         }
-    }
+        }
     }
     SetLang(lang: number) {
         try {

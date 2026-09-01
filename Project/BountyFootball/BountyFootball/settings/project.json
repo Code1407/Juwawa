@@ -58,5 +58,6 @@
   "migrate-history": [
     "cloud-function"
   ],
-  "clear-simulator-cache": true
+  "clear-simulator-cache": true,
+  "start-scene": "91d0b2e9-47bd-4a6f-9f74-0e2d2c38f75f"
 }

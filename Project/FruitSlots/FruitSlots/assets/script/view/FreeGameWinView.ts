@@ -38,12 +38,14 @@ export default class FreeGameWinView extends cc.Component {
     // onLoad () {}
 
     onEnable() {
+        
         this.winViewEff();
     }
 
     start () {
 
     }
+    
 
     // update (dt) {}
 }

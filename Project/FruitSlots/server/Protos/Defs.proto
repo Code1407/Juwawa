@@ -169,6 +169,7 @@ enterGameResp {
     Results lastResult                    // 上一局未完成的结算结果（用于断线重连）
     PlayerSettings playerSettings         // 玩家本地设置
     array<HistoryItem> history
+    RoundStep roundStep                   // 当前回合快照（用于断线重连恢复状态机）
 }
 
 // ---------- 普通投注 ----------
@@ -244,15 +245,16 @@ updateSettingsResp {
     int32 code // 返回码
 }
 
-// ---------- 下发下注档位 ----------
-// 服务端下发可用下注档位请求
+// ---------- 同步下注档位 ----------
+// 客户端上报当前下注档位
 sendBetAmounts {
-    array<int32> betAmounts // 可用的下注金额列表
+    array<int32> betAmounts // 客户端当前下注金额列表
 }
 
-// 下发下注档位响应
+// 服务端返回权威下注档位
 sendBetAmountsResp {
-    int32 code // 返回码
+    int32 code                 // 0 表示原本一致，失败表示客户端已过期
+    array<int32> betAmounts    // 服务端当前可用的下注金额列表
 }
 
 // ---------- 心跳 ----------

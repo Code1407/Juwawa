@@ -11,7 +11,6 @@ import Audio from "../Audio";
 import { Effect } from "../effect/FlyDiamond";
 import { EGameStatus, ETradeCode } from "../../shared3/interface/IGame";
 import ChipMoveNodeUI from "./ChipMoveNodeUI";
-import { checkTradeCode } from "../../shared2/GlobalViewsLoader";
 
 
 
@@ -96,7 +95,6 @@ export default class WheelItemUI extends cc.Component {
                 }
             gGameData.roundBetCount++;
         }
-        if (waitresp) checkTradeCode(waitresp.code)
     }
 
 

@@ -1,0 +1,69 @@
+{
+"skeleton": { "hash": "Y/iLEYy/XDmn9nyLYY60tPZumlo", "spine": "3.8.75", "x": -51.61, "y": -39.8, "width": 104.23, "height": 80.6 },
+"bones": [
+	{ "name": "root" },
+	{ "name": "1PG", "parent": "root" },
+	{ "name": "11", "parent": "1PG" }
+],
+"slots": [
+	{ "name": "XS", "bone": "1PG", "attachment": "XS" },
+	{ "name": "1PG", "bone": "1PG", "attachment": "12" },
+	{ "name": "11", "bone": "11", "attachment": "11" }
+],
+"skins": [
+	{
+		"name": "default",
+		"attachments": {
+			"11": {
+				"11": { "x": 0.5, "y": 0.5, "rotation": -0.9, "width": 103, "height": 79 }
+			},
+			"1PG": {
+				"12": { "x": 0.5, "y": 0.5, "width": 103, "height": 79 }
+			},
+			"XS": {
+				"XS": {
+					"type": "clipping",
+					"end": "1PG",
+					"vertexCount": 4,
+					"vertices": [ -58.94, -40.02, 55.6, -42.01, 66.31, 45.64, -51.22, 49.87 ]
+				}
+			}
+		}
+	}
+],
+"animations": {
+	"1 pg": {
+		"bones": {
+			"11": {
+				"translate": [
+					{},
+					{ "time": 0.1667, "x": -1.61, "y": -7.82 },
+					{ "time": 0.3333 }
+				]
+			}
+		},
+		"deform": {
+			"default": {
+				"XS": {
+					"XS": [
+						{
+							"offset": 4,
+							"vertices": [ -10.70698, -59.26192, -0.99602, -10.70697 ]
+						},
+						{
+							"time": 0.1667,
+							"offset": 4,
+							"vertices": [ -13.44598, -66.73192, -9.95998, -15.18896 ]
+						},
+						{
+							"time": 0.3333,
+							"offset": 4,
+							"vertices": [ -10.70698, -59.26192, -0.99602, -10.70697 ]
+						}
+					]
+				}
+			}
+		}
+	}
+}
+}

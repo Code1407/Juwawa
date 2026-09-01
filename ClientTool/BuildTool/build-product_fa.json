@@ -67,6 +67,18 @@
         ]
       }
     },
+	{
+      "name": "黄金捕鱼",
+      "packageName": "GoldFishing",
+	  "creatorVersion": "2.4.10",
+      "build": {
+        "orientation": "Auto",
+        "startScene": "assets/scene/full_screen.fire",
+        "scenes": [
+          "assets/scene/full_screen.fire"
+        ]
+      }
+    },
     {
       "name": "美味摩天轮",
       "packageName": "Wheel_Delicious",
@@ -198,8 +210,104 @@
       }
     },
 	{
+      "name": "龙虎斗",
+      "packageName": "DragonTiger",
+      "creatorVersion": "2.4.10",
+      "build": {
+        "orientation": "Auto",
+        "startScene": "assets/scene/seven.fire",
+        "scenes": [
+          "assets/scene/seven.fire"
+        ]
+      }
+    },
+	{
       "name": "轮盘",
       "packageName": "Roulette",
+      "creatorVersion": "2.4.10",
+      "build": {
+        "orientation": "Auto",
+        "startScene": "assets/scene/seven.fire",
+        "scenes": [
+          "assets/scene/seven.fire"
+        ]
+      }
+    },
+	{
+      "name": "大胃王",
+      "packageName": "Bigeater",
+      "creatorVersion": "2.4.10",
+      "build": {
+        "orientation": "Auto",
+        "startScene": "assets/scene/BigEater_halfScreen.fire",
+        "scenes": [
+          "assets/scene/BigEater_halfScreen.fire"
+        ]
+      }
+    },
+	{
+      "name": "豪车汇",
+      "packageName": "LuxuryCar",
+      "creatorVersion": "2.4.10",
+      "build": {
+        "orientation": "Auto",
+        "startScene": "assets/scene/seven_screen.fire",
+        "scenes": [
+          "assets/scene/seven_screen.fire"
+        ]
+      }
+    },
+	{
+      "name": "豪车汇R",
+      "packageName": "LuxuryCarR",
+      "creatorVersion": "2.4.10",
+      "build": {
+        "orientation": "Auto",
+        "startScene": "assets/scene/seven_screen.fire",
+        "scenes": [
+          "assets/scene/seven_screen.fire"
+        ]
+      }
+    },
+	{
+      "name": "足球汇",
+      "packageName": "BountyFootball",
+      "creatorVersion": "2.4.10",
+      "build": {
+        "orientation": "Auto",
+        "startScene": "assets/scene/seven_screen.fire",
+        "scenes": [
+          "assets/scene/seven_screen.fire"
+        ]
+      }
+    },
+	{
+      "name": "yummy",
+      "packageName": "Yummy",
+      "creatorVersion": "2.4.10",
+      "build": {
+        "orientation": "Auto",
+        "startScene": "assets/scenes/seven_screen.fire",
+        "scenes": [
+          "assets/scenes/seven_screen.fire"
+        ]
+      }
+    },
+	{
+      "name": "奥林匹斯",
+      "packageName": "OlympusSlot",
+      "creatorVersion": "2.4.10",
+      "build": {
+        "orientation": "Auto",
+        "startScene": "assets/scene/seven_screen.fire",
+        "scenes": [
+          "assets/scene/seven_screen.fire"
+        ]
+      }
+    },
+	{
+      "name": "万人水果机",
+      "packageName": "LuckyFruits",
       "creatorVersion": "2.4.10",
       "build": {
         "orientation": "Auto",

@@ -1,0 +1,155 @@
+Account {
+    uint64 diamond
+    string avatar
+    string nickname
+    uint32 level
+}
+
+PlayerSettings {
+    int32 soundVol
+    int32 lastBetAmountButton
+}
+
+LuckyFruitsRankItem {
+    string uid
+    string profile
+    string name
+    uint64 revenue
+}
+
+LuckyFruitsRoundStep {
+    uint64 todayRound
+    int32 status
+    int32 remainSecond
+    uint64 serverNowMs
+    uint64 phaseStartedAtMs
+    uint64 phaseEndsAtMs
+    uint32 timelineVersion
+    int32 winPos
+    array<int32> resultDetail
+    array<int32> resultPos
+}
+
+LuckyFruitsRoundResult {
+    uint64 todayRound
+    int32 winPos
+    array<int32> resultDetail
+    array<int32> resultPos
+}
+
+LuckyFruitsHistoryItem {
+    string date
+    uint64 round
+    int32 roundResult
+}
+
+LuckyFruitsMyHistoryItem {
+    string date
+    uint64 round
+    array<uint64> betDatails
+    int32 roundResult
+    array<int32> resultDetail
+}
+
+LuckyFruitsPlayerBetList {
+    string uid
+    array<uint32> betGradeArr
+    array<array<uint32>> betGradeNum
+}
+
+enterGame {}
+enterGameResp {
+    string uid
+    LuckyFruitsRoundStep roundStep
+    array<LuckyFruitsRankItem> rankList
+    Account account
+    uint64 todayRevenue
+    array<array<uint32>> lastWheelAmount
+    array<array<uint32>> curRoundWheelAmount
+    array<LuckyFruitsPlayerBetList> curRoundAllWheelAmount
+    array<LuckyFruitsHistoryItem> gameHistory
+    array<LuckyFruitsMyHistoryItem> myHistory
+    int32 lastBetAmountButton
+    PlayerSettings playerSettings
+}
+
+// 明确描述一笔下注：位置使用0-based索引，金额由面值×数量计算。
+LuckyFruitsBetData {
+    uint16 betPosition
+    uint64 chipValue
+    uint32 chipCount
+}
+
+bet {
+    uint64 todayRound
+    array<LuckyFruitsBetData> betList
+    // 以下字段仅用于兼容旧客户端/旧服务，服务端不得据此计算扣款金额。
+    array<uint32> betGradeArr
+    array<array<uint32>> betGradeNumArr
+    array<uint64> betDiamonList
+}
+betResp {
+    int32 code
+    uint64 accountDiamond
+    array<array<uint32>> betGradeNum
+}
+
+setBetAmountButton { int32 betAmountButtonIndex }
+setBetAmountButtonResp { int32 code }
+synchronize {}
+synchronizeResp {
+    string uid
+    LuckyFruitsRoundStep roundStep
+    array<LuckyFruitsRankItem> rankList
+    Account account
+    uint64 todayRevenue
+    array<array<uint32>> lastWheelAmount
+    array<array<uint32>> curRoundWheelAmount
+    array<LuckyFruitsPlayerBetList> curRoundAllWheelAmount
+    array<LuckyFruitsHistoryItem> gameHistory
+    array<LuckyFruitsMyHistoryItem> myHistory
+    int32 lastBetAmountButton
+    PlayerSettings playerSettings
+}
+updateSettings { PlayerSettings config }
+updateSettingsResp { int32 code }
+dbmHeartbeat {}
+dbmHeartbeatResp { int32 code }
+
+onRoundStep {
+    uint64 todayRound
+    int32 status
+    int32 remainSecond
+    uint64 serverNowMs
+    uint64 phaseStartedAtMs
+    uint64 phaseEndsAtMs
+    uint32 timelineVersion
+    int32 winPos
+    array<int32> resultDetail
+    array<int32> resultPos
+}
+onResultHandler {
+    uint64 todayRound
+    int32 winPos
+    array<int32> resultDetail
+    array<int32> resultPos
+}
+onbatNoticeAll { array<array<uint32>> wheelAmount }
+onRewardHandler {
+    string winCard
+    array<int32> resultDetail
+}
+onRankListChange { array<LuckyFruitsRankItem> rankList }
+onbatListRound {
+    string uid
+    int32 flyPlayerPos
+    array<uint32> batIndex
+    array<array<uint32>> num
+}
+onMaintenance {}
+onPlayerUpdate {
+    string uid
+    uint64 diamond
+    array<uint64> itemAmount
+    uint64 todayRound
+}

@@ -20,7 +20,6 @@ export default class SafeAreaNode extends cc.Component {
     callback
 
     start() {
-        this.node.opacity=0
         if (!this.isValid)
             return;
         this.gameNode = this.gameNode || this.node;

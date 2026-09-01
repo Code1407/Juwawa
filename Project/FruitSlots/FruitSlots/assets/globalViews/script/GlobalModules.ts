@@ -80,9 +80,15 @@ enum ETradeCode {
     betPassMax = -10,    //下注超过最大限制
     repeatOrder = -11,   // 重复订单
     userStatusError = -12,   // 用户状态异常
+    CoinFrozen = -24,    // 金币冻结
     nothing = -99997,
     userException = -99998,
     unknow = -99999,
+}
+
+function showCloseServerNotice() {
+    (<any>window).pendingCloseServerView = true;
+    setActive(GlobalViews.Instance?.closeServerView, true, "closeServerView");
 }
 
 (<any>window).breakRoundStep = false;
@@ -107,7 +113,7 @@ if (pinus() != null) {
     });
     pinusResp('onAutoQuit', () => {
         onAutoQuit();
-        StopGame(`自动退出 服务端倒计时结束`);
+        StopGame(`自动退出 服务端倒计时结束`, true);
     });
     pinusResp("onMaintenance", () => {
         onMaintenance();
@@ -134,18 +140,18 @@ function onChangeToken(token: string) {
     (<any>window).onChangeToken?.(token);
 }
 
-export async function StopGame(str: string) {
+export async function StopGame(str: string, immediately: boolean = false) {
     console.log(`Stop Game`, str);
-    await new Promise((res) => {
-        let id = setInterval(() => {
-            if ((<any>window).waitRound) {
-            }
-            else {
-                res(0);
-                clearInterval(id);
-            }
-        }, 100);
-    });
+    if (!immediately) {
+        await new Promise((res) => {
+            let id = setInterval(() => {
+                if (!(<any>window).waitRound) {
+                    res(0);
+                    clearInterval(id);
+                }
+            }, 100);
+        });
+    }
     (<any>window).stopGame?.();
 }
 
@@ -156,6 +162,21 @@ export async function StopGame(str: string) {
             StopGame(`用户异常`);
             break;
         case ETradeCode.sdkDisconnect: setActive(GlobalViews.Instance?.maintenanceView, true, "maintenanceView"); break;   
+        case ETradeCode.closeServer: showCloseServerNotice(); break;
+        case ETradeCode.CoinFrozen: setActive(GlobalViews.Instance?.coinFrozenView, true, "coinFrozenView"); break;
+        case ETradeCode.success:
+        case ETradeCode.missTime:
+        case ETradeCode.coolDown:
+        case ETradeCode.fail:
+        case ETradeCode.betDone:
+        case ETradeCode.betPassMax:
+        case ETradeCode.repeatOrder:
+        case ETradeCode.nothing:
+            break;
+        default:
+            console.warn("Unhandled trade code", code);
+            setActive(GlobalViews.Instance?.maintenanceView, true, "maintenanceView");
+            break;
     }
     if (code != ETradeCode.success) {
         console.warn("TradeCode", code);

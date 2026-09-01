@@ -1,6 +1,6 @@
 import MessageRouter from "../../shared/MessageRouter";
-import { gBetAmounts } from "../GameData";
-import { IEnterGameResp, IPlayer, IBetResp, EBetAmountIndex, IRoundResultResp, gConst } from "../interface/IFruitSlots";
+import { gBetAmounts, setBetAmounts } from "../GameData";
+import { IEnterGameResp, IPlayer, IBetResp, EBetAmountIndex, IRoundResultResp, gConst, IBetAmountsResp } from "../interface/IFruitSlots";
 
 const branchRank = "Branch";
 
@@ -58,8 +58,17 @@ export default class ClientPlayer implements IPlayer {
         return this.msgRouter.request("synchronize", {});
     }
 
-    async sendBetAmounts() {
-        this.msgRouter.request("sendBetAmounts", { betAmounts: gBetAmounts });
+    async sendBetAmounts(): Promise<IBetAmountsResp> {
+        const resp: IBetAmountsResp = await this.msgRouter.request("sendBetAmounts", {
+            betAmounts: gBetAmounts.slice()
+        });
+        if (!resp || !setBetAmounts(resp.betAmounts)) {
+            throw new Error("server returned invalid bet amounts");
+        }
+        if (resp.code !== 0) {
+            console.warn("local bet amounts differed from server; authoritative amounts applied", resp.betAmounts);
+        }
+        return resp;
     }
 
 

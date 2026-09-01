@@ -77,7 +77,7 @@ declare class JsSdk {
     //监听事件
     // `onQueryUser`：请求更新玩家sdk数据
     // `onGameBgHide`：请求隐藏背景图，参数为是否隐藏
-    // `onGameView`: 请求适配游戏尺寸，三个参数，分别是屏幕大小，游戏区域大小，游戏区域偏移
+    // `onGameView`: 请求适配游戏尺寸，四个参数，分别是屏幕大小，游戏区域大小，游戏区域偏移，游戏区域缩放
     addEvent(name: string, func: EventCall): boolean;
 
     //派发事件

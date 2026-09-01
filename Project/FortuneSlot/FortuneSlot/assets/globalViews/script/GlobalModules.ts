@@ -150,12 +150,22 @@ export async function StopGame(str: string) {
 }
 
 (<any>window).checkTradeCode = (code: number) => {
-    switch (code) {
-        case ETradeCode.insufficient: setActive(GlobalViews.Instance?.rechargeView, true, "rechargeView"); break;
-        case ETradeCode.userStatusError: setActive(GlobalViews.Instance?.userStatusErrorView, true, "userStatusErrorView");
-            StopGame(`用户异常`);
-            break;
-        case ETradeCode.sdkDisconnect: setActive(GlobalViews.Instance?.maintenanceView, true, "maintenanceView"); break;   
+    if(code==0){
+        return
+    }
+    if(code==ETradeCode.insufficient){
+        setActive(GlobalViews.Instance?.rechargeView, true, "rechargeView"); 
+    }
+    else if(code==ETradeCode.userStatusError){
+        setActive(GlobalViews.Instance?.userStatusErrorView, true, "userStatusErrorView");
+        StopGame(`用户异常`);
+    }
+    else if(code==-24){
+        setActive(GlobalViews.Instance?.userStatusErrorView2, true, "maintenanceView2");
+        StopGame(`用户异常`);
+    }
+    else{
+        setActive(GlobalViews.Instance?.maintenanceView, true, "maintenanceView");
     }
     if (code != ETradeCode.success) {
         console.warn("TradeCode", code);

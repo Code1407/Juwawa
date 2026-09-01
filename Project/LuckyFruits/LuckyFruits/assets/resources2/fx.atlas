@@ -1,0 +1,69 @@
+
+fx.png
+size: 278,128
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+caidaicaidai1
+  rotate: false
+  xy: 217, 39
+  size: 31, 26
+  orig: 31, 26
+  offset: 0, 0
+  index: -1
+caidaicaidai2
+  rotate: false
+  xy: 128, 10
+  size: 31, 27
+  orig: 31, 28
+  offset: 0, 1
+  index: -1
+caidaicaidai3
+  rotate: false
+  xy: 227, 7
+  size: 29, 28
+  orig: 31, 28
+  offset: 1, 0
+  index: -1
+caidaicaidai4
+  rotate: false
+  xy: 161, 11
+  size: 31, 26
+  orig: 31, 26
+  offset: 0, 0
+  index: -1
+caidaicaidai5
+  rotate: false
+  xy: 194, 12
+  size: 31, 25
+  orig: 31, 28
+  offset: 0, 2
+  index: -1
+caidaicaidai6
+  rotate: true
+  xy: 250, 37
+  size: 28, 26
+  orig: 28, 31
+  offset: 0, 3
+  index: -1
+guangban_202
+  rotate: false
+  xy: 128, 39
+  size: 87, 87
+  orig: 89, 89
+  offset: 1, 1
+  index: -1
+vb
+  rotate: false
+  xy: 2, 2
+  size: 124, 124
+  orig: 124, 124
+  offset: 0, 0
+  index: -1
+xing
+  rotate: false
+  xy: 217, 67
+  size: 59, 59
+  orig: 60, 59
+  offset: 0, 0
+  index: -1

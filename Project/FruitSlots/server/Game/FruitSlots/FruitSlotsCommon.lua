@@ -22,26 +22,6 @@ FRGameStatus = {
     unknow = 99999,  -- 未知状态
 }
 
--- 交易结果码
-FRTradeCode = {
-    success = 0,          -- 成功
-    insufficient = -1,    -- 余额不足
-    missTime = -2,        -- 时间错误
-    sdkDisconnect = -3,   -- SDK断开
-    closeServer = -4,     -- 服务器关闭
-    tokenInvalid = -5,    -- Token无效
-    coolDown = -6,        -- 冷却中
-    timeout = -7,         -- 超时
-    fail = -8,            -- 失败
-    betDone = -9,         -- 下注已完成
-    betPassMax = -10,     -- 超过最大下注
-    repeatOrder = -11,    -- 重复订单
-    userStatusError = -12,-- 用户状态错误
-    nothing = -99997,     -- 无操作
-    userException = -99998,-- 用户异常
-    unknow = -99999,      -- 未知
-}
-
 -- 游戏类型
 FRGameType = {
     normal = 0, -- 普通游戏
@@ -273,6 +253,7 @@ function FRProtoEncodeEnterGameResp(resp)
         lastResult = FRProtoEncodeResults(data.lastResult),
         playerSettings = FRProtoEncodePlayerSettings(data.playerSettings or {}),
         history = FRProtoEncodeHistory(data.history or {}),
+        roundStep = FRProtoEncodeRoundStep(data.roundStep),
     }
 end
 

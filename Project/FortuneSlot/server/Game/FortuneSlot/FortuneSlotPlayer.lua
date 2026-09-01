@@ -141,7 +141,7 @@ function FortuneSlotPlayer:betOrder(roundId, betAmount,calculateAmount, isExtra)
         return log_error("FortuneSlotPlayer:betOrder  self:getPlayer():coinsEnough(betAmount)")
     end
     self.betRounds[roundId]=betAmount
-    self:getPlayer():subCoins(roundId, 0, betAmount,function (errorCode,orderid,backPlayer)
+    self:getPlayer():subCoins(roundId, ECoinsOperateType.BetSub, betAmount,function (errorCode,orderid,backPlayer)
         if (errorCode == 0 and backPlayer) then
             local rankPSys = backPlayer:getSystem("RankPSystem")
             if rankPSys then
@@ -164,7 +164,7 @@ function FortuneSlotPlayer:betOrder(roundId, betAmount,calculateAmount, isExtra)
             result,oddsType,gameresult = FortuneeMain.machine:getResults(betAmount, calculateAmount, isExtra and true or false,FortuneeMain.player,roundId)
             FortuneeMain:runRound(roundId, FOGameType.normal, result,oddsType,gameresult)
         else
-            if errorCode~=-12 then
+            if errorCode~=-12 and errorCode~=-1 then
                 errorCode=-3
             end
         end
@@ -189,7 +189,7 @@ function FortuneSlotPlayer:winOrder(roundId, winAmount, oddsType, callback)
         end
         return FOTradeCode.nothing
     end
-    self:getPlayer():addCoins(roundId, oddsType, 2, winAmount, function(code, addOrderID, backPlayer)
+    self:getPlayer():addCoins(roundId, oddsType, ECoinsOperateType.WinAdd, winAmount, function(code, addOrderID, backPlayer)
         if callback then
             callback(code, addOrderID, backPlayer)
         end
@@ -253,7 +253,7 @@ function FortuneSlotPlayer:settleResult(roundId)
             if backPlayer then
                 gAnaly:singleCommitAnaly(player, 0,roundId,runningRound.gameresult)
                 backPlayer:statisGameRound(roundId,  FortuneeMain.betRounds[roundId], 0)
-                if code~=-12 then
+                if code~=-12 and code~=-1 then
                     code=-3
                 end
                 FortuneeMain:notifyBetFailure(code)

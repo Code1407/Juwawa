@@ -7,7 +7,7 @@ import { Effect } from "./effect/BaseEffect";
 import Game from "./Game";
 import { gBetAmounts, gGameData } from "./GameData";
 import { setMaintenanceView, setRechargeView } from "../shared2/GlobalViewsLoader";
-import { gConst, lineCount, IBetResp, IEnterGameResp, IRoundResultResp } from "./interface/IFruitSlots";
+import { gConst, lineCount, IBetResp, IEnterGameResp, IRoundResultResp, IRoundStep } from "./interface/IFruitSlots";
 import SpinUI from "./ui/SpinUI";
 import Views from "./Views";
 
@@ -17,7 +17,7 @@ export default class PlayerAccount extends ClientPlayer {
     roundId: number = 0;
     private static instance: PlayerAccount;
 
-    private constructor(msgRouter: MessageRouter, private account: Account) {
+    private constructor(msgRouter: MessageRouter, private account: Account, private scene: ClientScene) {
         super(msgRouter);
     }
 
@@ -27,8 +27,12 @@ export default class PlayerAccount extends ClientPlayer {
         (<any>window).msgRouter = msgRouter;
         let scene = new ClientScene(msgRouter);
         await scene.initScene();
-        this.instance = new PlayerAccount(msgRouter, account);
+        this.instance = new PlayerAccount(msgRouter, account, scene);
         return this.instance;
+    }
+
+    restoreRoundStep(roundStep: IRoundStep, restoreStatus: boolean = true): Promise<void> {
+        return this.scene.onRoundStep(roundStep, restoreStatus);
     }
 
     async enterGame(): Promise<IEnterGameResp> {

@@ -1,0 +1,65 @@
+{
+"skeleton": { "hash": "Ku5FruPitOoVABUJ1yrsgynsBkA", "spine": "3.8.75", "x": -48, "y": -39, "width": 96, "height": 78 },
+"bones": [
+	{ "name": "root" },
+	{ "name": "21", "parent": "root" }
+],
+"slots": [
+	{ "name": "xs", "bone": "root", "attachment": "xs" },
+	{ "name": "22", "bone": "root", "attachment": "22" },
+	{ "name": "21", "bone": "21", "attachment": "21" }
+],
+"skins": [
+	{
+		"name": "default",
+		"attachments": {
+			"22": {
+				"22": { "width": 96, "height": 78 }
+			},
+			"xs": {
+				"xs": {
+					"type": "clipping",
+					"end": "22",
+					"vertexCount": 4,
+					"vertices": [ 55.64, -5.6, -49.42, 36.06, -57.93, -53.76, 49.81, -38.53 ]
+				}
+			},
+			"21": {
+				"21": { "width": 96, "height": 78 }
+			}
+		}
+	}
+],
+"animations": {
+	"animation": {
+		"bones": {
+			"21": {
+				"translate": [
+					{},
+					{ "time": 0.1667, "x": -1.57, "y": -8.06 },
+					{ "time": 0.3333 }
+				]
+			}
+		},
+		"deform": {
+			"default": {
+				"xs": {
+					"xs": [
+						{
+							"vertices": [ -3.80799, -8.28799 ]
+						},
+						{
+							"time": 0.1667,
+							"vertices": [ -5.82397, -15.00798, -0.672, -6.71999 ]
+						},
+						{
+							"time": 0.3333,
+							"vertices": [ -3.80799, -8.28799 ]
+						}
+					]
+				}
+			}
+		}
+	}
+}
+}

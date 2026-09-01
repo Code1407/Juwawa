@@ -50,3 +50,6 @@ text.path37= `reanudar`;
 text.path38 = `El servidor del juego está en mantenimiento y no se puede jugar temporalmente.
 Por favor, inténtalo de nuevo más tarde.`;
 text.path39 =  "Salida";
+
+text.path40 = `Las monedas están congeladas temporalmente, por favor contacta con el equipo de operaciones oficial.`;
+text.path41 = `Salir`;

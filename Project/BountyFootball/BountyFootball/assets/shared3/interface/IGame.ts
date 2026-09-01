@@ -42,6 +42,7 @@ export enum ETradeCode {
     betPassMax = -10,    //下注超过最大限制
     repeatOrder = -11,   // 重复订单
     userStatusError = -12,   // 用户状态异常
+    coinFrozen = -24,    // 金币冻结
     nothing = -99997,
     userException = -99998,
     unknow = -99999,

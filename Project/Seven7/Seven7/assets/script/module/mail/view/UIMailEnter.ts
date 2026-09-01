@@ -1,4 +1,4 @@
-import { _decorator, Node } from 'cc';
+import { _decorator, find, Node } from 'cc';
 import { GameComponent } from "db://oops-framework/module/common/GameComponent";
 import GameModelMgr from '../../mvc/GameModelMgr';
 import { EventMessage } from 'db://oops-framework/core/common/event/EventMessage';
@@ -12,8 +12,12 @@ export class UIMailEnter extends GameComponent {
     @property(Node)
     private redPoint: Node;
 
+    private root:Node;
+
     onLoad(): void {
-        this.node.on(Node.EventType.TOUCH_START, this.on_click_btn)
+        this.node.on(Node.EventType.TOUCH_START, this.on_click_btn);
+        this.root = find("Root", this.node);
+        this.root.active = false;
     }
 
     start() {
@@ -21,7 +25,7 @@ export class UIMailEnter extends GameComponent {
 
         let cfg = oops.network.getgetClientConfig();
         let openMail = cfg && cfg.custom && cfg.custom.enableMail || false;
-        this.node.active = openMail;
+        //this.node.active = openMail;
         if(openMail){
             GameModelMgr.mailModel.cs_mail_list_req();
         }
@@ -34,6 +38,10 @@ export class UIMailEnter extends GameComponent {
 
     private on_redpoint_update() {
         let mails = GameModelMgr.mailModel.get_mails();
+        this.root.active = mails.size > 0;
+        if(mails.size <= 0){
+            return;
+        }
         let haveRp = false;
         for (const mail of mails.values()) {
             if(mail.is_show_rp()) {

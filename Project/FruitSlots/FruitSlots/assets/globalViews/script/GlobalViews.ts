@@ -35,6 +35,8 @@ export default class GlobalViews extends cc.Component {
     maintenanceView: cc.Node;
     @property(cc.Node)
     rechargeView: cc.Node;
+    @property({ type: cc.Node, displayName: "金币冻结" })
+    coinFrozenView: cc.Node;
     @property(cc.Node)
     closeServerView: cc.Node;
     @property(TradeError)
@@ -61,6 +63,7 @@ export default class GlobalViews extends cc.Component {
         (<any>window).userStatusErrorView = this.userStatusErrorView;
         (<any>window).maintenanceView = this.maintenanceView;
         (<any>window).rechargeView = this.rechargeView;
+        (<any>window).coinFrozenView = this.coinFrozenView;
         (<any>window).closeServerView = this.closeServerView;
         if ((<any>window).pendingCloseServerView && this.closeServerView) {
             this.closeServerView.active = true;

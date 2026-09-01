@@ -14,7 +14,7 @@ export default class ClientScene implements ISceneListen {
     initScene() {
         let __this = this;
         this.msgRouter.on('onRoundStep', function (data) {
-            __this.onRoundStep(data);
+            __this.onRoundStep(data).catch(error => console.error("onRoundStep failed", error));
         });
         this.msgRouter.on('onJackpotHint', function (data) {
             __this.onJackpotHint(data);
@@ -55,7 +55,7 @@ export default class ClientScene implements ISceneListen {
         Game.Instance.onResultHandler(msg);
     }
 
-    onRoundStep(roundStep: IRoundStep) {
+    async onRoundStep(roundStep: IRoundStep, restoreStatus: boolean = true): Promise<void> {
         /*
         if (roundStep.status == EGameStatus.stop) gGameData.status = roundStep.status;
 
@@ -90,11 +90,13 @@ export default class ClientScene implements ISceneListen {
         // roundStep.accountDiamond 可能是结算前的预测值或较旧快照，不能覆盖
         // ScCoinsUpdatePush 下发的实际账户余额。
 
+        if (!restoreStatus) return;
+
         if (!(gGameData.status == EGameStatus.final && roundStep.status == EGameStatus.run)
             && !(gGameData.status == EGameStatus.run && roundStep.status == EGameStatus.final)
             && !(gGameData.status == EGameStatus.run && roundStep.status == EGameStatus.bet)
             && !(gGameData.status == EGameStatus.coolDown && roundStep.status == EGameStatus.bet)) {
-            Game.Instance.changeGameStatus(roundStep.status);
+            await Game.Instance.changeGameStatus(roundStep.status);
         }
 
     }

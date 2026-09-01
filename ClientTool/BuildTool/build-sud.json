@@ -1,9 +1,9 @@
 {
   "common": {
     "md5Cache": true,
-	"pureClientPath": "D:/GameTemplate/PureClient_SUD",
-	"projectsPath": "D:/Project",
-    "exportRoot": "D:/ClientTool/BuildTool/buildOut/sud",
+	"pureClientPath": "E:/Project/WorkSpace/GameTemplate/PureClient_SUD",
+	"projectsPath": "E:/Project/WorkSpace/Project",
+    "exportRoot": "E:/Project/WorkSpace/ClientTool/BuildTool/buildOut/sud",
     "obfuscate": {
       "enabled": true,
       "includeAllBundles": true,
@@ -139,19 +139,6 @@
     {
       "name": "火箭",
       "packageName": "Rocket",
-      "creatorVersion": "2.4.10",
-	  "gameId":26,
-      "build": {
-        "orientation": "Auto",
-        "startScene": "assets/scenes/seven_screen.fire",
-        "scenes": [
-          "assets/scenes/seven_screen.fire"
-        ]
-      }
-    },
-	{
-      "name": "豪车汇",
-      "packageName": "LuxuryCar",
       "creatorVersion": "2.4.10",
 	  "gameId":26,
       "build": {

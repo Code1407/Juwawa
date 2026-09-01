@@ -1,0 +1,172 @@
+{
+"skeleton": {
+	"hash": "8u8Isp2l9/rGvMRTNSOtEBCDC6Y",
+	"spine": "3.8.75",
+	"x": -124.03,
+	"y": -96,
+	"width": 248.07,
+	"height": 192,
+	"images": "./动画切图/",
+	"audio": ""
+},
+"bones": [
+	{ "name": "root", "shearY": -0.02 }
+],
+"slots": [
+	{ "name": "走马灯1", "bone": "root", "attachment": "1/走马灯1" },
+	{ "name": "走马灯2", "bone": "root", "attachment": "1/走马灯2" },
+	{ "name": "2/1", "bone": "root", "attachment": "2/1" },
+	{ "name": "2/2", "bone": "root", "attachment": "2/2" },
+	{ "name": "2/3", "bone": "root", "attachment": "2/3" },
+	{ "name": "2/4", "bone": "root", "attachment": "2/4" },
+	{ "name": "2/5", "bone": "root", "attachment": "2/5" },
+	{ "name": "2/6", "bone": "root", "attachment": "2/6" }
+],
+"skins": [
+	{
+		"name": "default",
+		"attachments": {
+			"2/1": {
+				"2/1": { "width": 248, "height": 192 }
+			},
+			"2/2": {
+				"2/2": { "width": 248, "height": 192 }
+			},
+			"2/3": {
+				"2/3": { "width": 248, "height": 192 }
+			},
+			"2/4": {
+				"2/4": { "width": 248, "height": 192 }
+			},
+			"2/5": {
+				"2/5": { "width": 248, "height": 192 }
+			},
+			"2/6": {
+				"2/6": { "width": 248, "height": 192 }
+			},
+			"走马灯1": {
+				"1/走马灯1": { "width": 248, "height": 192 }
+			},
+			"走马灯2": {
+				"1/走马灯2": { "width": 248, "height": 192 }
+			}
+		}
+	}
+],
+"animations": {
+	"1 putong": {
+		"slots": {
+			"走马灯2": {
+				"color": [
+					{ "color": "ffffff00", "curve": "stepped" },
+					{ "time": 1, "color": "ffffff00" },
+					{ "time": 1.1667, "color": "ffffffff", "curve": "stepped" },
+					{ "time": 2.1667, "color": "ffffffff" },
+					{ "time": 2.3333, "color": "ffffff00" }
+				]
+			},
+			"2/6": {
+				"color": [
+					{ "color": "ffffff00" }
+				]
+			},
+			"2/5": {
+				"color": [
+					{ "color": "ffffff00" }
+				]
+			},
+			"2/4": {
+				"color": [
+					{ "color": "ffffff00" }
+				]
+			},
+			"走马灯1": {
+				"color": [
+					{ "time": 1, "color": "ffffffff" },
+					{ "time": 1.1667, "color": "ffffff00", "curve": "stepped" },
+					{ "time": 2.1667, "color": "ffffff00" },
+					{ "time": 2.3333, "color": "ffffffff" }
+				]
+			},
+			"2/3": {
+				"color": [
+					{ "color": "ffffff00" }
+				]
+			},
+			"2/2": {
+				"color": [
+					{ "color": "ffffff00" }
+				]
+			},
+			"2/1": {
+				"color": [
+					{ "color": "ffffff00" }
+				]
+			}
+		}
+	},
+	"2 zhongjiang": {
+		"slots": {
+			"走马灯2": {
+				"color": [
+					{ "color": "ffffff00" }
+				]
+			},
+			"2/6": {
+				"color": [
+					{ "color": "ffffff80" },
+					{ "time": 0.1, "color": "ffffff00", "curve": "stepped" },
+					{ "time": 0.3333, "color": "ffffff00" },
+					{ "time": 0.5333, "color": "ffffffff" },
+					{ "time": 0.6667, "color": "ffffff7f" }
+				]
+			},
+			"2/5": {
+				"color": [
+					{ "color": "ffffff00", "curve": "stepped" },
+					{ "time": 0.2333, "color": "ffffff00" },
+					{ "time": 0.4333, "color": "ffffffff" },
+					{ "time": 0.6667, "color": "ffffff00" }
+				]
+			},
+			"2/4": {
+				"color": [
+					{ "color": "ffffff00", "curve": "stepped" },
+					{ "time": 0.1, "color": "ffffff00" },
+					{ "time": 0.3333, "color": "ffffffff" },
+					{ "time": 0.5333, "color": "ffffff00" }
+				]
+			},
+			"走马灯1": {
+				"color": [
+					{ "color": "ffffff00" }
+				]
+			},
+			"2/3": {
+				"color": [
+					{ "color": "ffffff00" },
+					{ "time": 0.2333, "color": "ffffffff" },
+					{ "time": 0.4333, "color": "ffffff00" }
+				]
+			},
+			"2/2": {
+				"color": [
+					{ "color": "ffffff80" },
+					{ "time": 0.1, "color": "ffffffff" },
+					{ "time": 0.3333, "color": "ffffff00", "curve": "stepped" },
+					{ "time": 0.5333, "color": "ffffff00" },
+					{ "time": 0.6667, "color": "ffffff80" }
+				]
+			},
+			"2/1": {
+				"color": [
+					{ "color": "ffffffff" },
+					{ "time": 0.2333, "color": "ffffff00", "curve": "stepped" },
+					{ "time": 0.4333, "color": "ffffff00" },
+					{ "time": 0.6667, "color": "ffffffff" }
+				]
+			}
+		}
+	}
+}
+}

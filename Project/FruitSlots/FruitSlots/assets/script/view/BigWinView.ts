@@ -55,6 +55,8 @@ export default class BigWinView extends cc.Component {
         this.js_bj2.scale = 1;
         this.bigWinEff();
         this.jb_tx?.resetSystem();
+
+        
     }
 
     start () {

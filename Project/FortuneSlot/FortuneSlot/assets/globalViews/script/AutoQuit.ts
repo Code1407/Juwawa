@@ -11,12 +11,6 @@ export let quitTime =300;//强退时间
 // export let idleTime = 40;//挂机时间
 // export let quitTime = 60;//强退时间
 
-
-if ((<any>window).gameName?.includes("Fishing")) {
-    idleTime = 10;
-    quitTime = 40;
-}
-
 let timeoutQuit = 0;
 
 export function onAutoQuit() {

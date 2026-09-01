@@ -302,10 +302,10 @@ export default class Game extends cc.Component {
         }
         // window.location.reload();
     }
-    onResultHandler(msg: { code: number, roundId: number }) {
+    onResultHandler(msg: { code: number, rawTradeCode?: number, roundId: number }) {
         if (!msg || msg.code == ETradeCode.success) return;
         this.autoBetUI.setAutoBet(false);
-        checkTradeCode(msg.code);
+        checkTradeCode(msg.rawTradeCode ?? msg.code);
     }
     onBetNoticeAll(data: IAllBetResp) {
         gGameData.totalWheelAmount = data.wheelAmount;

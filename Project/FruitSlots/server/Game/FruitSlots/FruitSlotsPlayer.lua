@@ -8,6 +8,7 @@ require "GameBase.SystemBase"
 require "FruitSlots.FruitSlotsCommon"
 require "FruitSlots.FruitSlotsConfig"
 require "FruitSlots.FruitSlotsMachine"
+require "CommomDefine"
 
 -- 玩家默认数据结构
 local function defaultData()
@@ -174,13 +175,21 @@ end
 -- 构建返回给客户端的完整游戏状态
 function FruitSlotsPlayer:getClientResp()
     local data = self:getDataSafe()
+    local jackpotAmountPool = self.scene:getAllJackpotPool()
     return {
         account = FRBuildAccount(self:getPlayer()),
-        jackpotAmountPool = self.scene:getAllJackpotPool(),
+        jackpotAmountPool = jackpotAmountPool,
         betAmountIndex = data.lastBetAmountButton or data.playerSettings.lastBetAmountButton or 0,
         lastResult = data.lastResult,
         playerSettings = data.playerSettings or {},
         history = data.history or {},
+        roundStep = {
+            runningRoundID = self.runningRoundID or 0,
+            status = self.machineStatus or FRGameStatus.stop,
+            accountDiamond = self:getDiamond(),
+            jackpotPool = jackpotAmountPool,
+            results = self.runningResults,
+        },
     }
 end
 
@@ -258,6 +267,14 @@ function FruitSlotsPlayer:getBetDetail(button)
     return detail
 end
 
+-- 旧客户端读取归一化后的resultCode；新客户端优先读取平台原始rawTradeCode。
+local function pushBetResp(system, resultCode, backPlayer, rawTradeCode)
+    system = system or (backPlayer and backPlayer:getSystem("FruitSlots"))
+    if system then
+        system:notifyBetFailure(resultCode, rawTradeCode)
+    end
+end
+
 -- 记录一次下注统计
 function FruitSlotsPlayer:incrBetCount(button, betAmount, revenue)
     local detail = self:getBetDetail(button)
@@ -270,33 +287,33 @@ end
 -- 下注订单：扣减金币
 function FruitSlotsPlayer:betOrder(roundId, betAmount, callback)
     if self.scene:isStop() then
-        return FRTradeCode.closeServer
+        return FRTradeCode.CloseServer
     end
     betAmount = FRRoundInt(betAmount or 0)
     if betAmount <= 0 then
-        return FRTradeCode.nothing
+        return FRTradeCode.Nothing
     end
     if self:getDiamond() < betAmount then
-        return FRTradeCode.insufficient
+        return FRTradeCode.Insufficient
     end
     self:getPlayer():subCoins(roundId, self.machine and self.machine:getLastRoundRateType() or 0, betAmount,
         function(code, _orderId, backPlayer)
             local system = backPlayer and backPlayer:getSystem("FruitSlots") or self
-            if code == FRTradeCode.success then
+            if code == FRTradeCode.Success then
                 local rankSys = backPlayer and backPlayer:getSystem("RankPSystem") or nil
                 if rankSys then rankSys:updateRankList(betAmount) end
                 if callback then callback(code, _orderId, backPlayer, system) end
                 return
             end
             local resultCode = code
-            if resultCode ~= -12 then resultCode = FRTradeCode.fail end
+            if resultCode ~= FRTradeCode.UserStatusError and resultCode ~= FRTradeCode.Insufficient and resultCode ~= FRTradeCode.CoinFrozen then resultCode = FRTradeCode.SdkDisconnect end
             if callback then
-                callback(resultCode, _orderId, backPlayer, system)
+                callback(resultCode, _orderId, backPlayer, system, code)
             else
-                system:notifyBetFailure(resultCode)
+                pushBetResp(system, resultCode, backPlayer, code)
             end
         end)
-    return FRTradeCode.success
+    return FRTradeCode.Success
 end
 
 -- 获胜订单：发放奖励金币（异步回调）
@@ -304,16 +321,16 @@ function FruitSlotsPlayer:winOrder(roundId, winAmount, oddsType, callback)
     winAmount = FRRoundInt(winAmount or 0)
     if winAmount <= 0 then
         if callback then
-            callback(FRTradeCode.nothing, nil, self:getPlayer())
+            callback(FRTradeCode.Nothing, nil, self:getPlayer())
         end
-        return FRTradeCode.nothing
+        return FRTradeCode.Nothing
     end
     self:getPlayer():addCoins(roundId, oddsType or 0, ECoinsOperateType.WinAdd, winAmount, function(code, addOrderID, backPlayer)
         if callback then
             callback(code, addOrderID, backPlayer)
         end
     end)
-    return FRTradeCode.success
+    return FRTradeCode.Success
 end
 
 -- 记录一个正在运行的回合
@@ -395,9 +412,10 @@ function FruitSlotsPlayer:incrJackpotCount(betAmount)
 end
 
 -- 通知客户端下注失败
-function FruitSlotsPlayer:notifyBetFailure(code)
+function FruitSlotsPlayer:notifyBetFailure(code, rawTradeCode)
     self.scene:onResultHandler(self:getUid(), {
-        code = code or FRTradeCode.fail,
+        code = code or FRTradeCode.Fail,
+        rawTradeCode = rawTradeCode,
         result = nil,
         roundId = 0,
     })
@@ -445,7 +463,7 @@ function FruitSlotsPlayer:completePaidBet(roundId, betAmount, linesBetAmount)
         self.runningRoundID = roundId
         self:runRound(roundId, FRGameType.normal, result, oddsType, gameResult, linesBetAmount)
         self.scene:onResultHandler(self:getUid(), {
-            code = FRTradeCode.success, result = result, roundId = roundId,
+            code = FRTradeCode.Success, result = result, roundId = roundId,
         })
     end, function(message)
         return debug and debug.traceback and debug.traceback(tostring(message), 2) or tostring(message)
@@ -460,7 +478,7 @@ function FruitSlotsPlayer:completePaidBet(roundId, betAmount, linesBetAmount)
         self.runningRoundID = 0
         self:changeMachineStatus(FRGameStatus.final)
         log_error("FruitSlots paid bet result generation failed, roundId:{0}, error:{1}", roundId, tostring(err))
-        self:notifyBetFailure(FRTradeCode.fail)
+        self:notifyBetFailure(FRTradeCode.Fail)
         self.scene:tryFinishServerClosing()
         return false
     end
@@ -473,12 +491,12 @@ end
 -- 普通下注流程：扣款 -> 生成单控结果 -> 启动回合
 function FruitSlotsPlayer:betNormal(betAmount)
     if self.scene:isStop() then
-        self:notifyBetFailure(FRTradeCode.closeServer)
-        return { code = FRTradeCode.closeServer, result = nil, roundId = 0 }
+        self:notifyBetFailure(FRTradeCode.CloseServer)
+        return { code = FRTradeCode.CloseServer, result = nil, roundId = 0 }
     end
     if self.machineStatus ~= FRGameStatus.bet then
-        self:notifyBetFailure(FRTradeCode.fail)
-        return { code = FRTradeCode.fail, result = nil, roundId = 0 }
+        self:notifyBetFailure(FRTradeCode.Fail)
+        return { code = FRTradeCode.Fail, result = nil, roundId = 0 }
     end
 
     local data = self:getDataSafe()
@@ -486,23 +504,23 @@ function FruitSlotsPlayer:betNormal(betAmount)
     -- 持久化的未知订单将保留以进行对账，且不得
     -- 永久阻止玩家开始一个具有唯一密钥的新回合。
     if self.pendingBet ~= nil then
-        self:notifyBetFailure(FRTradeCode.fail)
-        return { code = FRTradeCode.fail, result = nil, roundId = 0 }
+        self:notifyBetFailure(FRTradeCode.Fail)
+        return { code = FRTradeCode.Fail, result = nil, roundId = 0 }
     end
     -- 先结算上一个未完成的回合
     if next(data.runningRounds or {}) ~= nil then
         self:stopRunningRound()
         if next(data.runningRounds or {}) ~= nil then
-            self:notifyBetFailure(FRTradeCode.fail)
-            return { code = FRTradeCode.fail, result = nil, roundId = 0 }
+            self:notifyBetFailure(FRTradeCode.Fail)
+            return { code = FRTradeCode.Fail, result = nil, roundId = 0 }
         end
     end
 
     -- 清除上次残存的免费游戏状态
     betAmount = FRRoundInt(betAmount or 0)
     if not FruitSlotsIsValidBetAmount(betAmount) then
-        self:notifyBetFailure(FRTradeCode.fail)
-        return { code = FRTradeCode.fail, result = nil, roundId = 0 }
+        self:notifyBetFailure(FRTradeCode.Fail)
+        return { code = FRTradeCode.Fail, result = nil, roundId = 0 }
     end
     local linesBetAmount = betAmount * FRLineCount -- 总下注 = 单线下注 x 线数
     local roundId = self:incrTodayRoundID()
@@ -514,7 +532,7 @@ function FruitSlotsPlayer:betNormal(betAmount)
     }
     self.pendingBet = { roundId = roundId, betAmount = betAmount, linesBetAmount = linesBetAmount }
     self:changeMachineStatus(FRGameStatus.ready)
-    local code = self:betOrder(roundId, linesBetAmount, function(payCode, _orderId, backPlayer, system)
+    local code = self:betOrder(roundId, linesBetAmount, function(payCode, _orderId, backPlayer, system, rawTradeCode)
         local systemData = system and system:getDataSafe() or nil
         local persistedPending = systemData and systemData.pendingBets[tostring(roundId)] or nil
         if not system or not persistedPending then
@@ -526,10 +544,10 @@ function FruitSlotsPlayer:betNormal(betAmount)
             return
         end
         system.pendingBet = nil
-        if payCode ~= FRTradeCode.success then
+        if payCode ~= FRTradeCode.Success then
             systemData.pendingBets[tostring(roundId)] = nil
             system:changeMachineStatus(FRGameStatus.bet)
-            system:notifyBetFailure(payCode)
+            pushBetResp(system, payCode, backPlayer, rawTradeCode)
             system.scene:tryFinishServerClosing()
             return
         end
@@ -542,7 +560,7 @@ function FruitSlotsPlayer:betNormal(betAmount)
         systemData.pendingBets[tostring(roundId)] = nil
         system:completePaidBet(roundId, betAmount, linesBetAmount)
     end)
-    if code ~= FRTradeCode.success then
+    if code ~= FRTradeCode.Success then
         data.pendingBets[tostring(roundId)] = nil
         self.pendingBet = nil
         self:changeMachineStatus(FRGameStatus.bet)
@@ -561,31 +579,31 @@ function FruitSlotsPlayer:betFree()
     -- 优雅关服只允许消费本局已经获得的免费次数，不能开启新的付费局。
     local canFinishFreeMode = self.scene:isClosing() and self:hasPendingFreeRounds()
     if self.scene:isStop() and not canFinishFreeMode then
-        self:notifyBetFailure(FRTradeCode.closeServer)
-        return { code = FRTradeCode.closeServer, result = nil, roundId = 0 }
+        self:notifyBetFailure(FRTradeCode.CloseServer)
+        return { code = FRTradeCode.CloseServer, result = nil, roundId = 0 }
     end
     if self.machineStatus ~= FRGameStatus.bet then
-        self:notifyBetFailure(FRTradeCode.fail)
-        return { code = FRTradeCode.fail, result = nil, roundId = 0 }
+        self:notifyBetFailure(FRTradeCode.Fail)
+        return { code = FRTradeCode.Fail, result = nil, roundId = 0 }
     end
 
     local data = self:getDataSafe()
     if not data.lastResult then
-        return { code = FRTradeCode.success, result = nil, roundId = 0 }
+        return { code = FRTradeCode.Success, result = nil, roundId = 0 }
     end
 
     -- 读取上次结果中的免费游戏参数
     local freeCount = data.lastResult.freeCount or 0
     local betAmount = data.lastResult.betAmount or 0
     if freeCount <= 0 or betAmount <= 0 then
-        return { code = FRTradeCode.success, result = nil, roundId = 0 }
+        return { code = FRTradeCode.Success, result = nil, roundId = 0 }
     end
 
     if next(data.runningRounds or {}) ~= nil then
         self:stopRunningRound()
         if next(data.runningRounds or {}) ~= nil then
-            self:notifyBetFailure(FRTradeCode.fail)
-            return { code = FRTradeCode.fail, result = nil, roundId = 0 }
+            self:notifyBetFailure(FRTradeCode.Fail)
+            return { code = FRTradeCode.Fail, result = nil, roundId = 0 }
         end
     end
 
@@ -596,7 +614,7 @@ function FruitSlotsPlayer:betFree()
     self:runRound(roundId, FRGameType.free, result, oddsType, gameResult, 0)
 
     return {
-        code = FRTradeCode.success,
+        code = FRTradeCode.Success,
         result = result,
         roundId = roundId,
     }
@@ -659,7 +677,7 @@ function FruitSlotsPlayer:settleResult(roundId)
     self:winOrder(roundId, winAmount, result.oddsType, function(code, addOrderID, backPlayer)
         local system = backPlayer and backPlayer:getSystem("FruitSlots") or self
         local player = backPlayer or system:getPlayer()
-        local success = code == FRTradeCode.success
+        local success = code == FRTradeCode.Success
         system.scene:onAccountDiamondUpdate(system:getUid(), {
             value = math.floor((player and player:getCoins()) or system:getDiamond() or 0),
             offset = success and winAmount or 0,
@@ -745,7 +763,7 @@ function FruitSlotsPlayer:setBetAmountButton(betAmountButtonIndex)
     data.lastBetAmountButton = betAmountButtonIndex or 0
     data.playerSettings = data.playerSettings or {}
     data.playerSettings.lastBetAmountButton = betAmountButtonIndex or 0
-    return { code = FRTradeCode.success }
+    return { code = FRTradeCode.Success }
 end
 
 -- 更新玩家设置（音量、加速等）
@@ -777,5 +795,5 @@ function FruitSlotsPlayer:updateSettings(config)
         isSpeed = isSpeed,
     }
     data.lastBetAmountButton = data.playerSettings.lastBetAmountButton
-    return { code = FRTradeCode.success }
+    return { code = FRTradeCode.Success }
 end

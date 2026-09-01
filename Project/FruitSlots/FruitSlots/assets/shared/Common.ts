@@ -551,6 +551,27 @@ export namespace sdk {
         if (sdkClient && sdkClient.recharge) sdkClient.recharge();
     }
 
+    export async function reconnect() {
+        console.log("sdk reconnect");
+        if ((<any>window).net) {
+            const table = serverConfig;
+            const connectUrl = table && table.serverAdress;
+            if (connectUrl) {
+                (<any>window).net.connect(connectUrl, {
+                    pingInterval: 3,
+                    pingOut: 8,
+                    retryInterval: 2,
+                    retryMaxCount: 10,
+                    compress: true
+                });
+            }
+        }
+        else {
+            ((<any>window).sdk?.reload && (<any>window).sdk.reload()) || window.location.reload();
+        }
+        (<any>window).updateAutoQuit?.();
+    }
+
     export function quit() {
         console.log("quit");
 
@@ -600,6 +621,7 @@ export let isGameHide = () => (<any>window).gameHide;
 
 (<any>window).HotGameRecharge = sdk.recharge;
 (<any>window).HotGameQuit = sdk.quit;
+(<any>window).HotGameReconnect = sdk.reconnect;
 
 export let DecimalUnit: {
 

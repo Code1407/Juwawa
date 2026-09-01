@@ -5,6 +5,7 @@
 // Learn life-cycle callbacks:
 //  - https://docs.cocos.com/creator/2.4/manual/en/scripting/life-cycle-callbacks.html
 
+
 import { setActive } from "./GlobalModules";
 
 const { ccclass, property } = cc._decorator;
@@ -17,9 +18,6 @@ export default class SDKUI_EX extends cc.Component {
     btnQuit: cc.Node
     @property(cc.Node)
     btnReload: cc.Node
-    @property(cc.Node)
-    closeBtn: cc.Node 
-
     protected start(): void {
         this.btnRecharge?.on(cc.Node.EventType.TOUCH_END, async () => {
             console.log(`touch rechage button`);
@@ -46,14 +44,11 @@ export default class SDKUI_EX extends cc.Component {
         })
         this.btnReload?.on(cc.Node.EventType.TOUCH_END, async () => {
             console.log(`touch reload button`);
-            ((<any>window).HotGameReconnect && (<any>window).HotGameReconnect() && this.close())
-        })
-        this.closeBtn?.on(cc.Node.EventType.TOUCH_END, async () => {
-            this.close()
+            ((<any>window).reload && (<any>window).reload()) || window.location.reload();
         })
     }
     close() {
-        this.node.active = false;
+        setActive(this.node, false);
     }
 }
 export async function TryUpdateToken() {

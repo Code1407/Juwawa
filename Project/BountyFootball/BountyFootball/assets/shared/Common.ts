@@ -8,8 +8,8 @@ const defaultServerConfig = {
     platId: 101,
     platKey: "abc",
     serverIndex: 1,
-    uId: "zzj3",
-    token: "qwertyuiop12313",
+    uId: "gcc_0094252",
+    token: "qwertyuiop12",
     routerPath: "game"
 };
 

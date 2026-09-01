@@ -103,9 +103,9 @@ function FruitSlotsIsValidBetAmount(betAmount)
     return false
 end
 
-function FruitSlotsBetAmountsMatch(clientAmounts)
+function FruitSlotsBetAmountsMatch(clientAmounts, serverAmounts)
     if type(clientAmounts) ~= "table" then return false end
-    local serverAmounts = FruitSlotsGetBetAmounts()
+    serverAmounts = serverAmounts or FruitSlotsGetBetAmounts()
     if #clientAmounts ~= #serverAmounts then return false end
     for index, amount in ipairs(serverAmounts) do
         if tonumber(clientAmounts[index]) ~= amount then return false end

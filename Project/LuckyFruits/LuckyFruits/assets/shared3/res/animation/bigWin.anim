@@ -1,0 +1,129 @@
+{
+  "__type__": "cc.AnimationClip",
+  "_name": "bigWin",
+  "_objFlags": 0,
+  "_native": "",
+  "_duration": 0.6333333333333333,
+  "sample": 60,
+  "speed": 1,
+  "wrapMode": 54,
+  "curveData": {
+    "paths": {
+      "holder/BIG": {
+        "props": {
+          "scale": [
+            {
+              "frame": 0,
+              "value": {
+                "__type__": "cc.Vec3",
+                "x": 1.15,
+                "y": 1.15,
+                "z": 1.295
+              }
+            },
+            {
+              "frame": 0.6333333333333333,
+              "value": {
+                "__type__": "cc.Vec3",
+                "x": 1,
+                "y": 1,
+                "z": 1.039
+              }
+            }
+          ]
+        }
+      },
+      "holder/WIN": {
+        "props": {
+          "scale": [
+            {
+              "frame": 0,
+              "value": {
+                "__type__": "cc.Vec3",
+                "x": 1,
+                "y": 1,
+                "z": 1.053
+              }
+            },
+            {
+              "frame": 0.6333333333333333,
+              "value": {
+                "__type__": "cc.Vec3",
+                "x": 1.15,
+                "y": 1.15,
+                "z": 1.111
+              }
+            }
+          ]
+        }
+      },
+      "holder/STAR": {
+        "props": {
+          "scale": [
+            {
+              "frame": 0,
+              "value": {
+                "__type__": "cc.Vec3",
+                "x": 1,
+                "y": 1,
+                "z": 0.968
+              }
+            },
+            {
+              "frame": 0.31666666666666665,
+              "value": {
+                "__type__": "cc.Vec3",
+                "x": 0.95,
+                "y": 0.95,
+                "z": 0.945
+              }
+            },
+            {
+              "frame": 0.6333333333333333,
+              "value": {
+                "__type__": "cc.Vec3",
+                "x": 1,
+                "y": 1,
+                "z": 0.945
+              }
+            }
+          ]
+        }
+      },
+      "holder/DI": {
+        "props": {
+          "scale": [
+            {
+              "frame": 0,
+              "value": {
+                "__type__": "cc.Vec3",
+                "x": 1,
+                "y": 1,
+                "z": 1.006
+              }
+            },
+            {
+              "frame": 0.31666666666666665,
+              "value": {
+                "__type__": "cc.Vec3",
+                "x": 1.02,
+                "y": 1.02,
+                "z": 1.006
+              }
+            },
+            {
+              "frame": 0.6333333333333333,
+              "value": {
+                "__type__": "cc.Vec3",
+                "x": 1,
+                "y": 1,
+                "z": 1.006
+              }
+            }
+          ]
+        }
+      }
+    }
+  },
+  "events": []
+}

@@ -360,10 +360,12 @@ function GameAnalyData:player_win_to_coin_max()
             if self:check_result_valid(id, nil, true) then
                 if id == 2 then
                     for jId, cfgJp in ipairs(cfgJackpot) do
+                        local rewardJid = nil
                         local openRewards = {}
                         table.insert(openRewards, id)
                         if cfgJp.Rewards and #cfgJp.Rewards > 0 then
                             if self:check_result_valid(id, jId, true) then
+                                rewardJid = jId
                                 for _, jpReward in ipairs(cfgJp.Rewards) do
                                     table.insert(openRewards, jpReward)
                                 end                           
@@ -372,7 +374,7 @@ function GameAnalyData:player_win_to_coin_max()
                         local winTotal = get_player_win_total(openRewards)
                         if winTotal > 0 then
                             if winTotal > (winMax or 0) then
-                                winMax, rewardId, jpId = winTotal, id, jId
+                                winMax, rewardId, jpId = winTotal, id, rewardJid
                             end
                         end
                     end
@@ -426,10 +428,12 @@ function GameAnalyData:player_win_to_vip_max()
             if self:check_result_valid(id, nil, true) then
                 if id == 2 then
                     for jId, cfgJp in ipairs(cfgJackpot) do
+                        local rewardJid = nil
                         local openRewards = {}
                         table.insert(openRewards, id)
                         if cfgJp.Rewards and #cfgJp.Rewards > 0 then
                             if self:check_result_valid(id, jId, true) then
+                                rewardJid = jId
                                 for _, jpReward in ipairs(cfgJp.Rewards) do
                                     table.insert(openRewards, jpReward)
                                 end
@@ -438,7 +442,7 @@ function GameAnalyData:player_win_to_vip_max()
                         local vipWeightTotal = get_player_vip_weight_total(openRewards)
                         if vipWeightTotal then
                             if vipWeightTotal >= (vipWeightMax or 0) then
-                                vipWeightMax, rewardId, jpId = vipWeightTotal, id, jId
+                                vipWeightMax, rewardId, jpId = vipWeightTotal, id, rewardJid
                             end
                         end
                     end
@@ -490,10 +494,12 @@ function GameAnalyData:player_win_to_player_count_max()
             if self:check_result_valid(id, nil, true) then
                 if id == 2 then
                     for jId, cfgJp in ipairs(cfgJackpot) do
+                        local rewardJid = nil
                         local openRewards = {}
                         table.insert(openRewards, id)
                         if cfgJp.Rewards and #cfgJp.Rewards > 0 then
                             if self:check_result_valid(id, jId, true) then
+                                rewardJid = jId
                                 for _, jpReward in ipairs(cfgJp.Rewards) do
                                     table.insert(openRewards, jpReward)
                                 end
@@ -502,7 +508,7 @@ function GameAnalyData:player_win_to_player_count_max()
                         local playerTotal = get_player_win_count(openRewards)
                         if playerTotal > 0 then
                             if playerTotal > (playerCountMax or 0) then
-                                playerCountMax, rewardId, jpId = playerTotal, id, jId
+                                playerCountMax, rewardId, jpId = playerTotal, id, rewardJid
                             end
                         end
                     end
@@ -672,7 +678,7 @@ function GameAnalyData:get_valid_jp_id(checkWaterRuler)
         local reward77 = self:get_global_reward_by_reward(2)
         local cfgJackpot = gConfigMgr:getBaseConfig("Jackpot")
         for jpId, cfgJp in ipairs(cfgJackpot) do
-            if self:check_result_valid(reward77, jpId, checkWaterRuler) then
+            if self:check_result_valid(2, jpId, checkWaterRuler) then
                 table.insert(ids, jpId)
                 table.insert(weights, cfgJp.Weight)
             end

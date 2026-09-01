@@ -29,4 +29,9 @@ end
 
 function GameApp:onClosing()
     log_info("***服务器准备停服更新***")
+
+    if not gWorld:hasPlayer() then
+        gApp:finishClosing()
+        log_info("没人在线, 立即停服更新")
+    end
 end

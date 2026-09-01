@@ -18,6 +18,7 @@ export default class FreeGameView extends BigWinView {
     start () {
 
     }
+    
 
     // update (dt) {}
 }

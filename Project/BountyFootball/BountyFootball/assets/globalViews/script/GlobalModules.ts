@@ -80,9 +80,15 @@ enum ETradeCode {
     betPassMax = -10,    //下注超过最大限制
     repeatOrder = -11,   // 重复订单
     userStatusError = -12,   // 用户状态异常
+    CoinFrozen = -24,    // 金币冻结
     nothing = -99997,
     userException = -99998,
     unknow = -99999,
+}
+
+function showCloseServerNotice() {
+    (<any>window).pendingCloseServerView = true;
+    setActive(GlobalViews.Instance?.closeServerView, true, "closeServerView");
 }
 
 (<any>window).breakRoundStep = false;
@@ -156,6 +162,21 @@ export async function StopGame(str: string, immediately: boolean = false) {
             StopGame(`用户异常`);
             break;
         case ETradeCode.sdkDisconnect: setActive(GlobalViews.Instance?.maintenanceView, true, "maintenanceView"); break;   
+        case ETradeCode.closeServer: showCloseServerNotice(); break;
+        case ETradeCode.CoinFrozen: setActive(GlobalViews.Instance?.coinFrozenView, true, "coinFrozenView"); break;
+        case ETradeCode.success:
+        case ETradeCode.missTime:
+        case ETradeCode.coolDown:
+        case ETradeCode.fail:
+        case ETradeCode.betDone:
+        case ETradeCode.betPassMax:
+        case ETradeCode.repeatOrder:
+        case ETradeCode.nothing:
+            break;
+        default:
+            console.warn("Unhandled trade code", code);
+            setActive(GlobalViews.Instance?.maintenanceView, true, "maintenanceView");
+            break;
     }
     if (code != ETradeCode.success) {
         console.warn("TradeCode", code);

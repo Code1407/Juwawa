@@ -3,6 +3,34 @@
 -- 定义了游戏中使用的各类枚举常量
 -- ============================================================
 
+
+
+--积分交易SDK错误码
+FRTradeCode = {
+    Internal        = 1, --内部错误
+	Remote          = 2, --远端错误
+
+	Success         = 0,
+	Insufficient    = -1, --余额不足
+	MissTime        = -2, --错过下注时间
+	SdkDisconnect   = -3, --平台sdk不通
+	CloseServer     = -4, --服务器发生严重错误导致关服
+	TokenInvalid    = -5, --无效token
+	CoolDown        = -6, --冷却
+	Timeout         = -7, --超时
+	Fail            = -8, 
+	BetDone         = -9, --重复下注
+	BetPassMax      = -10, --下注超过最大限制
+	RepeatOrder     = -11, --重复订单
+	UserStatusError = -12, --用户状态异常
+	ObeRepair       = -20, --layla 定制
+	Ignore          = -21, --sungo 定制
+	CoinFrozen     = -24, --币种暂时冻结，请联系官方运营部门
+	Nothing         = -99997,
+	UserException   = -99998,
+	Unknow          = -99999,
+}
+
 -- 单控分析类型：控制玩家输赢的策略类型
 EAnalyType = {
     NoLimit = 0,    -- 无限制（不进行单控）

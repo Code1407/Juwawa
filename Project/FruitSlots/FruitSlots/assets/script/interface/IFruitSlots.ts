@@ -117,7 +117,7 @@ export interface IRoundStep {
     status: EGameStatus;
     accountDiamond: number;
     jackpotPool: IJackpotAmountPool;
-    results: IResults;
+    results?: IResults;
 }
 
 export interface IJackpotAmountPool {
@@ -151,16 +151,24 @@ export interface IEnterGameResp {
     betAmountIndex: EBetAmountIndex;
     lastResult: IResults;
     playerSettings: IPlayerSettings,
+    // 旧服务端可能未下发，客户端保留兼容性降级。
+    roundStep?: IRoundStep;
 }
 
 export interface IBetResp {
     code: ETradeCode;
+    rawTradeCode?: number;
     result: IResults;
     roundId: number;
 }
 
 export interface IRoundResultResp {
     accountDiamond: number;
+}
+
+export interface IBetAmountsResp {
+    code: ETradeCode;
+    betAmounts: number[];
 }
 
 export interface IHint {
@@ -175,6 +183,7 @@ export interface IPlayer {
     stopRound(roundId: number): Promise<IRoundResultResp>;
     setBetAmountButton(betAmountButtonIndex: EBetAmountIndex);
     synchronize(): Promise<IEnterGameResp>;
+    sendBetAmounts(): Promise<IBetAmountsResp>;
 }
 
 export interface ISceneListen {

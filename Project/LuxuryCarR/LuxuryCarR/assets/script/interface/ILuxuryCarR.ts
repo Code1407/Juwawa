@@ -164,7 +164,8 @@ export interface IEnterGameResp {
 
 export interface IBetResp {
     requestId: number;
-    code: number; // 0 成功， -1 余额不足, -2 错过下注时间, -3 平台sdk不通
+    code: number; // 兼容旧客户端的稳定业务码
+    rawTradeCode?: number; // 平台原始交易码；新客户端优先读取
     accountDiamond: number;
     wheelAmount: number[];
     wheelChipAmount: number[][];

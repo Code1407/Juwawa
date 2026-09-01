@@ -33,3 +33,6 @@ text.path35 = `geçmiş`;
 text.path38 = `Oyun sunucusu bakımda olduğundan geçici olarak oynanamaz.
 Lütfen daha sonra tekrar deneyin.`;
 text.path39 = `Çıkış`;
+
+text.path40 = `Paralar geçici olarak donduruldu, lütfen resmi operasyon ekibiyle iletişime geçin.`;
+text.path41 = `Çıkış`;

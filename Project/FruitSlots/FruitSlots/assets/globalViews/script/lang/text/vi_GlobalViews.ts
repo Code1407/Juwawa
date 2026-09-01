@@ -32,3 +32,6 @@ text.path37 = `Hồi phục`;
 text.path38 = `Máy chủ trò chơi đang được bảo trì và tạm thời không thể chơi được.
 Vui lòng thử lại sau.`;
 text.path39 = "Thoát";
+
+text.path40 = `Xu đang tạm thời bị khóa, vui lòng liên hệ bộ phận vận hành chính thức.`;
+text.path41 = `Thoát`;

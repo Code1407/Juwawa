@@ -58,17 +58,17 @@
     "_active": true,
     "_components": [
       {
-        "__id__": 764
-      },
-      {
-        "__id__": 766
-      },
-      {
         "__id__": 768
+      },
+      {
+        "__id__": 770
+      },
+      {
+        "__id__": 772
       }
     ],
     "_prefab": {
-      "__id__": 770
+      "__id__": 774
     },
     "_lpos": {
       "__type__": "cc.Vec3",
@@ -16750,6 +16750,12 @@
       },
       {
         "__id__": 763
+      },
+      {
+        "__id__": 764
+      },
+      {
+        "__id__": 766
       }
     ],
     "removedComponents": []
@@ -16827,6 +16833,38 @@
     "value": true
   },
   {
+    "__type__": "CCPropertyOverrideInfo",
+    "targetInfo": {
+      "__id__": 765
+    },
+    "propertyPath": [
+      "_active"
+    ],
+    "value": false
+  },
+  {
+    "__type__": "cc.TargetInfo",
+    "localID": [
+      "77Tsx1A15Gj6Xsdn+wkVIb"
+    ]
+  },
+  {
+    "__type__": "CCPropertyOverrideInfo",
+    "targetInfo": {
+      "__id__": 767
+    },
+    "propertyPath": [
+      "_active"
+    ],
+    "value": false
+  },
+  {
+    "__type__": "cc.TargetInfo",
+    "localID": [
+      "faKovOXzdIaJlh8D35V/4q"
+    ]
+  },
+  {
     "__type__": "cc.UITransform",
     "_name": "",
     "_objFlags": 0,
@@ -16836,7 +16874,7 @@
     },
     "_enabled": true,
     "__prefab": {
-      "__id__": 765
+      "__id__": 769
     },
     "_contentSize": {
       "__type__": "cc.Size",
@@ -16864,7 +16902,7 @@
     },
     "_enabled": true,
     "__prefab": {
-      "__id__": 767
+      "__id__": 771
     },
     "chipsCtrl": {
       "__id__": 633
@@ -16918,7 +16956,7 @@
     },
     "_enabled": true,
     "__prefab": {
-      "__id__": 769
+      "__id__": 773
     },
     "_alignFlags": 45,
     "_target": null,
@@ -16956,7 +16994,7 @@
     "instance": null,
     "targetOverrides": [
       {
-        "__id__": 771
+        "__id__": 775
       }
     ],
     "nestedPrefabInstanceRoots": [
@@ -16987,7 +17025,7 @@
       "__id__": 385
     },
     "targetInfo": {
-      "__id__": 772
+      "__id__": 776
     }
   },
   {

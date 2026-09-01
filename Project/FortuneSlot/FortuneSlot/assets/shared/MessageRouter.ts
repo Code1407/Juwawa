@@ -781,6 +781,8 @@ class JsNetMessageRouter {
                 }
                 //先计算当前位置
                 node.y=(args[0].height/2-args[2].top-args[1].height/2)/args[0].height*1530
+                node.x=(args[0].width/2-args[2].right-args[1].width/2)/args[0].width*960
+                node.scale=node.scale*args[3]
             }
             ((window as any).onGameScreenChanged || []).forEach(fn => fn?.());
             });

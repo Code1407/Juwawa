@@ -66,6 +66,11 @@ export default class SpinUI extends cc.Component {
     setAutoBet(auto: boolean) {
         this.auto_down.active = auto;
         this.auto_up.active = !auto;
+        (<any>window).isAutoBetActive = auto;
+    }
+
+    onDestroy() {
+        (<any>window).isAutoBetActive = false;
     }
 
     private switchButton(status: boolean) {

@@ -4,6 +4,7 @@ import GameProxyMgr from "../mvc/GameProxyMgr";
 import { GameEvent } from "../common/GameEvent";
 import { NetEvent } from "../common/NetEvent";
 import { GameGlobal } from "../common/GameGlobal";
+import { ETradeCode } from "../../framework/commom/FrameDefine";
 
 export default class Seven7System extends IMvc {
 
@@ -68,7 +69,13 @@ export default class Seven7System extends IMvc {
         }
 
         if(msg.errorCode && msg.errorCode != 0){
-            oops.gui.showErrorCode(msg.errorCode);
+            if(msg.errorCode == ETradeCode.UserStatusError){//用户状态异常
+                oops.gui.showAccounErrortUI();
+            }else if(msg.errorCode == ETradeCode.Insufficient){//余额不足
+                oops.gui.showRechargeUI();
+            }else{
+                oops.gui.toast("common_bet_error", true)
+            }
             GameProxyMgr.playerProxy.update_player_coins(msg.money || 0);
             return;
         }

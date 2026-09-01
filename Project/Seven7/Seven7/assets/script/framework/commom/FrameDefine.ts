@@ -72,12 +72,33 @@ export enum ESkin {
     default = 1, //默认
 }
 
-/** 服务器错误码 */
-export enum EErrorCode{
-    /** sdk定 */
-    UserStatusError = -12,  // 用户状态异常
 
-    /** 自己定 */
+/** 服务器交易错误码 */
+export enum ETradeCode {
+    Internal        = 1, //内部错误
+	Remote          = 2, //远端错误
+
+	Success         = 0,
+	Insufficient    = -1, //余额不足
+	MissTime        = -2, //错过下注时间
+	SdkDisconnect   = -3, //平台sdk不通
+	CloseServer     = -4, //服务器发生严重错误导致关服
+	TokenInvalid    = -5, //无效token
+	CoolDown        = -6, //冷却
+	Timeout         = -7, //超时
+	Fail            = -8, 
+	BetDone         = -9, //重复下注
+	BetPassMax      = -10, //下注超过最大限制
+	RepeatOrder     = -11, //重复订单
+	UserStatusError = -12, //用户状态异常
+	ObeRepair       = -20, //layla 定制
+	Ignore          = -21, //sungo 定制
+	Nothing         = -99997,
+	UserException   = -99998,
+	Unknow          = -99999,
+
+
+     /** 自己定 */
     BetCountError = 10011,      // 下注次数超出
     BetTypeCountError = 10012,  // 下注种类超出数量
 }

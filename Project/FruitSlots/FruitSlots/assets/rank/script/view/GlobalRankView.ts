@@ -287,6 +287,9 @@ export default class GlobalRankView extends cc.Component {
         }
         this.UpdateWeekDay();
         this.TryLoad();
+
+        //当前节点在父节点上 改为顶层
+        this.node.parent.parent.zIndex = this.node.parent.parent.parent.children.length + 10;
     }
 
     TryLoad() {
@@ -306,6 +309,7 @@ export default class GlobalRankView extends cc.Component {
 
     protected onDisable(): void {
         this.Clear();
+        this.node.parent.parent.zIndex = 10;
     }
 
     Clear() {

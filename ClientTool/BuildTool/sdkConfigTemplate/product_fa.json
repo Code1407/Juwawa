@@ -11,6 +11,10 @@
         {
             "machArea": 4,
             "url": "https://front.fj.hotgame.win:8080/adress"
+        },
+        {
+            "machArea": 5,
+            "url": "https://front.alq.hotgame.win:8080/adress"
         }
     ]
 }

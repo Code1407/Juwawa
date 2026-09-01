@@ -50,3 +50,6 @@ text.path35 = `retomar`;
 text.path38 = `O servidor de jogo está em manutenção e não está disponível temporariamente.
 Por favor, tente mais tarde.`;
 text.path39 = "Sair";
+
+text.path40 = `As moedas estão temporariamente congeladas, por favor entre em contato com a equipe de operações oficial.`;
+text.path41 = `Sair`;

@@ -23,5 +23,11 @@ export default class RuleView extends cc.Component {
         });
     }
 
+    protected onEnable(): void {
+        this.node.parent.zIndex = this.node.parent.children.length+100;
+    }
+
+   
+
     // update (dt) {}
 }

@@ -170,6 +170,7 @@ interface enterGameResp {
     lastResult: Results
     playerSettings: PlayerSettings
     history: HistoryItem[]
+    roundStep: RoundStep
 }
 
 interface betNormal {
@@ -233,6 +234,7 @@ interface sendBetAmounts {
 
 interface sendBetAmountsResp {
     code: number
+    betAmounts: number[]
 }
 
 interface dbmHeartbeat {

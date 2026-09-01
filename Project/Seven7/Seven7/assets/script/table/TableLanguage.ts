@@ -27,8 +27,8 @@ export class TableLanguage {
         return this.data.VI;
     }
     /** 孟加拉语 */
-    get BD(): string {
-        return this.data.BD;
+    get BN(): string {
+        return this.data.BN;
     }
     /** 西班牙语 */
     get ES(): string {

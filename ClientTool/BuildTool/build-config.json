@@ -3,9 +3,9 @@
 	"md5Cache": true,
 	"debug": true,
 	"enableVConsole": true,
-	"pureClientPath": "D:/GameTemplate/PureClient",
-	"projectsPath": "E:/Project/Cocos/GitProject",
-    "exportRoot": "D:/ClientTool/BuildTool/buildOut",
+	"pureClientPath": "D:/Work/Project/GameTemplate/PureClient",
+	"projectsPath": "D:/Work/Project",
+    "exportRoot": "D:/Work/Project/ClientTool/BuildTool/buildOut",
     "obfuscate": {
       "enabled": true,
       "includeAllBundles": true,
@@ -81,14 +81,14 @@
       }
     },
 	{
-      "name": "豪车汇",
-      "packageName": "LuxuryCar",
+      "name": "万人水果机",
+      "packageName": "LuckyFruits",
       "creatorVersion": "2.4.10",
       "build": {
         "orientation": "Auto",
-        "startScene": "assets/scene/seven_screen.fire",
+        "startScene": "assets/scene/seven.fire",
         "scenes": [
-          "assets/scene/seven_screen.fire"
+          "assets/scene/seven.fire"
         ]
       }
     }

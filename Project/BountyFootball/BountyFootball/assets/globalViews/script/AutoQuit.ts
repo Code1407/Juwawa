@@ -58,7 +58,8 @@ function updateAutoQuit() {
             return;
         }
         if (Date.now() > timeToShowTips) {
-            setActive(GlobalViews.Instance?.timerToAutoQuitView, true, "timerToAutoQuitView");
+            // 前端超时后不再弹出 timerToQuit 倒计时窗口。
+            // setActive(GlobalViews.Instance?.timerToAutoQuitView, true, "timerToAutoQuitView");
             clearInterval(timeoutIdle);
         }
     }, 500);

@@ -101,19 +101,20 @@ function Player:updateSettings(msg)
     return sys:updateSettings(msg.config)
 end
 
--- 同步下注金额档位配置：校验客户端与服务器下注档位是否一致
--- 若不一致则记录错误日志并返回失败，防止客户端用旧档位下注
+-- 同步下注金额档位配置：校验客户端配置，并始终返回服务端权威档位。
 -- @param msg.betAmounts - 客户端持有的下注金额列表
--- @return table { code } - 0 表示一致，FRTradeCode.fail 表示不一致
+-- @return table { code, betAmounts } - code为0表示原本一致，Fail表示客户端配置已过期
 function Player:sendBetAmounts(msg)
     local sys = getFruitSlotsSys(self)
     local clientAmounts = msg and msg.betAmounts or nil
-    if not FruitSlotsBetAmountsMatch(clientAmounts) then
+    local serverAmounts = FruitSlotsGetBetAmounts()
+    local code = FRTradeCode.Success
+    if not FruitSlotsBetAmountsMatch(clientAmounts, serverAmounts) then
         log_error("FruitSlots bet amounts mismatch, uid:{0}", tostring(self:getUid() or ""))
-        return { code = FRTradeCode.fail }
+        code = FRTradeCode.Fail
     end
     sys.scene:syncBetAmountPools()
-    return { code = 0 }
+    return { code = code, betAmounts = serverAmounts }
 end
 
 -- ===== 心跳与调试消息 =====

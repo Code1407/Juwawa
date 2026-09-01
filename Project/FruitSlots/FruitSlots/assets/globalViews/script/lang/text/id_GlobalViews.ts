@@ -33,3 +33,6 @@ text.path37 = `resume`;
 text.path38 = `Server game sedang dalam perbaikan dan tidak dapat dimainkan untuk sementara waktu.
 Silakan coba lagi nanti.`;
 text.path39 =  `berhenti`;
+
+text.path40 = `Koin sementara dibekukan, silakan hubungi tim operasional resmi.`;
+text.path41 = `Keluar`;

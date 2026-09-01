@@ -43,6 +43,8 @@ export class Path {
     path37: string;
     path38: string;
     path39: string;
+    path40: string;
+    path41: string;
 }
 export let paths: Path = {
     path3: "/GlobalViews/disconnectView/view/content",
@@ -86,6 +88,8 @@ export let paths: Path = {
     path36: "/GlobalViews/cheatWarningView/content",
     path37: "/GlobalViews/cheatWarningView/New Button/New Label",
     path38: "/GlobalViews/closeServerView/view/content",
-    path39: "/GlobalViews/closeServerView/view/btn1/Label"
+    path39: "/GlobalViews/closeServerView/view/btn1/Label",
+    path40: "/GlobalViews/CoinFrozenView/view/content",
+    path41: "/GlobalViews/CoinFrozenView/view/btn1/Label"
 }
 export let textsMap: { [lang: string]: Path } = {};

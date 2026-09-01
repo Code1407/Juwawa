@@ -99,7 +99,7 @@ export default class Game extends cc.Component {
         }
 
         if (msg.code != ETradeCode.success) {
-            this.restoreAfterResultFailure(msg.code);
+            this.restoreAfterResultFailure(msg.rawTradeCode ?? msg.code);
             return false;
         }
 
@@ -293,7 +293,40 @@ export default class Game extends cc.Component {
     private async initGame() {
         this.player = await PlayerAccount.createPlayer(this.account);
         let enterGameResp = await this.player.enterGame();
-        await this.initPlayerData(enterGameResp, true);
+        await this.applyEnterGameResp(enterGameResp, true);
+    }
+
+    private async applyEnterGameResp(
+        enterGameResp: IEnterGameResp,
+        isFirstCall: boolean = false,
+        restoreRoundStatus: boolean = true
+    ): Promise<boolean> {
+        if (!enterGameResp) return false;
+        await this.initPlayerData(enterGameResp, isFirstCall);
+        if (!enterGameResp.roundStep) return false;
+        await this.player.restoreRoundStep(enterGameResp.roundStep, restoreRoundStatus);
+        return true;
+    }
+
+    private async restoreAfterInterruption(enterGameResp: IEnterGameResp) {
+        if (!enterGameResp) return;
+
+        const roundStep = enterGameResp.roundStep;
+        const shouldResumeFreeRound = !!roundStep
+            && roundStep.status == EGameStatus.bet
+            && !roundStep.runningRoundID
+            && (enterGameResp.lastResult?.freeCount || 0) > 0;
+
+        // 待续的免费局必须由 resumeFreeRoundAfterReconnect 强制从 stop -> bet，
+        // 否则客户端留在 bet/run 时会被同状态去重或乱序保护拦掉。
+        const restoredRoundStep = await this.applyEnterGameResp(
+            enterGameResp,
+            false,
+            !shouldResumeFreeRound
+        );
+        if (shouldResumeFreeRound || !restoredRoundStep) {
+            await this.resumeFreeRoundAfterReconnect();
+        }
     }
 
     private async initPlayerData(enterGameResp: IEnterGameResp, isFirstCall: boolean = false) {
@@ -360,7 +393,7 @@ export default class Game extends cc.Component {
     async synchronize() {
         if (gGameData.status != EGameStatus.stop) {
             let enterGameResp = await this.player.synchronize();
-            this.initPlayerData(enterGameResp);
+            await this.applyEnterGameResp(enterGameResp);
         }
     }
 
@@ -376,6 +409,16 @@ export default class Game extends cc.Component {
     visibleNodes() {
         this.audioButton.active = true;
         Bottombar.Instance.node.active = true;
+    }
+
+    private refreshBetAmountUi() {
+        if (gBetAmounts.length === 0) return;
+
+        let index = Math.floor(Number(gGameData.betAmountIndex));
+        if (!Number.isFinite(index) || index < 0 || index >= gBetAmounts.length) index = 0;
+        gGameData.betAmountIndex = index as EBetAmountIndex;
+        Bottombar.Instance.setBetAmount(gBetAmounts[index]);
+        Jackpot.Instance.switchIndex(gGameData.betAmountIndex);
     }
 
     async start() {
@@ -398,9 +441,9 @@ export default class Game extends cc.Component {
             SpinUI.Instance.setAutoBet(autoStatus);
         };
         (<any>window).onReconnect = async () => {
+            if ((<any>window).isAutoQuitLocked) return;
             let enterGameResp = await this.player.enterGame();
-            await this.initPlayerData(enterGameResp);
-            await this.resumeFreeRoundAfterReconnect();
+            await this.restoreAfterInterruption(enterGameResp);
         }
         (<any>window).hideAutoButton = () => {
             //隐藏自动按钮
@@ -438,7 +481,7 @@ export default class Game extends cc.Component {
             SpinUI.Instance.setAutoBet(false);
             if (gGameData.status != EGameStatus.stop) {
                 let enterGameResp = await this.player.synchronize();
-                this.initPlayerData(enterGameResp);
+                await this.restoreAfterInterruption(enterGameResp);
             }
         });
         (<any>window).stopGame = () => {
@@ -446,10 +489,13 @@ export default class Game extends cc.Component {
             gGameData.status = EGameStatus.stop;
         }
 
-        // this.changeGameStatus(EGameStatus.bet);
-        let betAmount = gBetAmounts[gGameData.betAmountIndex];
-        Bottombar.Instance.setBetAmount(betAmount);
-        this.player.sendBetAmounts();
+        try {
+            await this.player.sendBetAmounts();
+            this.refreshBetAmountUi();
+        } catch (error) {
+            console.error("sync bet amounts failed", error);
+            this.showDisconnectView();
+        }
     }
 
     update(dt) {
@@ -471,6 +517,7 @@ export default class Game extends cc.Component {
     private registerSdk() {
         // (<any>window).TMUtils?.registerHandler("XGUpdateCoin", (<any>window).XGUpdateCoin);
         // (<any>window).VYBridge?.onRechargeFinish((<any>window).VYUpdateCoin);
+        (<any>window).changedw = () => this.refreshBetAmountUi();
     }
 
     showDisconnectView() {

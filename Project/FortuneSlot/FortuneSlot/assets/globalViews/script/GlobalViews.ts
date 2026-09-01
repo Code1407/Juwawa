@@ -34,6 +34,8 @@ export default class GlobalViews extends cc.Component {
     @property(cc.Node)
     maintenanceView: cc.Node;
     @property(cc.Node)
+    userStatusErrorView2: cc.Node;
+    @property(cc.Node)
     rechargeView: cc.Node;
     @property(cc.Node)
     closeServerView: cc.Node;

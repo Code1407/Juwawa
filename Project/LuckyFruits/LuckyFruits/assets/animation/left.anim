@@ -1,0 +1,49 @@
+{
+  "__type__": "cc.AnimationClip",
+  "_name": "left",
+  "_objFlags": 0,
+  "_native": "",
+  "_duration": 0.6666666666666666,
+  "sample": 60,
+  "speed": 0.8,
+  "wrapMode": 0,
+  "curveData": {
+    "props": {
+      "angle": [
+        {
+          "frame": 0,
+          "value": 0,
+          "curve": "linear"
+        },
+        {
+          "frame": 0.16666666666666666,
+          "value": 30,
+          "curve": "linear"
+        },
+        {
+          "frame": 0.2833333333333333,
+          "value": -10,
+          "curve": [
+            1.0526525198938992,
+            0.021485411140583666,
+            0.7,
+            0.7
+          ]
+        },
+        {
+          "frame": 0.38333333333333336,
+          "value": 0
+        },
+        {
+          "frame": 0.55,
+          "value": 30
+        },
+        {
+          "frame": 0.6666666666666666,
+          "value": 0
+        }
+      ]
+    }
+  },
+  "events": []
+}

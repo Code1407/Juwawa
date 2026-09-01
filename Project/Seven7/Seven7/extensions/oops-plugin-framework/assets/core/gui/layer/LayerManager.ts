@@ -12,7 +12,7 @@ import { UIConfig } from "./UIConfig";
 import { TableLanguageNotice } from "db://assets/script/table/TableLanguageNotice";
 import { JsonUtil } from "../../utils/JsonUtil";
 import { UIID } from "db://assets/script/module/common/GameUIConfig";
-import { CommomIconPath, EErrorCode } from "db://assets/script/framework/commom/FrameDefine";
+import { CommomIconPath, ETradeCode } from "db://assets/script/framework/commom/FrameDefine";
 
 
 /** 界面层级管理器 */
@@ -211,9 +211,12 @@ export class LayerManager {
     * @param errCode ErrorCode码
     */
     showErrorCode(errCode: number){
-        if(errCode == EErrorCode.UserStatusError){
+        if(errCode == ETradeCode.UserStatusError){
             this.showAccounErrortUI();
-        }else{
+        }else if(errCode == ETradeCode.Insufficient){
+            this.showRechargeUI();
+        }
+        else{
             this.showNoticeById(errCode);
         }
     }

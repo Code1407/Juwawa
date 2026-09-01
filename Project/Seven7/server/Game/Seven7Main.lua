@@ -44,7 +44,6 @@ function Seven7Main:onLoad(data)
     end
 
     SvrSystemBase.onLoad(self, data)
-    self:resetRound()
 end
 
 function Seven7Main:cfgConstantInit()
@@ -73,35 +72,14 @@ function Seven7Main:clearData()
     end
 end
 
-function Seven7Main:onOClock(hour)
-   if hour == 0 then
-        self:resetRound()
-   end     
-end
-
-function Seven7Main:resetRound()
-    local data = self:getData()
-    if not data.resetRoundTime then
-        data.resetRoundTime = 0
+function Seven7Main:checkNeedResetRound(lastTime, nowTime)
+    if not lastTime or lastTime == 0 then
+        return true
     end
-    local lastResetTime = data.resetRoundTime
-    local nowTime = app__:utc_s()
-    if lastResetTime == 0 then
-        data.curGameInfo.round = 0
-        data.curGameInfo.roundId = 0
-        data.resetRoundTime = nowTime 
-        return
-    end
-
-    local date1 = os.date("*t", nowTime)
-    local date2 = os.date("*t", lastResetTime)
-
+    local date1 = os.date("*t", lastTime)
+    local date2 = os.date("*t", nowTime)
     local isSameDay = date1.year == date2.year and date1.month == date2.month and date1.day == date2.day
-    if not isSameDay then
-        data.curGameInfo.round = 0
-        data.curGameInfo.roundId = 0
-        data.resetRoundTime = nowTime 
-    end
+    return not isSameDay
 end
 
 --------------------------------------------
@@ -133,15 +111,28 @@ function Seven7Main:betPrepare()
     local data = self:getData() 
     self.gameState = GameState.PREPARE
 
+    local lastTime = data.curGameInfo.prepareTime or 0
+    local nowTime = app__:utc_s()
+    if self:checkNeedResetRound(lastTime, nowTime) then
+        data.curGameInfo.round = 0
+    end
+
     local round = (data.curGameInfo.round or 0) + 1
-    local time = app__:utc_s()
+    local roundId = GenUnionIncrId(round)
+
     data.curGameInfo.round = round
-    data.curGameInfo.roundId = GenUnionIncrId(round)
-    data.curGameInfo.prepareTime = time
+    data.curGameInfo.roundId = roundId
+    data.curGameInfo.prepareTime = nowTime
+
+    self.roundResult = {
+        round = round,
+        roundId = roundId,
+        prepareTime = nowTime
+    }
     
     self:betPrepareCountDown()
-    Router.Client.ScGamePreparePush({prepareTime = time, round = data.curGameInfo.roundId}, gWorld)
-    log_info("开始押注 时间:{0} 期数:{1}", time, round)
+    Router.Client.ScGamePreparePush({prepareTime = nowTime, round = data.curGameInfo.roundId}, gWorld)
+    log_info("开始押注 时间:{0} 期数:{1}", nowTime, round)
 end
 
 --10s+2s(留2s网络延时缓冲)倒计时开始(下注)
@@ -180,7 +171,6 @@ end
 --押注结算
 function Seven7Main:betSettlement()
     self.gameState = GameState.OPENREWARD
-    local gamedata = self:getData()
     self.roundOrders = {}
 
     if not self.gameBetData then
@@ -188,10 +178,13 @@ function Seven7Main:betSettlement()
         return
     end
 
+    local roundId = self.roundResult.roundId
+    local round = self.roundResult.round
+
     --获取游戏结果
-    local gameAnalyData = GameAnalyData(self.gameBetData, gamedata.curGameInfo.roundId)
+    local gameAnalyData = GameAnalyData(self.gameBetData, roundId)
     local result = gameAnalyData:get_game_result()
-    log_info("第{0}局开奖结果:rewardId:{1} jpId:{2}", gamedata.curGameInfo.round, result.rewardId, result.jpId or 0)
+    log_info("第{0}局开奖结果:rewardId:{1} jpId:{2}", round, result.rewardId, result.jpId or 0)
 
     if not result or not result.zhuanPanId or not result.rewardId then
         self:dealyPrepare()
@@ -222,13 +215,9 @@ function Seven7Main:betSettlement()
         end
     end
 
-    self.roundResult = {
-        round = gamedata.curGameInfo.round,
-        roundId = gamedata.curGameInfo.roundId,
-        rewardId = rewardId,
-        jpRewards = jpRewards,
-        zhuanPanId = zhuanPanId
-    }
+    self.roundResult.rewardId = rewardId
+    self.roundResult.jpRewards = jpRewards
+    self.roundResult.zhuanPanId = zhuanPanId
 
     --保存游戏结果
     self:saveGameResult(rewardId, jpRewards or {})
@@ -265,7 +254,7 @@ function Seven7Main:betSettlement()
                 end
             end
 
-            log_info("结算时玩家[{0}] 总计押注:{1}, 押注详情:{2}", playerUid, betTotal, log_view(betMap))
+            log_info("第{0}局结算时玩家[{1}] 总计押注:{2}, 押注详情:{3}", round, playerUid, betTotal, log_view(betMap))
 
             self.gameBetData:updatePlayerRewardMap(pid, presult)
 
@@ -277,15 +266,15 @@ function Seven7Main:betSettlement()
                 })
                 winPlayerNum = winPlayerNum + 1
             else
-                self:syncStatisPlayerData(gamedata.curGameInfo.roundId, player, pid, playerUid)              
+                self:syncStatisPlayerData(roundId, player, pid, playerUid)              
             end 
-            player:saveGameResult(presult, gamedata.curGameInfo.roundId)
+            player:saveGameResult(presult, roundId)
             commitAnalyReward[pid] = win
         end     
     end
 
     if next(commitAnalyPlayer) then
-        gAnaly:multiCommitAnaly(commitAnalyPlayer, commitAnalyReward, gamedata.curGameInfo.roundId, result.gameOddsResult)
+        gAnaly:multiCommitAnaly(commitAnalyPlayer, commitAnalyReward, roundId, result.gameOddsResult)
     end
 
     if winPlayerNum > 0 then
@@ -293,7 +282,7 @@ function Seven7Main:betSettlement()
         self:betAddCoins(winPlayerNum, winPlayerList, gameAnalyData, openRewardDt, patformData)  
     else       
         if havePlayerBet then
-            self:syncStatisGameData(gamedata.curGameInfo.roundId)
+            self:syncStatisGameData(roundId)
         end
         self:broadcastResult()
         self:dealyPrepare(openRewardDt)
@@ -312,7 +301,6 @@ function Seven7Main:broadcastResult(roundRank3)
 end
 
 function Seven7Main:betAddCoins(winPlayerNum, winPlayerList, gameAnalyData, openRewardDt, patformData)
-    local gamedata = self:getData()
     local backCount = 0
     local backPlayerList = {}
 
@@ -322,6 +310,9 @@ function Seven7Main:betAddCoins(winPlayerNum, winPlayerList, gameAnalyData, open
         end
     end)
 
+    local roundId = self.roundResult.roundId
+    local round = self.roundResult.round
+
     local oddsType = gameAnalyData:get_odds_type()
     for _, pinfo in ipairs(winPlayerList) do  
         local pid = pinfo.pid
@@ -329,29 +320,29 @@ function Seven7Main:betAddCoins(winPlayerNum, winPlayerList, gameAnalyData, open
         local player = gWorld:findAllPlayer(pid)
         if player then
             local playerUid = player:getUid()
-            player:addCoins(gamedata.curGameInfo.roundId, oddsType, ECoinsOperateType.WinAdd, win, function (ercode, orderID, backPlayer)
+            player:addCoins(roundId, oddsType, ECoinsOperateType.WinAdd, win, function (ercode, orderID, backPlayer)
                 backCount = backCount + 1
                 if backPlayer then
                     local realWin = 0
                     if ercode == 0 then  
                         realWin = win
                         table.insert(backPlayerList, {pid = pid, win = win, betTotal = pinfo.betTotal})
-                        log_info("玩家[{0}]在{1}局下注赢取积分[{2}]添加成功",playerUid, gamedata.curGameInfo.round, realWin)
+                        log_info("玩家[{0}]在{1}局下注赢取积分[{2}]添加成功",playerUid, round, realWin)
                         
                         if self.gameBetData then
                             self.gameBetData:updateReward(realWin)
                             self.gameBetData:updatePlayerRewardTotal(pid, realWin)
                         else
-                            log_error("sdk 加钱回调 gameBetData 为nil存:uid:{} round:{}", playerUid, gamedata.curGameInfo.round)
+                            log_error("sdk 加钱回调 gameBetData 为nil存:uid:{} round:{}", playerUid, round)
                         end
-                        self:syncStatisPlayerData(gamedata.curGameInfo.roundId, backPlayer, pid, playerUid)  
+                        self:syncStatisPlayerData(roundId, backPlayer, pid, playerUid)  
                     else
-                        log_error("SDK加钱有错:uid:{0}, orderID:{1}, addCoins:{2}, round:{3}, ercode:{4}", playerUid, orderID, win, gamedata.curGameInfo.round, ercode)
-                        local msg = {errorCode = ercode, round = gamedata.curGameInfo.round, playerBet = self.gameBetData:getPlayerBetTotal(pid), playerWin = 0}
+                        log_error("SDK加钱有错:uid:{0}, orderID:{1}, addCoins:{2}, round:{3}, ercode:{4}", playerUid, orderID, win, round, ercode)
+                        local msg = {errorCode = ercode, round = roundId, playerBet = self.gameBetData:getPlayerBetTotal(pid), playerWin = 0}
                         Router.Client.ScPlayerRoundResultPush(msg, backPlayer)
                     end   
                 else
-                    log_error("SDK 加钱回调参数player为nil:uid:{0}, addCoins:{1}, round:{2}, ercode:{3}", playerUid, win, gamedata.curGameInfo.round, ercode)
+                    log_error("SDK 加钱回调参数player为nil:uid:{0}, addCoins:{1}, round:{2}, ercode:{3}", playerUid, win, round, ercode)
                 end
                 
                 if backCount >= winPlayerNum then
@@ -363,8 +354,7 @@ function Seven7Main:betAddCoins(winPlayerNum, winPlayerList, gameAnalyData, open
 end
 
 function Seven7Main:resultSort(playerList, openRewardDt)
-    local gamedata = self:getData()
-    self:syncStatisGameData(gamedata.curGameInfo.roundId)
+    self:syncStatisGameData(self.roundResult.roundId)
     --排序
     table.sort(playerList, function(a, b)
         return a.win > b.win
@@ -405,7 +395,7 @@ function Seven7Main:resultSort(playerList, openRewardDt)
         if player then
             Router.Client.ScPlayerRoundResultPush({
                 errorCode = 0,
-                round = gamedata.curGameInfo.round, 
+                round = self.roundResult.round, 
                 playerBet = self.gameBetData:getPlayerBetTotal(item.pid),
                 playerWin = item.win,
             }, player)
@@ -426,8 +416,8 @@ function Seven7Main:saveGameResult(rewardId, jpRewards)
 
     --结果存系统
     table.insert(data.resultHistory, {
-            round = data.curGameInfo.roundId, 
-            time =  data.curGameInfo.prepareTime,
+            round = self.roundResult.roundId, 
+            time =  self.roundResult.prepareTime,
             resultID = rewardId,
             jpRewards = jpRewards
         }
@@ -550,7 +540,7 @@ function Seven7Main:checkBetCountIsValid(pid)
     return palyerCount < max
 end
 
---获取延时下注
+--计算延时下注
 function Seven7Main:getDelayRewardCoins(uid, roundId, betMap)
     local round = GenDayIncrId(roundId)
     local gamedata = self:getData()
@@ -627,10 +617,9 @@ end
 
 --------------------Msg------------------------
 function Seven7Main:csCurGameInfoReq(pid)
-    local gamedata = self:getData() 
     local backMsg = {
-        round = gamedata.curGameInfo.roundId,
-        prepareTime = gamedata.curGameInfo.prepareTime,
+        round = self.roundResult.roundId,
+        prepareTime = self.roundResult.prepareTime,
         gameState = self.gameState,
         betWorld = {},
         betSelf = {}
@@ -656,7 +645,6 @@ function Seven7Main:csBetReq(pid, msg)
 
     local playerUid = curPlayer:getUid()
     local playerMoney = curPlayer:getCoins()
-    local gamedata = self:getData() 
 
     local backMsg = {
         errorCode = 0,
@@ -665,8 +653,8 @@ function Seven7Main:csBetReq(pid, msg)
     }
 
     local curTime = app__:utc_s()
-    local curRoundId = gamedata.curGameInfo.roundId
-    local curRound = gamedata.curGameInfo.round
+    local curRoundId = self.roundResult.roundId
+    local curRound = self.roundResult.round
     local curBetMsg = msg
 
     --检查SDK
@@ -733,8 +721,8 @@ function Seven7Main:csBetReq(pid, msg)
         end
 
         --下注回调状态不为游戏准备状态
-        if self.gameState ~= GameState.PREPARE or curRoundId ~= gamedata.curGameInfo.roundId then
-            log_info("下注Sdk回调超时, 状态不对: uid:{0} orderID:{1}, betAllNum:{2}, round_bet:{3}, round_now:{4} betInfo:{5}", playerUid, orderID, betAllNum, curRound, gamedata.curGameInfo.round, log_view(curBetMsg.betList or {}))
+        if self.gameState ~= GameState.PREPARE or curRoundId ~= self.roundResult.roundId then
+            log_info("下注Sdk回调超时, 状态不对: uid:{0} orderID:{1}, betAllNum:{2}, round_bet:{3}, round_now:{4} betInfo:{5}", playerUid, orderID, betAllNum, curRound, self.roundResult.round, log_view(curBetMsg.betList or {}))
             self:delayRewardRecord(curRoundId, orderID, curBetMsg, playerUid, 0, ECoinsOperateType.BetSub, betAllNum, patformData, backPlayer)
             return
         end
@@ -759,22 +747,22 @@ function Seven7Main:csBetReq(pid, msg)
             self.gameBetData:updateBetValue(pid, rewardID, chipNum)
             self.gameBetData:updatePlayerBetCount(pid)
             table.insert(betInfo.betList, value)
-            log_info("玩家押注: uid:{0} 期数:{1} 押注奖励ID:{2} 筹码大小:{3} 筹码数量:{4} ", playerUid, curRound, rewardID, chipValue, chipCount)
         end
         --保存押注数据到玩家
         local pBetMap = self.gameBetData:getPlayerBetMap(pid)
-        backPlayer:saveBetInfo(gamedata.curGameInfo.prepareTime, curRoundId, betInfo, pBetMap)
+        backPlayer:saveBetInfo(self.roundResult.prepareTime, curRoundId, betInfo, pBetMap)
 
         --同步押注信息给所有玩家
         local data = self.gameBetData:getScGlobalBetInfo()
         data.betList = msg.betList
         data.pid = pid
-        data.round = gamedata.curGameInfo.roundId
+        data.round = curRoundId
         Router.Client.ScUpdateWorldBetPush(data, gWorld)
         backMsg.money = playerMoney
         backMsg.betList = msg.betList
         Router.Client.CsBetResp(backMsg, backPlayer)
-        log_info("玩家该次押注数据合并: uid:{0} 押注总额:{1} 时间:{2} 期数:{3}", playerUid, betAllNum, curTime, curRound)
+
+        log_info("玩家[{0}]在{1}局时间{2}总注押{3}, 押注详情:{4}", playerUid, curRound, curTime, betAllNum, log_view(msg.betList))
     end, patformData)
 
     if orderId then
@@ -865,7 +853,8 @@ function Seven7Main:syncStatisGameData(roundId)
 
     local betTotal = self.gameBetData:getBetTotal()
     local rewardTotal = self.gameBetData:getRewardTotal()
-    log_info("游戏数据统计: ServerIndex:{0} round:{1} 总投注:{2} 总奖励:{3}", gApp:getServerIndex(), self.roundResult.roundId, betTotal, rewardTotal)
+    local round = GenDayIncrId(roundId)
+    log_info("游戏数据统计: ServerIndex:{0} round:{1} 总投注:{2} 总奖励:{3}", gApp:getServerIndex(), round, betTotal, rewardTotal)
 end
 
 --统计上传玩家数据
@@ -878,12 +867,7 @@ function Seven7Main:syncStatisPlayerData(roundId, player, pid, playerUid)
         return
     end
 
-    local gamedata = self:getData()
-    if not gamedata.curGameInfo or not gamedata.curGameInfo.roundId then
-        return
-    end
-
-    if roundId ~= gamedata.curGameInfo.roundId then
+    if roundId ~= self.roundResult.roundId then
         log_error("syncStatisPlayerData roundId 不一致")
         return
     end
@@ -900,8 +884,7 @@ function Seven7Main:syncStatisPlayerData(roundId, player, pid, playerUid)
     rewardData.rewardMap = self.gameBetData:getPlayerRewardMap(pid)
     rewardData.rewardTotal = self.gameBetData:getPlayerRewardTotal(pid)
 
-    local round = GenDayIncrId(roundId)
     player:statisGameRound(roundId, payData, rewardData)
-    log_info("玩家数据统计:uid:{0} ServerIndex:{1} round:{2} 总投注:{3} 总奖励:{4}",playerUid, gApp:getServerIndex(), round, payData.betTotal, rewardData.rewardTotal)
+    log_info("玩家数据统计:uid:{0} ServerIndex:{1} round:{2} 总投注:{3} 总奖励:{4}",playerUid, gApp:getServerIndex(), self.roundResult.round, payData.betTotal, rewardData.rewardTotal)
 end
 

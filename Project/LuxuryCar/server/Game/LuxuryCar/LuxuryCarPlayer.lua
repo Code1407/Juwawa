@@ -196,6 +196,22 @@ end
 --   6. 立即返回一个"处理中"的成功响应（实际扣款结果以回调为准）
 function LuxuryCarPlayer:bet(todayRound, betGrades, chipCounts, requestedBets, requestId)
     requestId = tonumber(requestId) or 0
+
+    -- code供旧客户端读取；rawTradeCode透传平台原始交易码，供新客户端独立扩展提示。
+    local function pushBetResp(system, resultCode, player, rawTradeCode)
+        player = player or (system and system:getPlayer())
+        if system and player and player:isOnline() then
+            Router.Client.betResp({
+                requestId = requestId,
+                code = resultCode,
+                rawTradeCode = rawTradeCode,
+                accountDiamond = system:getDiamond(),
+                wheelAmount = system:getData().bets,
+                wheelChipAmount = system:getData().chipCounts,
+            }, player)
+        end
+    end
+
     local step = self.scene:getRoundStep()
     local uid = self:getUid()
     -- 验证：场景已关闭
@@ -269,14 +285,11 @@ function LuxuryCarPlayer:bet(todayRound, betGrades, chipCounts, requestedBets, r
             log_error("LuxuryCar bet subCoins failed: uid:{0} code:{1} total:{2}", uid, code, total)
 
             local resultCode = code
-            if resultCode ~= -12 then
-                resultCode = -3
-            end
+            if resultCode ~= ETradeCode.UserStatusError and resultCode ~= ETradeCode.Insufficient and resultCode ~= ETradeCode.CoinFrozen then resultCode = ETradeCode.SdkDisconnect end
             if backPlayer then
-                Router.Client.onResultHandler({ code = resultCode, roundId = todayRound }, backPlayer)
-                return Router.Client.betResp({ requestId = requestId, code = code, accountDiamond = system:getDiamond(), wheelAmount = system:getData().bets, wheelChipAmount = system:getData().chipCounts }, backPlayer)
+                Router.Client.onResultHandler({ code = resultCode, rawTradeCode = code, roundId = todayRound }, backPlayer)
             end
-            return
+            return pushBetResp(system, resultCode, backPlayer, code)
         end
 
         -- 验证：不在下注阶段或回合号不匹配
@@ -306,10 +319,7 @@ function LuxuryCarPlayer:bet(todayRound, betGrades, chipCounts, requestedBets, r
             )
             log_error("LuxuryCar late bet delay reward: uid:{0} round:{1} roundId:{2} betId:{3} orderId:{4} result:{5} subCoins:{6} rewardCoins:{7} oddsType:{8}",
                 uid, todayRound, roundId, betId, _orderId, result or -1, total, rewardCoins, oddsType)
-            if backPlayer then
-                return Router.Client.betResp({ requestId = requestId, code = LCTradeCode.missTime, accountDiamond = system:getDiamond(), wheelAmount = system:getData().bets, wheelChipAmount = system:getData().chipCounts }, backPlayer)
-            end
-            return
+            return pushBetResp(system, LCTradeCode.missTime, backPlayer)
         end
 
 
@@ -335,9 +345,7 @@ function LuxuryCarPlayer:bet(todayRound, betGrades, chipCounts, requestedBets, r
         system.scene:broadcast("onBetListRound", { uid = system:getUid(), flyPlayerPos = 0, batIndex = betGrades or {}, num = chipCounts or {} })
 
         -- 向客户端返回成功确认
-        if backPlayer then
-            Router.Client.betResp({ requestId = requestId, code = LCTradeCode.success, accountDiamond = system:getDiamond(), wheelAmount = data.bets, wheelChipAmount = data.chipCounts }, backPlayer)
-        end
+        pushBetResp(system, LCTradeCode.success, backPlayer)
     end)
     return { requestId = requestId, code = LCTradeCode.success, accountDiamond = self:getDiamond(), wheelAmount = self:getData().bets, wheelChipAmount = self:getData().chipCounts }
 end

@@ -194,10 +194,11 @@ export default class PlayerAccount extends ClientPlayer {
         let requestWheelChipAmount = cloneChipAmount(betGradeNum);
         let betResp = await super.bet(todayRound, betGradeIndex, betGradeNum, betDiamonList);
 
-        if(betResp)checkTradeCode(betResp?.code);   //添加了判断if，如果存在betResp,才进行code检查
         if (betResp == null) {
             return betResp;
-        } else if (todayRound != gGameData.roundStep.todayRound) {
+        }
+        checkTradeCode(betResp.rawTradeCode ?? betResp.code);
+        if (todayRound != gGameData.roundStep.todayRound) {
             return null;
         } else if (betResp.code == ETradeCode.missTime) {
             return null;
