@@ -1,0 +1,70 @@
+{
+  "ver": "1.0.27",
+  "importer": "image",
+  "imported": true,
+  "uuid": "eefec840-5228-4938-a66f-1d7e72f122db",
+  "files": [
+    ".json",
+    ".png"
+  ],
+  "subMetas": {
+    "phb_tb": {
+      "ver": "1.0.6",
+      "uuid": "a63472b0-6c04-49e8-8a10-5cb7d3742834",
+      "importer": "sprite-frame",
+      "rawTextureUuid": "eefec840-5228-4938-a66f-1d7e72f122db",
+      "trimType": "auto",
+      "trimThreshold": 1,
+      "rotated": false,
+      "offsetX": -9.5,
+      "offsetY": -102,
+      "trimX": 2,
+      "trimY": 225,
+      "width": 489,
+      "height": 266,
+      "rawWidth": 512,
+      "rawHeight": 512,
+      "borderTop": 0,
+      "borderBottom": 0,
+      "borderLeft": 0,
+      "borderRight": 0,
+      "subMetas": {},
+      "imported": false,
+      "files": [],
+      "userData": {},
+      "displayName": "",
+      "id": "",
+      "name": ""
+    },
+    "6c48a": {
+      "importer": "texture",
+      "uuid": "eefec840-5228-4938-a66f-1d7e72f122db@6c48a",
+      "displayName": "phb_tb",
+      "id": "6c48a",
+      "name": "texture",
+      "userData": {
+        "wrapModeS": "repeat",
+        "wrapModeT": "repeat",
+        "minfilter": "linear",
+        "magfilter": "linear",
+        "mipfilter": "none",
+        "anisotropy": 0,
+        "isUuid": true,
+        "imageUuidOrDatabaseUri": "eefec840-5228-4938-a66f-1d7e72f122db",
+        "visible": false
+      },
+      "ver": "1.0.22",
+      "imported": true,
+      "files": [
+        ".json"
+      ],
+      "subMetas": {}
+    }
+  },
+  "userData": {
+    "hasAlpha": true,
+    "type": "texture",
+    "fixAlphaTransparencyArtifacts": false,
+    "redirect": "eefec840-5228-4938-a66f-1d7e72f122db@6c48a"
+  }
+}

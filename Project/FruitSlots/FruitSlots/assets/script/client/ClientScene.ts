@@ -26,14 +26,22 @@ export default class ClientScene implements ISceneListen {
         this.msgRouter.on('ScCoinsUpdatePush', function (data: any) {
             const coins = Number(data?.coins);
             if (Number.isFinite(coins) && coins >= 0) {
-                Game.Instance.player.setAccountDiamond(coins);
+                Game.Instance.player.syncAccountDiamond(coins);
+            }
+        });
+        // 游戏服会同时携带余额变化量推送该消息；与通用金币推送统一走
+        // 同一套时序控制，重复的相同余额不会产生额外累加。
+        this.msgRouter.on('onAccountDiamondUpdate', function (data: any) {
+            const coins = Number(data?.value);
+            if (Number.isFinite(coins) && coins >= 0) {
+                Game.Instance.player.syncAccountDiamond(coins);
             }
         });
         // SDK 充值完成后，CsPlayerBaseDataReq 会触发 refreshSdk，并通过该消息返回最新余额。
         this.msgRouter.on('CsPlayerBaseDataResp', function (data: any) {
             const coins = Number(data?.pBaseData?.coins);
             if (Number.isFinite(coins) && coins >= 0) {
-                Game.Instance.player.setAccountDiamond(coins);
+                Game.Instance.player.syncAccountDiamond(coins);
             }
         });
         // 服务器关服消息由游戏场景消费，通用网络层只负责分发。
@@ -47,8 +55,15 @@ export default class ClientScene implements ISceneListen {
     }
 
     onJackpotHint(hint: IHint) {
-        gGameData.hints.push(`🎉${decodeURI(hint.userName)} won <color=#FEEC51>${hint.amount}</color> jackpot !🎉`);
-        Effect.showHint();
+        const userName = decodeURI(hint.userName);
+        const amount = hint.amount;
+        const hintMsg = `🎉 ${userName} won <color=#FEEC51>${amount}</color> jackpot !🎉`;
+
+        //延时3秒调用showHint，避免与onResultHandler同时调用
+        cc.director.getScheduler().schedule(()=>{
+            gGameData.hints.push(hintMsg);
+            Effect.showHint();
+        }, this, 3, 0, 0, false);
     }
 
     onResultHandler(msg: IBetResp) {

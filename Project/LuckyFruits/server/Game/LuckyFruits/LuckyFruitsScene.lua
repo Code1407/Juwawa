@@ -76,6 +76,7 @@ function LuckyFruitsScene:ctor__()
     self.players, self.roundPlayers, self.roundPlayerPids = {}, {}, {}
     self.roundBets, self.roundChipCounts = LFEmptyBets(), LFEmptyChipCounts()
     self.pendingBetCount, self.closingFinished = 0, false
+    self.pendingBetAmounts = {}
     self.roundOutcomes, self.roundOutcomeIds = {}, {}
 end
 
@@ -131,7 +132,6 @@ function LuckyFruitsScene:onLoad(data)
         state.lastStopPos = resultFinalStopPos(state.roundStep)
     end
     state.gameHistory = state.gameHistory or {}
-    state.roundRank = state.roundRank or {}
     self.roundBets = state.roundBets or LFEmptyBets()
     self.roundChipCounts = state.roundChipCounts or LFEmptyChipCounts()
     -- stop 只用于优雅关服，不能作为可恢复的游戏阶段。服务重启后直接
@@ -188,7 +188,20 @@ end
 
 -- 注册在线玩家到场景：玩家进入时调用
 function LuckyFruitsScene:registerPlayer(system)
-    self.players[system:getUid()] = system
+    local uid = system:getUid()
+    local roundPlayer = self.roundPlayers[uid]
+    if roundPlayer and roundPlayer ~= system then
+        -- 离线玩家仍保留在本局参与列表中；重新登录创建的新对象必须接回
+        -- 已确认的下注，否则入场快照为空，继续下注还会覆盖旧的结算对象。
+        local data, roundData = system:getData(), roundPlayer:getData()
+        data.bets = LFClone(roundData.bets or LFEmptyBets())
+        data.chipCounts = LFClone(roundData.chipCounts or LFEmptyChipCounts())
+        self:recordRoundPlayer(system)
+    elseif not roundPlayer then
+        -- 存储中的下注可能属于已经结束的回合，以场景参与列表为准。
+        system:onNewRound()
+    end
+    self.players[uid] = system
 end
 
 -- 注销玩家：玩家离开时调用
@@ -213,17 +226,39 @@ function LuckyFruitsScene:recordRoundPlayer(system, rawPlayer)
 end
 
 -- 待处理下注计数：用于关服时判断是否还有异步扣币未完成
-function LuckyFruitsScene:beginPendingBet() self.pendingBetCount = self.pendingBetCount + 1 end
-function LuckyFruitsScene:endPendingBet() self.pendingBetCount = math.max(0, self.pendingBetCount - 1) end
+-- 按全局回合ID和UID预占额度，避免异步扣款期间的并发请求绕过单局上限。
+-- 放在场景中，使玩家断线重连后仍能读取在途金额；旧回合回调只释放旧额度。
+function LuckyFruitsScene:getPendingBetAmount(roundId, uid)
+    local amounts = self.pendingBetAmounts[roundId]
+    return amounts and amounts[tostring(uid)] or 0
+end
 
--- 日切处理：若日期已变更则结算昨日日榜/周榜并重置今日回合序号
--- 周日触发周榜结算（以周日为一周截止）
+function LuckyFruitsScene:beginPendingBet(roundId, uid, amount)
+    local amounts = self.pendingBetAmounts[roundId] or {}
+    self.pendingBetAmounts[roundId] = amounts
+    uid = tostring(uid)
+    amounts[uid] = (amounts[uid] or 0) + amount
+    self.pendingBetCount = self.pendingBetCount + 1
+end
+
+function LuckyFruitsScene:endPendingBet(roundId, uid, amount)
+    local amounts = self.pendingBetAmounts[roundId]
+    if amounts then
+        uid = tostring(uid)
+        local remaining = (amounts[uid] or 0) - amount
+        amounts[uid] = remaining > 0 and remaining or nil
+        if next(amounts) == nil then self.pendingBetAmounts[roundId] = nil end
+    end
+    self.pendingBetCount = math.max(0, self.pendingBetCount - 1)
+end
+
+-- 日切处理：若日期已变更则按排行榜模块规则结算/清理奖励，并重置今日回合序号
 function LuckyFruitsScene:rolloverDay()
     local state, current = self:getData(), todayString()
     if state.today == current then return end
-    if SvrSystem.RankCommon then
-        SvrSystem.RankCommon.finalize(state.today, "day")
-        if os.date("%w") == "0" then SvrSystem.RankCommon.finalize(state.today, "week") end
+    local rankCommon = GameSystem and GameSystem.RankCommon
+    if rankCommon and rankCommon.onOClock then
+        rankCommon:onOClock(0)
     end
     state.today, state.todayRound = current, 0
     -- 通知所有在线玩家新一天开始：清零今日收益
@@ -329,13 +364,13 @@ function LuckyFruitsScene:selectResult(roundId)
     return result
 end
 
--- 累加回合下注并广播：玩家下注成功后调用
-function LuckyFruitsScene:addRoundBets(bets, chipCounts)
+-- 累加回合下注并广播：携带下注者UID，供客户端区分自己与其他玩家的下注
+function LuckyFruitsScene:addRoundBets(bets, chipCounts, uid)
     for i = 1, 5 do self.roundBets[i] = (self.roundBets[i] or 0) + (bets[i] or 0) end
     self.roundChipCounts = LFMergeChipCounts(self.roundChipCounts, chipCounts)
     local state = self:getData()
     state.roundBets, state.roundChipCounts = self.roundBets, self.roundChipCounts
-    self:broadcast("onbatNoticeAll", { wheelAmount = self.roundChipCounts })
+    self:broadcast("onbatNoticeAll", { uid = tostring(uid), wheelAmount = self.roundChipCounts })
 end
 
 -- 获取本回合所有玩家下注列表：用于客户端展示其他玩家下注
@@ -355,9 +390,6 @@ function LuckyFruitsScene:getRoundAllBetList()
     return list
 end
 
--- 获取本回合排行榜：按收益降序排列，最多rankSize条
-function LuckyFruitsScene:rankList() return LFClone(self:getData().roundRank or {}) end
-
 -- 保存游戏历史：记录每回合开奖结果，最多20条
 function LuckyFruitsScene:saveGameHistory(step)
     local history = self:getData().gameHistory
@@ -366,9 +398,9 @@ function LuckyFruitsScene:saveGameHistory(step)
 end
 
 -- 结算当前回合：遍历所有参与玩家计算奖励并异步入账
--- 同时更新排行榜、记录历史、上报统计数据
+-- 同时记录历史、上报统计数据
 function LuckyFruitsScene:settleCurrentRound(roundId, nowMs)
-    local state, ranks = self:getData(), {}
+    local state = self:getData()
     local step = state.roundStep
     local control = self.roundControl or { oddsType = 0, result = EGameOddsResult.Unknown, playerTab = {} }
     local rewards, gamePayData, gameRewardData = {}, {}, {}
@@ -378,11 +410,10 @@ function LuckyFruitsScene:settleCurrentRound(roundId, nowMs)
     for uid, system in pairs(self.roundPlayers) do
         local bets = LFClone(system:getData().bets or LFEmptyBets())
         local pid = self.roundPlayerPids[uid]
-        -- 调用玩家子系统结算：返回排行榜条目与奖励金额
-        local rankItem, reward = system:settleCurrentRound(
+        -- 调用玩家子系统结算：返回奖励金额
+        local _, reward = system:settleCurrentRound(
             roundId, step.todayRound, step.winPos, step.resultDetail, control.oddsType, uid, pid
         )
-        if rankItem and rankItem.revenue > 0 then ranks[#ranks + 1] = rankItem end
         if reward ~= nil then
             if pid then rewards[pid] = reward end
             -- 构造统计上报数据：按符号细分奖励
@@ -410,14 +441,9 @@ function LuckyFruitsScene:settleCurrentRound(roundId, nowMs)
         gAnaly:multiCommitAnaly(control.playerTab, rewards, roundId, control.result)
     end
 
-    -- 更新排行榜：按收益降序排列并裁剪到rankSize
-    table.sort(ranks, function(left, right) return left.revenue > right.revenue end)
-    while #ranks > LuckyFruitsConst.rankSize do table.remove(ranks) end
-    state.roundRank = ranks
     self:saveGameHistory(step)
-    -- 广播开奖结果与排行榜变更
+    -- 广播开奖结果；排行榜统一走独立 RankPSystem/RankCommon 异步链路。
     self:broadcast("onRewardHandler", { winCard = tostring(step.winPos), resultDetail = step.resultDetail })
-    self:broadcast("onRankListChange", { rankList = ranks })
 end
 
 -- 心跳回调：驱动回合状态机流转

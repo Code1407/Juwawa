@@ -20,15 +20,10 @@ export namespace Effect {
         flyNode.active = true;
         flyNode["setFromPos"] = setFromNode == null ? fromNode : setFromNode;
         // flyNode.setSiblingIndex(100);//让其在同一父节点下最后渲染
-        let node = new cc.Node;
-        toNode.addChild(node)
-        node.x = Math.random() * 75 - 25          ///Math.random()*150-75
-        node.y = 0.2 * 150 - 75         ///Math.random()*150-75
+        // 落点已在目标容器的局部坐标系中，无需添加无 sprite 的辅助节点。
+        const toLocal = cc.v2(Math.random() * 75 - 25, 0.2 * 150 - 75);
         let fromWorld = fromNode.parent.convertToWorldSpaceAR(fromNode.position);
         let fromLocal = toNode.convertToNodeSpaceAR(fromWorld);
-
-        let toWorld = node.parent.convertToWorldSpaceAR(node.position);
-        let toLocal = toNode.convertToNodeSpaceAR(toWorld);
 
         let distance = Math.sqrt(Math.pow(toLocal.x - fromLocal.x, 2) + Math.pow(toLocal.y - fromLocal.y, 2));
         let flyTime = distance / 1500;
@@ -37,7 +32,6 @@ export namespace Effect {
         cc.tween(flyNode)
             .to(flyTime, { position: toLocal }, { easing: 'quadOut' })
             .call(() => {
-                node.destroy();
                 cc.tween(flyNode).to(0.3, { opacity: 0 }).start();
             })
             .start();
@@ -65,23 +59,10 @@ export namespace Effect {
         flyNode.active = true;
         flyNode["setFromPos"] = setFromNode == null ? fromNode : setFromNode;
         // flyNode.setSiblingIndex(100);//让其在同一父节点下最后渲染
-        let node = new cc.Node;
-        toNode.addChild(node)
-
-        // if(Game.Instance.youzhu==false){
-
-        node.x = 0.5 * 150 - 75;
-        // }else{
-        //     Game.Instance.sumbig=true;
-        //     node.x = Math.random() * 75 - 25          ///Math.random()*150-75
-        // }
-        node.y = 0.5 * 150 - 75      ///Math.random()*150-75
+        const toLocal = cc.v2(0.5 * 150 - 75, 0.5 * 150 - 75);
 
         let fromWorld = fromNode.parent.convertToWorldSpaceAR(fromNode.position);
         let fromLocal = toNode.convertToNodeSpaceAR(fromWorld);
-
-        let toWorld = node.parent.convertToWorldSpaceAR(node.position);
-        let toLocal = toNode.convertToNodeSpaceAR(toWorld);
 
         let distance = Math.sqrt(Math.pow(toLocal.x - fromLocal.x, 2) + Math.pow(toLocal.y - fromLocal.y, 2));
         let flyTime = distance / 1500;
@@ -90,7 +71,6 @@ export namespace Effect {
         cc.tween(flyNode)
             .to(flyTime, { position: toLocal }, { easing: 'quadOut' })
             .call(() => {
-                node.destroy();
                 cc.tween(flyNode).to(0.3, { opacity: 0 }).start();
             })
             .start();
@@ -98,12 +78,13 @@ export namespace Effect {
         return flyNode;
     }
 
-    export function FlyChip2(fromNode: cc.Node, toNode: cc.Node, parentNode: cc.Node) {
+    export function FlyChip2(fromNode: cc.Node, toNode: cc.Node, parentNode: cc.Node): number {
         if (gGameData.Gamefocus == false) {
-            return;
+            return 0;
         }
-        if (fromNode == null || toNode == null || parentNode == null) {
-            return;
+        if (!cc.isValid(fromNode, true) || !cc.isValid(toNode, true) || !cc.isValid(parentNode, true)
+            || !cc.isValid(fromNode.parent, true) || !cc.isValid(toNode.parent, true)) {
+            return 0;
         }
         if (!Game.Instance.soundPlayed) { // 只在第一次调用时播放声音
             Audio.Instance.playSendBet();
@@ -123,5 +104,6 @@ export namespace Effect {
             .to(flyTime, { position: toLocal })
             .call(() => { fromNode.destroy() })
             .start();
+        return 0.5 + flyTime;
     }
 }

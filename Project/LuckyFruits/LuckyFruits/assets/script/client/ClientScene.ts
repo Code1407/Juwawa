@@ -1,5 +1,5 @@
 import MessageRouter from "../../shared/MessageRouter";
-import { ISceneListen, IRoundStep, IRoundResult, IRankListItem, IAllBetResp, IRewardResp, ICountDownPlayerUpdate } from "../interface/ILuckyFruits";
+import { ISceneListen, IRoundStep, IRoundResult, IAllBetResp, IRewardResp, ICountDownPlayerUpdate } from "../interface/ILuckyFruits";
 import Game from "../Game";
 import { gGameData } from "../GameData";
 import { EGameStatus } from "../../shared3/interface/IGame";
@@ -22,9 +22,6 @@ export default class ClientScene implements ISceneListen {
         });
         this.msgRouter.on('onRewardHandler', function (data) {
             __this.onRewardHandler(data);
-        });
-        this.msgRouter.on('onRankListChange', function (data: any) {
-            __this.onRankListChange(data?.rankList || data || []);
         });
         this.msgRouter.on('onbatListRound', function (data) {
             __this.onbatListRound(data);
@@ -96,11 +93,6 @@ export default class ClientScene implements ISceneListen {
         let game = Game.Instance;
         game.OnRewardHandler(roundResult);
     }
-    onRankListChange(resp: IRankListItem[]) {//同步排行榜
-        let game = Game.Instance;
-        game.onRankListChange(resp);
-    }
-
     onbatListRound(data: any) {//服务器下发派奖的动画参数
         let game = Game.Instance;
         game.OnbatListRound(data);

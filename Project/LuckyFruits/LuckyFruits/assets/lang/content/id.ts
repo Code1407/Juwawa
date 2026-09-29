@@ -1,7 +1,6 @@
 import { ELang } from "../langEnum";
 import { LangText, langContent, langNode, langInCodes, LangInCode } from "../node";
 
-
 const lang = ELang.id;
 
 langNode[lang] = new LangText();
@@ -10,49 +9,36 @@ langContent[lang] = new LangText();
 const text = langContent[lang];
 const codeText = langInCodes[lang] = new LangInCode;
 
-
-
-
-
 text.game.autoPlay= `Auto
 内测
 专用`;
-text.game.stopAuto =`Auto
+text.game.stopAuto =`Stop
 内测
 专用`;
-text.game.players = "players";
-text.game.card1Pot = "Pot:";
-text.game.card1Mine = "Mine:";
-text.game.card2Pot = "Pot:";
-text.game.card2Mine = "Mine:";
-text.game.card3Pot = "Pot:";
-text.game.card3Mine = "Mine:";
 text.game.todayRound = "Putaran:";
 
-text.ready.content = "Ready Time";
-text.gameHistory.title = "Game History";
+text.ready.content = "Waktu persiapan";
+text.gameHistory.title = "Riwayat Permainan";
 text.myHistory.title = "Riwayat Saya";
 text.myHistory.date = "Tanggal";
 text.myHistory.betDetail = "Detail Taruhan";
 text.myHistory.result = "Hasil";
 text.myHistory.revenue = "Pendapatan";
+text.rewarding.content = "Sedang memberikan hadiah, mohon tunggu!";
 
+codeText.globalContent.round = "Putaran: "
+codeText.globalContent.betMaxLimit = "Anda hanya bisa bertaruh maksimal {0} per putaran!";
 text.help.title = "Aturan Permainan";
 text.help.content =
 `
-Setiap simbol buah memiliki dua kemungkinan hasil. Jika "x2" muncul di bawah simbol pemenang, hadiah dihitung menggunakan pengali yang ditampilkan; jika tidak, tingkat pembayaran default berlaku.
-
-x2 Apel
-x2 Pisang
-x2 Lemon
-x2 Semangka
-
-Pembayaran default buah
+Opsi taruhan default dan pengali bonus buah adalah:
 x3 Apel Besar
 x6 Pisang Besar
 x8 Lemon Besar
 x12 Semangka Besar
 x30 BAR
+
+Jika Anda mendarat di buah yang menampilkan "x2", pengali akan digandakan.
 
 Hadiah khusus:
 1. Rainbow Luck (dua mode)
@@ -65,13 +51,3 @@ Hadiah khusus:
 
 Catatan: Kedua mode Luck dapat memasuki "Bad Luck Time", dan tidak ada hadiah yang diberikan selama periode tersebut.
 `
-
-text.betLimit.content = "You can only cost no more than 500,000 per round!";
-
-codeText.pokerLevel.highCard = "high card"
-codeText.pokerLevel.pair = "pair";
-codeText.pokerLevel.straight = "straight";
-codeText.pokerLevel.flush = "flush";
-codeText.pokerLevel.straightFlush = "straight flush";
-codeText.pokerLevel.fullHouse = "three of a king";
-codeText.globalContent.round = "Putaran: "

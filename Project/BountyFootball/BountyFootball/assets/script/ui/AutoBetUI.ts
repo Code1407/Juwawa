@@ -66,14 +66,6 @@ export default class AutoBetUI extends cc.Component {
                     if (betResp && (await betResp).code == ETradeCode.success) {
                         for (let k = 0; k < flyNum; k++) {
                             Effect.FlyDiamond2(ChipMoveNodeUI.Instance.mineNode[j], ChipMoveNodeUI.Instance.items[index], j, index, true, 2000);
-
-                            if (Game.Instance.player.accountDiamond >= Game.Instance.balanceNum) {
-                                for (let i = 0; i < Game.Instance.bettingBox.myBetNum.length; i++) {
-                                    Game.Instance.bettingBox.myBetNum[index].active = true;
-                                    Game.Instance.bettingBox.allBetNum[index].active = true;
-
-                                }
-                            }
                         }
                     }
                 }
@@ -124,14 +116,6 @@ export default class AutoBetUI extends cc.Component {
                     if (betResp && (await betResp).code == ETradeCode.success) {
                         for (let k = 0; k < flyNum; k++) {
                             Effect.FlyDiamond2(ChipMoveNodeUI.Instance.mineNode[j], ChipMoveNodeUI.Instance.items[index], j, index, true, 2000);
-
-                            if (Game.Instance.player.accountDiamond >= Game.Instance.balanceNum) {
-                                for (let i = 0; i < Game.Instance.bettingBox.myBetNum.length; i++) {
-                                    Game.Instance.bettingBox.myBetNum[index].active = true;
-                                    Game.Instance.bettingBox.allBetNum[index].active = true;
-
-                                }
-                            }
                         }
                     }
                 }

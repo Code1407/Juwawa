@@ -1,0 +1,98 @@
+{
+  "1": {
+    "symbolId": 0,
+    "symbolName": "symbol0",
+    "match2": 1,
+    "match3": 6,
+    "match4": 12,
+    "match5": 36
+  },
+  "2": {
+    "symbolId": 1,
+    "symbolName": "symbol1",
+    "match2": 2,
+    "match3": 10,
+    "match4": 20,
+    "match5": 60
+  },
+  "3": {
+    "symbolId": 2,
+    "symbolName": "symbol2",
+    "match2": 3,
+    "match3": 12,
+    "match4": 24,
+    "match5": 72
+  },
+  "4": {
+    "symbolId": 3,
+    "symbolName": "symbol3",
+    "match2": 5,
+    "match3": 15,
+    "match4": 30,
+    "match5": 90
+  },
+  "5": {
+    "symbolId": 4,
+    "symbolName": "symbol4",
+    "match2": 6,
+    "match3": 20,
+    "match4": 40,
+    "match5": 120
+  },
+  "6": {
+    "symbolId": 5,
+    "symbolName": "symbol5",
+    "match2": 0,
+    "match3": 25,
+    "match4": 50,
+    "match5": 150
+  },
+  "7": {
+    "symbolId": 6,
+    "symbolName": "symbol6",
+    "match2": 0,
+    "match3": 40,
+    "match4": 80,
+    "match5": 240
+  },
+  "8": {
+    "symbolId": 7,
+    "symbolName": "symbol7",
+    "match2": 0,
+    "match3": 60,
+    "match4": 120,
+    "match5": 360
+  },
+  "9": {
+    "symbolId": 8,
+    "symbolName": "Wild",
+    "match2": 0,
+    "match3": 100,
+    "match4": 200,
+    "match5": 600
+  },
+  "10": {
+    "symbolId": 9,
+    "symbolName": "BONUS",
+    "match2": 0,
+    "match3": 0,
+    "match4": 0,
+    "match5": 0
+  },
+  "11": {
+    "symbolId": 10,
+    "symbolName": "FREESPINS",
+    "match2": 0,
+    "match3": 0,
+    "match4": 0,
+    "match5": 0
+  },
+  "12": {
+    "symbolId": 11,
+    "symbolName": "JACKPOT",
+    "match2": 0,
+    "match3": 0,
+    "match4": 0,
+    "match5": 0
+  }
+}

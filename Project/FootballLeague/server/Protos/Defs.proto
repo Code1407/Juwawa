@@ -1,0 +1,237 @@
+
+//类型：bool, string, int16, uint16, int32, uint32, int64, uint64, array<>, map<>, 已定义的类型名
+//范围：使用中括号[]，在变量名后给出[min, max]，使用闭区间，即包含min和max
+//默认范围：整型取各自的最大范围，字符串和数组为[0, 256]
+//限制：为了和js和行为一致，map类型的key只能使用string类型，当然在写入数据时，map和key可以为数字，会被默认转成字符串处理
+//规范：所有数字相关的定义，尽可能使用无符号整型，除非已经明确可能为负数才定义有符号类型
+//示例：
+
+
+//玩家数据
+RankData{
+	uint64 pid
+	string name
+	string avatarUrl
+	uint16 rankNum 
+	uint64 score
+}
+
+SceneResultData{
+	uint16 sceneType
+	uint16 zhuanPanId
+	array<uint16> rewards
+	array<uint16> wheelMultiple
+	uint64 winNum
+	map<string, uint64> betSelf
+	map<string, uint64> hotBetMap
+	// 当前场景下注额最高的球队（奖励 ID）；0 表示尚无下注
+	uint16 hotTeamId
+	uint64 betTotal
+	array<RankData> roundRank3
+	uint64 jackpot
+	uint64 jackpotAmount
+	map<string, uint64> jackpotAmountPool
+}
+
+
+//玩家进入游戏
+ScPlayerEnterGamePush{
+	PlayerBaseData pBaseData
+	bool openAudio
+	uint16 chipIndex
+	uint16 team_id
+}
+
+
+//当前这局游戏信息
+CsCurGameInfoReq{
+	uint16 team_id
+}
+CsCurGameInfoResp{
+	uint16 team_id
+	uint16 gameState
+	//期数
+	uint16 round
+	//准备时间戳
+	uint64 prepareTime
+	// 服务端下发时刻（毫秒），用于客户端同步 JP 动画起点。
+	uint64 serverTime
+	//自己
+	map<string, uint64> betSelf
+	//今日赢取
+	uint64 todayRevenue 
+	//前三名
+	array<RankData>toDayRank3 
+	//热点下注奖励
+	array<uint16> hotRewards
+	map<string, uint64> hotBetMap
+	uint64 betTotal
+	array<SceneResultData> sceneInfos
+	map<string, uint64> jackpotAmountPool
+}
+
+ScGamePreparePush{
+	//时间
+	uint64 prepareTime
+	//期数
+	uint64 round
+}
+
+//下注信息
+BetData{
+	//奖励ID
+	uint16 rewardID
+	//筹码
+	uint64 chipValue
+	//筹码数量
+	uint64 chipCount
+}
+
+CsBetReq{
+	uint16 team_id
+	uint16 sceneType
+	//押注信息List
+	array<BetData> betList
+}
+CsBetResp{
+	int64 errorCode
+	uint16 team_id
+	uint16 sceneType
+	//玩家当前钱
+	uint64 money 
+	//押注信息List
+	array<BetData> betList
+}
+
+//单局游戏结果排行
+ScRankInfoPush{
+	int64 errorCode
+	//期数
+	uint64 round
+	//转盘id
+	uint16 zhuanPanId
+	//奖励
+	array<uint16> rewards
+	//赚钱数量
+	uint64 winNum
+	//玩家当前钱
+	uint64 money
+	//排行名次
+	uint16 rankNum
+	//今日收益
+	uint64 todayRevenue
+	array<SceneResultData> sceneInfos
+	map<string, uint64> jackpotAmountPool
+}
+
+//开奖结果
+ScOpenRewardPush{
+	//期数
+	uint64 round
+	//转盘id
+	uint16 zhuanPanId
+	//奖励
+	array<uint16> rewards
+	//今天前三名
+	array<RankData>toDayRank3 
+	//当局三名
+	array<RankData>roundRank3 
+	array<SceneResultData> sceneInfos
+	map<string, uint64> jackpotAmountPool
+}
+
+//热度奖励推送
+ScHotBetRewardPush{
+	array<uint16> rewards
+	map<string, uint64> hotBetMap
+	uint64 betTotal
+	array<SceneResultData> sceneInfos
+}
+
+
+//游戏历史记录List
+//游戏结果
+GameResultData{
+	uint16 team_id
+	//准备时间戳
+	uint64 prepareTime
+	//期数
+	uint64 round
+	//转盘id
+	uint16 zhuanPanId
+	array<uint16> rewards
+	array<SceneResultData> sceneInfos
+}
+CsGameHistoryReq{
+	uint16 team_id
+}
+CsGameHistoryResp{
+	array<GameResultData> list
+}
+
+
+//玩家下注历史记录
+//每次下注数据
+BetOnceData{
+	//下注时间戳
+	uint64 betTime
+	//下注数据List
+	array<BetData> betList
+}
+//每局游戏数据
+BetRoundData{
+	//服务器ID
+	uint16 serverIndex
+	//期数
+	uint64 round
+	//准备时间戳
+	uint64 prepareTime
+	//开奖结果ID
+	uint16 rewardID
+	//赢取
+	uint16 win
+	//下注信息
+	array<BetOnceData> betInfo
+}
+//请求自己历史记录
+HistoryData{
+	uint16 team_id
+	uint64 serverIndex
+	uint64 prepareTime
+	uint64 round
+	map<string, uint64> betMap
+	array<uint16> rewards
+	uint64 addCoins
+	uint16 zhuanPanId
+	array<SceneResultData> sceneInfos
+}
+CsSelfBetHistoryReq{
+	uint16 team_id
+}
+CsSelfBetHistoryResp{
+	array<HistoryData> list
+}
+
+//游戏排行榜
+CsRevenueRankReq {
+}
+CsRevenueRankResp {
+   array<RankData>list
+}
+
+//音频开关变更
+CsAudioChangeReq{
+	bool openAudio
+}
+
+//挡位开关变更
+CsChipChangeReq{
+	uint16 chipIndex
+}
+
+//球队切换
+CsTeamChangeReq{
+	uint16 team_id
+}
+
+

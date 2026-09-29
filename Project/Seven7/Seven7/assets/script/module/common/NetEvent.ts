@@ -20,6 +20,10 @@ export enum NetEvent {
     NET_SC_OPEN_REWARD_PUSH = "ScOpenRewardPush",
     /**游戏开奖历史请求 */
     NET_CS_GAME_HISTORY_REQ = "CsGameHistoryReq",
+    /**游戏最近开奖历史请求 */
+    NET_CS_GAME_LATELY_HISTORY_REQ = "CsGameLatelyHistoryReq",
+    NET_CS_GAME_LATELY_HISTORY_RESP = "CsGameLatelyHistoryResp",
+    NET_SC_GAME_LATELY_HISTORY_PUSH = "ScGameLatelyHistoryPush",
     /**游戏开奖历史请求回包 */
     NET_CS_GAME_HISTORY_RESP = "CsGameHistoryResp",
     /**我的下注记录请求 */

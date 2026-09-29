@@ -50,7 +50,6 @@ interface enterGame {
 interface enterGameResp {
     roundStep: BountyFootballRoundStep
     historyResults: number[]
-    rankList: BountyFootballRankItem[]
     uid: string
     account: Account
     todayRevenue: number
@@ -98,7 +97,6 @@ interface synchronize {
 interface synchronizeResp {
     roundStep: BountyFootballRoundStep
     historyResults: number[]
-    rankList: BountyFootballRankItem[]
     uid: string
     account: Account
     todayRevenue: number
@@ -126,9 +124,6 @@ interface dbmHeartbeatResp {
     code: number
 }
 
-interface onRankListChange {
-    rankList: BountyFootballRankItem[]
-}
 
 interface onRoundStep {
     todayRound: number

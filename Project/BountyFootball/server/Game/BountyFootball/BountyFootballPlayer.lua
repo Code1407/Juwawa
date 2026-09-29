@@ -75,14 +75,13 @@ end
 --   totalWheelAmount        场景总池累计下注（所有玩家合计）
 --   curRoundAllWheelAmount  当前回合所有玩家的下注列表
 --   historyResults          场景历史开奖结果
---   rankList                场景排行榜
 --   myHistory               本玩家个人历史回合记录
 --   lastBetAmountButton     上次选择的下注金额按钮索引
 --   playerSettings          玩家个人偏好设置
 -- 该方法在 enterGame / synchronize 等场景被调用，用于全量同步客户端状态。
 function BountyFootballPlayer:getClientResp()
     local data = self:getData()
-    return { uid = self:getUid(), roundStep = self.scene:getRoundStep(), account = LCAccount(self:getPlayer()), todayRevenue = data.todayRevenue or 0, wheelAmount = data.bets or LCEmptyBets(), wheelChipAmount = data.chipCounts or LCEmptyChipCounts(), totalWheelAmount = self.scene.roundBets, curRoundAllWheelAmount = self.scene:getRoundAllBetList(), historyResults = self.scene.historyResults, rankList = self.scene:rankList(), myHistory = data.history or {}, lastBetAmountButton = data.lastBetAmountButton or 0, playerSettings = data.playerSettings or {} }
+    return { uid = self:getUid(), roundStep = self.scene:getRoundStep(), account = LCAccount(self:getPlayer()), todayRevenue = data.todayRevenue or 0, wheelAmount = data.bets or LCEmptyBets(), wheelChipAmount = data.chipCounts or LCEmptyChipCounts(), totalWheelAmount = self.scene.roundBets, curRoundAllWheelAmount = self.scene:getRoundAllBetList(), historyResults = self.scene.historyResults, myHistory = data.history or {}, lastBetAmountButton = data.lastBetAmountButton or 0, playerSettings = data.playerSettings or {} }
 end
 
 -- enterGame：玩家进入游戏时调用，返回初始快照（委托给 getClientResp）。
@@ -222,7 +221,13 @@ function BountyFootballPlayer:bet(todayRound, betGrades, chipCounts, requestedBe
     -- 验证：不在下注阶段或回合号不匹配
     if step.status ~= LCGameStatus.bet or tonumber(todayRound) ~= step.todayRound then
         log_info("BountyFootball bet rejected: invalid time, uid:{0} requestRound:{1} currentRound:{2} status:{3}", uid, todayRound, step.todayRound, step.status)
-        return { requestId = requestId, code = LCTradeCode.missTime, accountDiamond = self:getDiamond(), wheelAmount = self:getData().bets }
+        return { requestId = requestId, code = LCTradeCode.missTime, accountDiamond = self:getDiamond(), wheelAmount = self:getData().bets, wheelChipAmount = self:getData().chipCounts }
+    end
+    -- 以服务端倒计时为准，最后 3 秒停止接收新下注，避免临近封盘的请求进入异步扣款流程。
+    local remainSecond = tonumber(step.remainSecond) or 0
+    if remainSecond <= 3 then
+        log_info("BountyFootball bet rejected: cutoff, uid:{0} round:{1} remainSecond:{2}", uid, step.todayRound, remainSecond)
+        return { requestId = requestId, code = LCTradeCode.missTime, accountDiamond = self:getDiamond(), wheelAmount = self:getData().bets, wheelChipAmount = self:getData().chipCounts }
     end
     -- 服务端按公共档位配置重算下注金额；档位、数量、选中标记或金额不匹配时拒绝下注。
     local gradesValid, invalidReason = validateBetGrades(betGrades, chipCounts, requestedBets)
@@ -293,31 +298,44 @@ function BountyFootballPlayer:bet(todayRound, betGrades, chipCounts, requestedBe
 
         -- 验证：不在下注阶段或回合号不匹配
         local n_step = system.scene:getRoundStep()
+        local currentRoundId = system.scene:getRoundId()
         if n_step.status ~= LCGameStatus.bet
             or tonumber(todayRound) ~= n_step.todayRound
-            or system.scene:getRoundId() ~= roundId then
+            or currentRoundId ~= roundId then
             local outcome = system.scene:getRoundOutcome(roundId)
-            local result = outcome and outcome.result or nil
-            local oddsType = outcome and outcome.oddsType or 0
-            local rewardCoins = result and result >= 0 and LCRevenue(bets, result) or 0
-            local gameExt = { win_id = tostring(result or -1) }
-            local rewardPlayer = backPlayer or system:getPlayer()
-            if not rewardPlayer then
-                log_error("BountyFootball late bet delay reward failed: player nil, uid:{0} roundId:{1} orderId:{2}", uid, roundId, _orderId)
-                return
+            local result = outcome and tonumber(outcome.result) or -1
+            if result < 0 then
+                log_error("BountyFootball late bet missing outcome: uid:{0} round:{1} roundId:{2} orderId:{3} currentRound:{4} currentRoundId:{5} status:{6}",
+                    uid, todayRound, roundId, _orderId, n_step.todayRound or -1, currentRoundId or -1, n_step.status or -1)
+                return pushBetResp(system, LCTradeCode.fail, backPlayer)
             end
-            rewardPlayer:subCoinsDelayReward(
-                roundId,
-                betId,
-                _orderId,
-                oddsType,
-                ECoinsOperateType.WinAdd,
-                total,
-                rewardCoins,
-                gameExt
-            )
-            log_info("BountyFootball late bet delay reward: uid:{0} round:{1} roundId:{2} betId:{3} orderId:{4} result:{5} subCoins:{6} rewardCoins:{7} oddsType:{8}",
-                uid, todayRound, roundId, betId, _orderId, result or -1, total, rewardCoins, oddsType)
+
+            local oddsType = outcome and outcome.oddsType or 0
+            local rewardCoins = LCRevenue(bets, result)
+            local gameExt = { win_id = tostring(result or -1) }
+            if rewardCoins > 0 then
+                local rewardPlayer = backPlayer or system:getPlayer()
+                if not rewardPlayer then
+                    log_error("BountyFootball late bet delay reward failed: player nil, uid:{0} roundId:{1} orderId:{2}", uid, roundId, _orderId)
+                    return
+                end
+
+                rewardPlayer:subCoinsDelayReward(
+                    roundId,
+                    betId,
+                    _orderId,
+                    oddsType,
+                    ECoinsOperateType.WinAdd,
+                    total,
+                    rewardCoins,
+                    gameExt
+                )
+                log_info("BountyFootball late bet delay reward: uid:{0} round:{1} roundId:{2} betId:{3} orderId:{4} result:{5} subCoins:{6} rewardCoins:{7} oddsType:{8}",
+                    uid, todayRound, roundId, betId, _orderId, result, total, rewardCoins, oddsType)
+            else
+                log_info("BountyFootball late bet no reward: uid:{0} round:{1} roundId:{2} betId:{3} orderId:{4} result:{5} subCoins:{6}",
+                    uid, todayRound, roundId, betId, _orderId, result, total)
+            end
             return pushBetResp(system, LCTradeCode.missTime, backPlayer)
         end
 

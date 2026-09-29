@@ -8,19 +8,14 @@ local RANK_VALUE_FIELDS = {
     { key = "AwardRate", name = "AwardRate" },
 }
 
-local function applyBoolSwitch(value)
-    if value == true or value == 1 or value == "1" then return true end
-    return false
-end
-
-local function applyRankValueConfig(rankConfig)
+local function _applyRankValueConfig(rankConfig)
     if type(rankConfig) ~= "table" or not next(rankConfig) then
         return false
     end
     for i = 1, #RANK_VALUE_FIELDS do
         local field = RANK_VALUE_FIELDS[i]
         local value = rankConfig[field.key]
-        if value ~= nil then
+        if value then
             RankCfgMgr[field.key] = value
         else
             log_error("Rank configs not found " .. field.name)
@@ -29,28 +24,15 @@ local function applyRankValueConfig(rankConfig)
     return true
 end
 
-local function applyRankSwitchConfig(rankConfig)
-    if type(rankConfig) ~= "table" then
-        return
-    end
-    if rankConfig.RankSwitch ~= nil then
-        RankCfgMgr.EnableRank = applyBoolSwitch(rankConfig.RankSwitch)
-    end
-    if rankConfig.PlatformSwitch ~= nil then
-        RankCfgMgr.EnablePlatform = applyBoolSwitch(rankConfig.PlatformSwitch)
-    end
-end
-
-local function loadRankSwitches()
+local function _loadRankSwitches()
     local projCommon = gApp:getProjCommon()
     local commonCustom = projCommon and projCommon["Custom"]
     if type(commonCustom) == "table" then
-        if commonCustom.enableRank ~= nil then
-            RankCfgMgr.EnableRank = commonCustom.enableRank == true
-        end
-        if commonCustom.enablePlatform ~= nil then
-            RankCfgMgr.EnablePlatform = commonCustom.enablePlatform == true
-        end
+        RankCfgMgr.EnableRank = commonCustom.enableRank == true
+        RankCfgMgr.EnablePlatform = commonCustom.enablePlatform == true
+    else
+        RankCfgMgr.EnableRank = false
+        RankCfgMgr.EnablePlatform = false
     end
 end
 
@@ -70,19 +52,17 @@ function RankCfgMgr:isRankConfigReady()
 end
 
 function RankCfgMgr:onProjRankCfgMgr()
-    loadRankSwitches()
+    _loadRankSwitches()
     local serverConfig = gApp:getProjServer()
     local serverCustom = serverConfig and serverConfig["Custom"]
     local rankConfig = serverCustom and serverCustom["1"]
-    applyRankSwitchConfig(rankConfig)
-    applyRankValueConfig(rankConfig)
+    _applyRankValueConfig(rankConfig)
 end
 
 function RankCfgMgr:onLoadRankCfgMgr()
     local rankCommonCfg = gConfigMgr:getBaseConfig("RankCommon")
     local rankConfig = rankCommonCfg and rankCommonCfg[1]
-    applyRankSwitchConfig(rankConfig)
-    if not applyRankValueConfig(rankConfig) then
+    if not _applyRankValueConfig(rankConfig) then
         log_error("Rank configs not found RankCommon")
     end
 end

@@ -62,7 +62,7 @@ export namespace Effect {
                     flyNode.destroy();
             }).start();
             
-            cc.tween(flyNode).to(speed1, {scale: 2}).to(speed2, {scale: 1}).start();
+            cc.tween(flyNode).to(speed1, {scale: 1.0}).to(speed2, {scale: 0.5}).start();
             cc.tween(flyNode).to(speed1, {angle: getRandomNumInt(0, 360)}).start();
 
             if (i % 3 == 2) {

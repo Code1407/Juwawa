@@ -33,7 +33,7 @@ export class LangText {
         result: undefined,
         revenue: undefined
     };
-    betLimit = new Tips;
+    rewarding = new Tips;
 }
 
 class LangTexts {
@@ -42,16 +42,9 @@ class LangTexts {
 
 
 export class LangInCode {
-    pokerLevel = {
-        highCard: "",
-        pair: "",
-        straight: "",
-        flush: "",
-        straightFlush: "",
-        fullHouse: ""
-    }
     globalContent = {
-        round:""
+        round:"",
+        betMaxLimit:""
     }
 }
 class LangInCodes {

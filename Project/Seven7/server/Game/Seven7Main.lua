@@ -93,17 +93,16 @@ function Seven7Main:playerEnterOrLeave(state)
 end
 
 function Seven7Main:betPrepare()
-    self:clearData()
-    
     if gApp:isWaitClosing() then
         gApp:finishClosing()
         log_info("服务器在更新关闭过程中,停止下一局押注")
         return
     end
 
+    self:clearData()
+
     if not gWorld:hasPlayer() then
         self.gameState = GameState.NONE
-        self:clearData()
         return
     end
 
@@ -298,6 +297,12 @@ function Seven7Main:broadcastResult(roundRank3)
         jpRewards = self.roundResult.jpRewards,
         roundRank3 = roundRank3 or {}
     }, gWorld)
+
+    local latelyHistory = self:getGameLatelyHistory(9)
+    if latelyHistory then
+        latelyHistory.jpRewardCount = self.roundResult.jpRewards and #self.roundResult.jpRewards or 0
+        Router.Client.ScGameLatelyHistoryPush(latelyHistory, gWorld)
+    end
 end
 
 function Seven7Main:betAddCoins(winPlayerNum, winPlayerList, gameAnalyData, openRewardDt, patformData)
@@ -364,7 +369,7 @@ function Seven7Main:resultSort(playerList, openRewardDt)
     for i = 1, 3 do
         if playerList[i] then
             local pid = playerList[i].pid
-            local player = gWorld:findPlayer(pid)
+            local player = gWorld:findAllPlayer(pid)
             if player then
                 table.insert(rank3, {
                     pid = playerList[i].pid,
@@ -391,7 +396,7 @@ function Seven7Main:resultSort(playerList, openRewardDt)
             lastWin = item.win
         end 
         item.rankNum = rankNum
-        local player = gWorld:findPlayer(item.pid)
+        local player = gWorld:findAllPlayer(item.pid)
         if player then
             Router.Client.ScPlayerRoundResultPush({
                 errorCode = 0,
@@ -544,7 +549,7 @@ end
 function Seven7Main:getDelayRewardCoins(uid, roundId, betMap)
     local round = GenDayIncrId(roundId)
     local gamedata = self:getData()
-    if not gamedata.resultHistory or #gamedata.resultHistory > 0 then
+    if not gamedata.resultHistory or #gamedata.resultHistory <= 0 then
         return 0
     end
 
@@ -789,6 +794,28 @@ function Seven7Main:csGameHistoryReq()
         --     return result
         -- end
     end
+    return result
+end
+
+
+function Seven7Main:getGameLatelyHistory(maxCount)
+    local gamedata = self:getData()
+    local result = {list = {}}
+    local len = gamedata.resultHistory and #gamedata.resultHistory or 0
+    local showCount = math.min(maxCount, len)
+    if showCount > 0 then
+        local dstIdx = 1
+        for i = len, len - showCount + 1, -1 do
+            result.list[dstIdx] = gamedata.resultHistory[i].resultID
+            dstIdx = dstIdx + 1
+        end
+    end
+    return result
+end
+
+--游戏最近历史记录
+function Seven7Main:csGameLatelyHistoryReq()
+    local result = self:getGameLatelyHistory(9)
     return result
 end
 

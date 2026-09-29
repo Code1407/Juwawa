@@ -5,10 +5,10 @@ import { CoolDown } from "../utl/CCAsync_Rank";
 import CheckMark from "../utl/CheckMark_Rank";
 import { NodePool } from "../utl/PrefabPool_Rank";
 import GlobalRankViewItem from "./GlobalRankViewItem";
-import AvatarCache from "../../../script/image/AvatarCache";
 
 const { ccclass, property } = cc._decorator;
 
+const MAX_AVATAR_LOADS = 6;
 const VIRTUAL_LIST_BUFFER = 160;
 const SCROLLING_EVENT = "scrolling";
 const SCROLL_ENDED_EVENT = "scroll-ended";
@@ -72,6 +72,8 @@ export default class GlobalRankView extends cc.Component {
 
     weekDaySelect = -1;
 
+    uidToHead: { [uid: string]: cc.SpriteFrame } = {};
+
     cdUpdateHead: CoolDown
 
     lastOpenTime: number;
@@ -92,6 +94,8 @@ export default class GlobalRankView extends cc.Component {
     private currentIsLast = false;
     private currentUpdateHead = false;
     private currentGen = 0;
+    private avatarLoadsInFlight = 0;
+    private avatarLoadQueue: (() => void)[] = [];
 
     initGlobalRankView() {
         this.cdUpdateHead = new CoolDown(3, this.node);
@@ -283,9 +287,6 @@ export default class GlobalRankView extends cc.Component {
         }
         this.UpdateWeekDay();
         this.TryLoad();
-
-        //当前节点在父节点上 改为顶层
-        this.node.parent.parent.zIndex = this.node.parent.parent.parent.children.length + 10;
     }
 
     TryLoad() {
@@ -297,6 +298,7 @@ export default class GlobalRankView extends cc.Component {
         this.currentIsLast = this.weekDaySelect < thisDay;
         this.currentGen = ++this.loadGeneration;
         this.buildToken++;
+        this.avatarLoadQueue = [];
         this.currentRankInfo = rankInfo;
         this.rebuildVirtualMetrics(rankInfo);
         this.updateVisibleItems(true);
@@ -304,12 +306,12 @@ export default class GlobalRankView extends cc.Component {
 
     protected onDisable(): void {
         this.Clear();
-        this.node.parent.parent.zIndex = 10;
     }
 
     Clear() {
         this.loadGeneration++;
         this.buildToken++;
+        this.avatarLoadQueue = [];
         for (let i = this.activeItems.length - 1; i >= 0; i--) {
             const item = this.activeItems[i];
             if (item && item.node.isValid)
@@ -498,6 +500,24 @@ export default class GlobalRankView extends cc.Component {
         this.activeItems = [];
     }
 
+    private enqueueAvatarLoad(task: () => void) {
+        if (this.avatarLoadsInFlight < MAX_AVATAR_LOADS) {
+            this.avatarLoadsInFlight++;
+            task();
+        } else {
+            this.avatarLoadQueue.push(task);
+        }
+    }
+
+    private finishAvatarLoad() {
+        this.avatarLoadsInFlight = Math.max(0, this.avatarLoadsInFlight - 1);
+        while (this.avatarLoadQueue.length > 0 && this.avatarLoadsInFlight < MAX_AVATAR_LOADS) {
+            this.avatarLoadsInFlight++;
+            const next = this.avatarLoadQueue.shift();
+            next();
+        }
+    }
+
     private bindItem(item: GlobalRankViewItem, rankInfo: IRankUserInfo, isLast: boolean, updateHead: boolean, gen: number) {
         const isMe = rankInfo.uid == myUID();
         (<any>item).__rankUid = rankInfo.uid;
@@ -542,25 +562,39 @@ export default class GlobalRankView extends cc.Component {
     private bindAvatar(item: GlobalRankViewItem, rankInfo: IRankUserInfo, updateHead: boolean, gen: number) {
         if (!item.avatar) return;
 
-        const avatarUrl = AvatarCache.normalize(rankInfo.avatar ?? rankInfo.avator);
+        let avatarUrl = rankInfo.avatar ?? rankInfo.avator;
         if (!avatarUrl) {
             item.resetAvatar();
             return;
         }
 
-        const cached = AvatarCache.get(avatarUrl);
+        const cached = this.uidToHead[rankInfo.uid];
         if (cached != null) {
             item.avatar.spriteFrame = cached;
-            return;
-        }
-        item.resetAvatar();
-        AvatarCache.load(avatarUrl, (error, frame) => {
-            if (gen !== this.loadGeneration || !item.node.isValid || (<any>item).__rankUid !== rankInfo.uid) return;
-            if (error || !frame) {
-                item.resetAvatar();
+            if (!updateHead)
                 return;
-            }
-            item.avatar.spriteFrame = frame;
+        }
+        else {
+            item.resetAvatar();
+        }
+
+        avatarUrl = decodeURI(avatarUrl);
+        if (updateHead)
+            avatarUrl += `${avatarUrl.includes('?') ? '&' : '?'}timestamp=${Date.now()}`;
+
+        this.enqueueAvatarLoad(() => {
+            cc.assetManager.loadRemote<cc.Texture2D>(avatarUrl, { ext: '.png' }, (err, texture) => {
+                this.finishAvatarLoad();
+                if (gen !== this.loadGeneration || !item.node.isValid || (<any>item).__rankUid !== rankInfo.uid) return;
+                if (err || texture == null) {
+                    if (cached == null)
+                        item.resetAvatar();
+                    return;
+                }
+                const frame = new cc.SpriteFrame(texture);
+                this.uidToHead[rankInfo.uid] = frame;
+                item.avatar.spriteFrame = frame;
+            });
         });
     }
 }

@@ -18,7 +18,8 @@ export default class BetAmountUI extends cc.Component {
     items: Array<cc.Node> = null;
 
     onClick(e: cc.Event) {
-        Audio.Instance.clickBet();
+        //Audio.Instance.clickBet();
+        Audio.Instance.playCardOut();
         gGameData.betAmountIndex = this.buttonIndex;
         let playerSettings = {
             soundVol: gGameData.soundVol,

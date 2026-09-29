@@ -84,7 +84,8 @@ export default class RepeatBetUI extends cc.Component {
                         }
                         if (gGameData.betMax > 0 && gGameData.BetTotalNumber + betTotal > gGameData.betMax) {
                             Audio.Instance.playClick();
-                            let str = "You can only cost " + gGameData.betMax + " each round"
+                            const langInCode = (<any>window).langInCode;
+                            let str = (langInCode && langInCode.globalContent.betMaxLimit || "You can only cost {0} each round").replace("{0}", gGameData.betMax.toString());
                             Game.Instance.BetNumLimitView.setLabelValue(str);
                             Game.Instance.BetNumLimitView.node.active = true;
                             return;
@@ -149,6 +150,7 @@ export default class RepeatBetUI extends cc.Component {
             if (wheelAmount.length == 0) {
                 return;
             }
+
             // let batCount:number[] = player.getNotedBatCount().concat();
             // for (let index = 0; index < batCount.length; index++) {
             //     if(batCount[index] == 0){
@@ -170,20 +172,24 @@ export default class RepeatBetUI extends cc.Component {
                                 player.curBetLimit[index] = gradeList[index];
                             }
                         }
+                        let betTotal = 0;
+                        for (let side = 0; side < wheelAmount.length; side++) {
+                            betTotal += calNumber(wheelAmount[side]);
+                        }
+
+                        if (gGameData.betMax > 0 && gGameData.BetTotalNumber + betTotal > gGameData.betMax) {
+                            Audio.Instance.playSendBet();
+                            const langInCode = (<any>window).langInCode;
+                            let str = (langInCode && langInCode.globalContent.betMaxLimit || "You can only cost {0} each round").replace("{0}", gGameData.betMax.toString());
+                            Game.Instance.BetNumLimitView.setLabelValue(str);
+                            Game.Instance.BetNumLimitView.node.active = true;
+                            return;
+                        }
+
                         let resp: IBetResp = await player.bet(gGameData.roundStep.todayRound, gradeList, wheelAmount);
                         //player.wheelAmount = wheelAmount;
                         if (resp && resp.code == ETradeCode.success) {
-                            let betTotal = 0;
-                            for (let side = 0; side < wheelAmount.length; side++) {
-                                betTotal += calNumber(wheelAmount[side]);
-                            }
-                            if (gGameData.betMax > 0 && gGameData.BetTotalNumber + betTotal > gGameData.betMax) {
-                                Audio.Instance.playSendBet();
-                                let str = "You can only cost " + gGameData.betMax + " each round"
-                                Game.Instance.BetNumLimitView.setLabelValue(str);
-                                Game.Instance.BetNumLimitView.node.active = true;
-                                return;
-                            }
+                            
                             gGameData.BetTotalNumber += betTotal;
                             Game.Instance.FlyChip({ batIndex: gradeList, num: wheelAmount });
                         }

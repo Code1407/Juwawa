@@ -1,0 +1,69 @@
+
+diaoxian.png
+size: 512,512
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+11
+  rotate: false
+  xy: 2, 345
+  size: 143, 143
+  orig: 143, 143
+  offset: 0, 0
+  index: -1
+22
+  rotate: false
+  xy: 2, 200
+  size: 143, 143
+  orig: 143, 143
+  offset: 0, 0
+  index: -1
+33
+  rotate: false
+  xy: 2, 55
+  size: 143, 143
+  orig: 143, 143
+  offset: 0, 0
+  index: -1
+44
+  rotate: false
+  xy: 147, 345
+  size: 143, 143
+  orig: 143, 143
+  offset: 0, 0
+  index: -1
+55
+  rotate: false
+  xy: 147, 200
+  size: 143, 143
+  orig: 143, 143
+  offset: 0, 0
+  index: -1
+66
+  rotate: false
+  xy: 147, 55
+  size: 143, 143
+  orig: 143, 143
+  offset: 0, 0
+  index: -1
+77
+  rotate: false
+  xy: 292, 345
+  size: 143, 143
+  orig: 143, 143
+  offset: 0, 0
+  index: -1
+88
+  rotate: false
+  xy: 292, 200
+  size: 143, 143
+  orig: 143, 143
+  offset: 0, 0
+  index: -1
+huo
+  rotate: true
+  xy: 2, 2
+  size: 51, 58
+  orig: 51, 58
+  offset: 0, 0
+  index: -1

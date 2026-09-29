@@ -1,0 +1,122 @@
+{
+  "__type__": "cc.AnimationClip",
+  "_name": "autoEffect",
+  "_objFlags": 0,
+  "_native": "",
+  "_duration": 19.5,
+  "sample": 60,
+  "speed": 1,
+  "wrapMode": 1,
+  "curveData": {
+    "paths": {
+      "auto": {
+        "props": {
+          "angle": [
+            {
+              "frame": 15,
+              "value": 0
+            },
+            {
+              "frame": 17.016666666666666,
+              "value": 720
+            },
+            {
+              "frame": 19.3,
+              "value": 1980
+            }
+          ],
+          "opacity": [
+            {
+              "frame": 16.5,
+              "value": 250
+            },
+            {
+              "frame": 19.5,
+              "value": 0
+            }
+          ],
+          "active": [
+            {
+              "frame": 0,
+              "value": false
+            },
+            {
+              "frame": 15,
+              "value": true
+            }
+          ]
+        }
+      },
+      "exeff": {
+        "props": {
+          "opacity": [
+            {
+              "frame": 15,
+              "value": 0
+            },
+            {
+              "frame": 15.5,
+              "value": 150
+            },
+            {
+              "frame": 16,
+              "value": 0
+            },
+            {
+              "frame": 16.5,
+              "value": 150
+            },
+            {
+              "frame": 17,
+              "value": 0
+            }
+          ],
+          "active": [
+            {
+              "frame": 0,
+              "value": false
+            },
+            {
+              "frame": 15,
+              "value": true
+            }
+          ]
+        }
+      },
+      "Label": {
+        "props": {
+          "opacity": [
+            {
+              "frame": 15,
+              "value": 0
+            },
+            {
+              "frame": 17.016666666666666,
+              "value": 180,
+              "curve": "linear"
+            },
+            {
+              "frame": 18.516666666666666,
+              "value": 180
+            },
+            {
+              "frame": 19.5,
+              "value": 0
+            }
+          ],
+          "active": [
+            {
+              "frame": 0,
+              "value": false
+            },
+            {
+              "frame": 15,
+              "value": true
+            }
+          ]
+        }
+      }
+    }
+  },
+  "events": []
+}

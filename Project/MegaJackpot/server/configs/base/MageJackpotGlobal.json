@@ -1,0 +1,210 @@
+{
+  "1": {
+    "configKey": "lineCount",
+    "configValue": 30
+  },
+  "2": {
+    "configKey": "bigWinMultiple",
+    "configValue": 100
+  },
+  "3": {
+    "configKey": "newUserRoundDefault",
+    "configValue": 20
+  },
+  "4": {
+    "configKey": "jackpotPeriod",
+    "configValue": 5000
+  },
+  "5": {
+    "configKey": "jackpotRateMin",
+    "configValue": 1
+  },
+  "6": {
+    "configKey": "jackpotRateMax",
+    "configValue": 1
+  },
+  "7": {
+    "configKey": "defaultRateType",
+    "configValue": 0
+  },
+  "8": {
+    "configKey": "heartbeatInterval",
+    "configValue": 1000
+  },
+  "9": {
+    "configKey": "BONUSPeriod",
+    "configValue": 5000
+  },
+  "10": {
+    "configKey": "BONUSRateMin",
+    "configValue": 2
+  },
+  "11": {
+    "configKey": "BONUSRateMax",
+    "configValue": 2
+  },
+  "12": {
+    "configKey": "FreePeriod",
+    "configValue": 5000
+  },
+  "13": {
+    "configKey": "FreeRateMin",
+    "configValue": 2
+  },
+  "14": {
+    "configKey": "FreeRateMax",
+    "configValue": 2
+  },
+  "15": {
+    "configKey": "freeProbability",
+    "configValue": 0.057
+  },
+  "16": {
+    "configKey": "jackpotPoolIncrRate",
+    "configValue": 0.02
+  },
+  "17": {
+    "configKey": "freeNormal0",
+    "configValue": 0.5
+  },
+  "18": {
+    "configKey": "freeNormal1",
+    "configValue": 0.3
+  },
+  "19": {
+    "configKey": "freeNormal2",
+    "configValue": 0.2
+  },
+  "20": {
+    "configKey": "freeNormal3",
+    "configValue": 0
+  },
+  "21": {
+    "configKey": "freeNormal4",
+    "configValue": 0
+  },
+  "22": {
+    "configKey": "freeNormal5",
+    "configValue": 0
+  },
+  "23": {
+    "configKey": "freeHit0",
+    "configValue": 0
+  },
+  "24": {
+    "configKey": "freeHit1",
+    "configValue": 0
+  },
+  "25": {
+    "configKey": "freeHit2",
+    "configValue": 0
+  },
+  "26": {
+    "configKey": "freeHit3",
+    "configValue": 0.6
+  },
+  "27": {
+    "configKey": "freeHit4",
+    "configValue": 0.3
+  },
+  "28": {
+    "configKey": "freeHit5",
+    "configValue": 0.1
+  },
+  "29": {
+    "configKey": "freeTimes0",
+    "configValue": 0
+  },
+  "30": {
+    "configKey": "freeTimes1",
+    "configValue": 0
+  },
+  "31": {
+    "configKey": "freeTimes2",
+    "configValue": 0
+  },
+  "32": {
+    "configKey": "freeTimes3",
+    "configValue": 5
+  },
+  "33": {
+    "configKey": "freeTimes4",
+    "configValue": 8
+  },
+  "34": {
+    "configKey": "freeTimes5",
+    "configValue": 12
+  },
+  "35": {
+    "configKey": "jackpotNormal0",
+    "configValue": 0.5
+  },
+  "36": {
+    "configKey": "jackpotNormal1",
+    "configValue": 0.3
+  },
+  "37": {
+    "configKey": "jackpotNormal2",
+    "configValue": 0.2
+  },
+  "38": {
+    "configKey": "jackpotNormal3",
+    "configValue": 0
+  },
+  "39": {
+    "configKey": "jackpotNormal4",
+    "configValue": 0
+  },
+  "40": {
+    "configKey": "jackpotNormal5",
+    "configValue": 0
+  },
+  "41": {
+    "configKey": "jackpotHit0",
+    "configValue": 0
+  },
+  "42": {
+    "configKey": "jackpotHit1",
+    "configValue": 0
+  },
+  "43": {
+    "configKey": "jackpotHit2",
+    "configValue": 0
+  },
+  "44": {
+    "configKey": "jackpotHit3",
+    "configValue": 0.7
+  },
+  "45": {
+    "configKey": "jackpotHit4",
+    "configValue": 0.3
+  },
+  "46": {
+    "configKey": "jackpotHit5",
+    "configValue": 0
+  },
+  "47": {
+    "configKey": "jackpotPercent0",
+    "configValue": 0
+  },
+  "48": {
+    "configKey": "jackpotPercent1",
+    "configValue": 0
+  },
+  "49": {
+    "configKey": "jackpotPercent2",
+    "configValue": 0
+  },
+  "50": {
+    "configKey": "jackpotPercent3",
+    "configValue": 0.05
+  },
+  "51": {
+    "configKey": "jackpotPercent4",
+    "configValue": 0.15
+  },
+  "52": {
+    "configKey": "jackpotPercent5",
+    "configValue": 0.5
+  }
+}

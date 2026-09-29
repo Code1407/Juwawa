@@ -52,7 +52,7 @@ export const linePaths: number[][] = [
 ];
 
 export const bigWinMultiple = 100;
-export const lineCount = 30;
+export const lineCount = 1;    //倍数操作30倍修改为1倍
 
 export function ErrorLog(msg: any) {
     console.trace("[FruitSlots GameError:]" + msg);

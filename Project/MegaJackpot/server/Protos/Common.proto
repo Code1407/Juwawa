@@ -1,0 +1,103 @@
+// 玩家基础数据结构
+PlayerBaseData{
+	uint64 playerId      // 玩家自增 ID
+	string playerUid     // 玩家唯一标识 UID（对外暴露）
+	string name          // 玩家昵称
+	string avatarUrl     // 头像 URL
+	uint64 coins         // 当前持有金币数
+}
+
+// 登录成功推送（服务端 -> 客户端）
+ScLoginSucPush{
+	PlayerBaseData pBaseData
+	array<int32> bonusWheelSegmentMultipliers // 幸运转盘扇区倍率，从0号扇区开始
+}
+
+// 时间同步：客户端发起请求携带本地时间，服务端返回服务端时间
+CsSyncTimeReq{
+	uint64 cTime         // 客户端本地时间戳
+}
+CsSyncTimeResp{
+	uint64 cTime         // 原样回传的客户端时间
+	uint64 sTime          // 服务端时间戳
+}
+
+// 玩家基本数据更新
+CsPlayerBaseDataReq{
+}
+CsPlayerBaseDataResp{
+	PlayerBaseData pBaseData
+}
+
+// 玩家积分（金币）改变同步推送
+ScCoinsUpdatePush{
+	uint64 coins          // 同步后的最新金币数
+}
+
+// Sdk 状态同步推送（如登录态、支付态等第三方 SDK 状态）
+ScSdkStatePush{
+	int32 state           // SDK 状态码
+}
+
+// 通用资源数据结构（用于奖励、扣费等场景）
+ResourceData{
+	uint32 resType                    // 资源大类（金币、钻石、道具等）
+	uint32 resId                      // 资源子 ID
+	uint64 resCount                   // 资源数量
+	int32 oddsType                    // 倍率类型（用于下注/派奖倍率区分）
+	map<string, string> gemeExt      // 游戏扩展字段（透传自定义 KV）
+	uint64 roundId                    // 关联的局 ID
+}
+
+// 邮件数据结构
+MailData{
+	string uId                       // 邮件唯一标识
+	uint64 mailId                     // 邮件业务 ID
+	uint32 mailCfgId                  // 邮件配置 ID（对应配置表）
+	uint32 gameId                     // 所属游戏 ID
+	array<ResourceData> rewards       // 邮件附带的奖励列表
+	uint32 rewardState                // 奖励领取状态（未领/已领等）
+	string extraJson                  // 扩展字段（JSON 字符串）
+	uint64 sendTime                   // 发送时间戳
+	bool read                         // 是否已读
+}
+
+// 邮件列表拉取
+CsMailListReq{
+}
+CsMailListResp{
+	array<MailData> mails            // 邮件列表
+}
+
+// 新邮件到达推送
+ScNewMailPush{
+	MailData mail                     // 新邮件数据
+}
+
+// 标记邮件已读
+CsMailReadReq{
+	array<uint64> mails              // 需标记已读的邮件 ID 列表
+}
+CsMailReadResp{
+	array<uint64> mails              // 成功标记已读的邮件 ID 列表
+}
+
+// 删除指定邮件
+CsMailDeleteReq{
+	array<uint64> mails              // 待删除的邮件 ID 列表
+}
+CsMailDeleteAllReadReq{
+}
+CsMailDeleteResp{
+	array<uint64> mails              // 成功删除的邮件 ID 列表
+}
+
+// 领取邮件奖励
+CsMailRewardReceiveReq{
+	array<uint64> mails              // 待领取奖励的邮件 ID 列表
+}
+CsMailRewardReceiveResp{
+	int64 errorCode                  // 错误码（0 表示成功）
+	uint64 mailId                    // 本次领取对应的邮件 ID
+	ResourceData reward              // 实际发放的奖励
+}

@@ -1,0 +1,8 @@
+{
+    "protos":[
+        "Protos/Common.proto",
+		"Protos/Defs.proto"
+    ],
+    "client":"../FootballLeague/assets/script/module/footballLeague/Defs.ts",
+    "server":"Game/Defs.lua"
+}

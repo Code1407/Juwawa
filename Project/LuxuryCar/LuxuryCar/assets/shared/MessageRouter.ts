@@ -1061,14 +1061,15 @@ class JsNetMessageRouter {
             });
             let gameConfig = (<any>window).betGrade || {};
             const element:GameCommonConfig = this.jsNet.getCommonConfig()
-            if(element.costs){
+            if(element.costs && element.costs.length > 0){
                 gameConfig.gradeAmounts=[]
                 for (let index = 0; index < element.costs.length; index++) {
                     const element1 = element.costs[index];
                     gameConfig.gradeAmounts[index]=element1.coins
                 }
-                (<any>window).changedw?.()
             }
+            // 服务端未配置下注档位时保留本地默认值，并通知已显示的界面刷新。
+            (<any>window).changedw?.()
             if(element.custom){
                 const ele:any=element.custom
                 if(ele["quitTime"]!=undefined){

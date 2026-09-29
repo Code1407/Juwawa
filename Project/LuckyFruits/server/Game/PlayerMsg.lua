@@ -44,7 +44,7 @@ function Player:dbmHeartbeat() return { code = 0 } end
 -- 请求今日实时排行榜（包含自身名次信息）
 function Player:CsGetTodayRealTimeRankReq() if rank(self) then rank(self):CsGetTodayRealTimeRankReq() end end
 -- 请求指定日期的排行榜列表
-function Player:CsGetRankListByDateStrReq(msg) if rank(self) then rank(self):CsGetRankListByDateStrReq(msg) end end
+function Player:CsGetRankListByDateStrReq(msg) if rank(self) then rank(self):CsGetRankListByDateStrReq(msg.dateStr) end end
 -- 请求日榜奖励列表
 function Player:CsDayRankAwardReq() if rank(self) then rank(self):CsDayRankAwardReq() end end
 -- 请求周榜奖励列表

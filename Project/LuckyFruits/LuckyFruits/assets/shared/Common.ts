@@ -8,7 +8,7 @@ const defaultServerConfig = {
     platId: 101,
     platKey: "abc",
     serverIndex: 1,
-    uId: "z12951",
+    uId: "0908",
     token: "qwertyuiop26",
     routerPath: "game"
 };

@@ -4,6 +4,7 @@ import PureClient from '../../PureClient/PureClient.min.js';
 import { Eventer } from '../../common/Eventer';
 import { EventMessage } from '../../common/EventMessage';
 import { EResourceType } from '../../common/CommonDefine';
+import { checkTradeCode } from '../../shared2/GlobalViewsLoader';
 
 export default class MailSystem extends Singleton<MailSystem>() {
      /**网络插件对象 */
@@ -19,7 +20,7 @@ export default class MailSystem extends Singleton<MailSystem>() {
         this.listenMsg("ScNewMailPush", this.sc_new_mail_push);
         this.listenMsg("CsMailReadResp", this.cs_mail_read_resp);
         this.listenMsg("CsMailDeleteResp", this.cs_mail_delete_resp);
-        this.listenMsg("CsMailRewardReceiveResp", this.cs_mail_reward_receive_resp);
+        this.listenMsg("CsMailRewardReceiveResp", this.cs_mail_reward_receive_resp.bind(this));
     }
 
     //邮件全量请求
@@ -92,6 +93,16 @@ export default class MailSystem extends Singleton<MailSystem>() {
     private cs_mail_reward_receive_resp(msg: CsMailRewardReceiveResp) {
         if (!msg || !msg.mailId || !msg.reward) {
             console.error("CsMailRewardReceiveResp is nil");
+            return;
+        }
+        if(msg.errorCode && msg.errorCode !== 0){
+            let clientCfg = this.get_client_config();
+            if(clientCfg){
+                let showTip = clientCfg && clientCfg.custom && clientCfg.custom.emailerro || false;
+                if(showTip){
+                    checkTradeCode(-3)
+                }
+            }
             return;
         }
         MailProxy.getInstance().set_mail_reward_received(msg.mailId);

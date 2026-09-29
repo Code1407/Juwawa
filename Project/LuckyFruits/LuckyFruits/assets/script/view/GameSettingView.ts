@@ -28,8 +28,7 @@ export default class GameSettingView extends cc.Component {
     start() {
         this.settingBtn();
         this.onNode.on(cc.Node.EventType.TOUCH_START, () => {
-            Audio.Instance.audioOn = !Audio.Instance.audioOn;
-            Audio.Instance.playClick();
+            Audio.Instance.setAudioEnabled(false);
             this.onNode.active = Audio.Instance.audioOn;
             this.offNode.active = !Audio.Instance.audioOn;
             gGameData.soundVol = Audio.Instance.audioOn ? 1 : 0;
@@ -38,12 +37,10 @@ export default class GameSettingView extends cc.Component {
                 lastBetAmountButton: gGameData.betAmountIndex
             }
             Game.Instance.player.updateSettings(playerSettings);
-            Audio.Instance.PlayBgm();
 
         });
         this.offNode.on(cc.Node.EventType.TOUCH_START, () => {
-            Audio.Instance.audioOn = !Audio.Instance.audioOn;
-            // Audio.Instance.playClick();
+            Audio.Instance.setAudioEnabled(true);
             this.onNode.active = Audio.Instance.audioOn;
             this.offNode.active = !Audio.Instance.audioOn;
             gGameData.soundVol = Audio.Instance.audioOn ? 1 : 0;
@@ -52,7 +49,6 @@ export default class GameSettingView extends cc.Component {
                 lastBetAmountButton: gGameData.betAmountIndex
             }
             Game.Instance.player.updateSettings(playerSettings);
-            Audio.Instance.PlayBgm();
         });
 
         this.closeButton.on(cc.Node.EventType.TOUCH_START, () => {

@@ -10,7 +10,7 @@ require "LuckyFruits.LuckyFruitsConfig"
 -- 游戏回合状态机：bet(下注)→run(开奖中)→final(结算)→bet(下一轮)
 LFGameStatus = { stop = 0, bet = 1, run = 2, final = 4, heartbeat = 7, maintenance = 99998 }
 -- 下注交易码：与平台SDK对齐，用于客户端展示下注失败原因
-LFTradeCode = { success = 0, insufficient = -1, missTime = -2, closeServer = -4, fail = -8, repeatOrder = -11 }
+LFTradeCode = { success = 0, insufficient = -1, missTime = -2, closeServer = -4, fail = -8, betPassMax = -10, repeatOrder = -11 }
 -- 必须与前端 Common.ts 的 DEFAULT_BET_GRADE_AMOUNTS 保持一致。
 -- 后台未下发 Costs 时，双方用此配置继续构造和校验下注。
 local LFDefaultGradeAmounts = { 100, 1000, 10000, 100000 }
@@ -67,6 +67,14 @@ function LFGetGradeAmounts()
         end
     end
     return values
+end
+
+-- 与前端 Game.ts 的 betMax 规则一致：最高档筹码面额的100倍。
+-- 从服务端 Costs 计算，不能信任客户端传入的金额或上限；档位不要求排序。
+function LFGetRoundBetMax()
+    local maxGrade = 0
+    for _, amount in ipairs(LFGetGradeAmounts()) do maxGrade = math.max(maxGrade, amount) end
+    return maxGrade * 100
 end
 
 -- 创建空筹码计数表：5个下注位置×gradeCount档面额，全部初始化为0

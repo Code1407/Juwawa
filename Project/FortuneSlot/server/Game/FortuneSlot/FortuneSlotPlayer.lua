@@ -164,7 +164,7 @@ function FortuneSlotPlayer:betOrder(roundId, betAmount,calculateAmount, isExtra)
             result,oddsType,gameresult = FortuneeMain.machine:getResults(betAmount, calculateAmount, isExtra and true or false,FortuneeMain.player,roundId)
             FortuneeMain:runRound(roundId, FOGameType.normal, result,oddsType,gameresult)
         else
-            if errorCode~=-12 and errorCode~=-1 then
+            if errorCode~=-12 and errorCode~=-1 and errorCode~=-24 then
                 errorCode=-3
             end
         end
@@ -173,7 +173,9 @@ function FortuneSlotPlayer:betOrder(roundId, betAmount,calculateAmount, isExtra)
             result = result,
             roundId = GenDayIncrId(roundId),
         })
-    end)
+    end,{
+            bet_id = tostring(betAmount).." ",
+        })
 
     return FOTradeCode.success
 end
@@ -253,7 +255,7 @@ function FortuneSlotPlayer:settleResult(roundId)
             if backPlayer then
                 gAnaly:singleCommitAnaly(player, 0,roundId,runningRound.gameresult)
                 backPlayer:statisGameRound(roundId,  FortuneeMain.betRounds[roundId], 0)
-                if code~=-12 and code~=-1 then
+                if code~=-12 and code~=-1 and code~=-24 then
                     code=-3
                 end
                 FortuneeMain:notifyBetFailure(code)

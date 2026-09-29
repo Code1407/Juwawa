@@ -73,7 +73,7 @@ export class UIRankPlayerItem extends GameComponent {
             this.img_coin.spriteFrame = coinSp;
         }
 
-        this.lab_sore.string = playerData.score.toLocaleString();
+        this.lab_sore.string = playerData.score.toLocaleString('en-US');
         this.lab_award.string = playerData.bonus.toString();
 
         let isTop3 = this.selfRank <= 3;

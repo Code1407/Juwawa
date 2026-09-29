@@ -193,7 +193,7 @@ function FruitSlotsPlayer:getClientResp()
     }
 end
 
-function FruitSlotsPlayer:saveHistory(result, roundId, gameType)
+function FruitSlotsPlayer:saveHistory(result, roundId, gameType, roundBet)
     if not result then return end
     local data = self:getDataSafe()
     local history = data.history or {}
@@ -201,7 +201,7 @@ function FruitSlotsPlayer:saveHistory(result, roundId, gameType)
     table.insert(history, {
         date = tostring(app__:utc_milli_s()),
         round = roundId or 0,
-        bet = FRRoundInt((result.betAmount or 0) * FRLineCount),
+        bet = FRRoundInt(roundBet or 0),
         win = FRRoundInt((result.betAmount or 0) * (result.multiple or 0)) + FRRoundInt(result.jackpotAmount or 0),
         multiple = result.multiple or 0,
         gameType = gameType or FRGameType.normal,
@@ -522,7 +522,7 @@ function FruitSlotsPlayer:betNormal(betAmount)
         self:notifyBetFailure(FRTradeCode.Fail)
         return { code = FRTradeCode.Fail, result = nil, roundId = 0 }
     end
-    local linesBetAmount = betAmount * FRLineCount -- 总下注 = 单线下注 x 线数
+    local linesBetAmount = betAmount -- 客户端传入整局总下注，直接作为实际扣款金额
     local roundId = self:incrTodayRoundID()
     data.pendingBets[tostring(roundId)] = {
         state = "subtracting",
@@ -714,7 +714,7 @@ function FruitSlotsPlayer:runRound(roundId, gameType, result, oddsType, gameResu
     self:changeMachineStatus(FRGameStatus.run, result) -- 切换到运行状态
     local data = self:getDataSafe()
     data.lastResult = result
-    self:saveHistory(result, roundId, gameType)
+    self:saveHistory(result, roundId, gameType, roundBet)
 
     local revenue = FRRoundInt((result.betAmount or 0) * (result.multiple or 0)) + FRRoundInt(result.jackpotAmount or 0)
     local revenue2user = 0
@@ -736,15 +736,25 @@ function FruitSlotsPlayer:runRound(roundId, gameType, result, oddsType, gameResu
         roundBet = roundBet or 0,
     })
 
+    -- 后端奖池统计接口尚未完善，暂不调用。
+    -- self.scene:statisRewardPool(roundId)
+
     -- 更新统计
-    local roundBet = gameType == FRGameType.normal and ((result.betAmount or 0) * FRLineCount) or 0
-    local detail = self:incrBetCount(result.betAmount, roundBet, revenue)
+    local detail = self:incrBetCount(result.betAmount, roundBet or 0, revenue)
     -- 大赢标记
-    if (result.multiple or 0) >= FRBigWinMultiple then
+    if FRArraySum(result.multiples or {}) >= FRBigWinMultiple then
         detail.sp.nBigwin = (detail.sp.nBigwin or 0) + 1
     end
     -- Jackpot中奖广播
     if (result.jackpotAmount or 0) > 0 then
+        local jackpotPool = result.jackpotAmountPool or {}
+        local poolKey = tostring(result.betAmount or 0)
+        local jackpotPoolCurrent = tonumber(jackpotPool[poolKey] or jackpotPool[result.betAmount or 0]) or 0
+        local jackpotPoolBefore = tonumber(result.jackpotPoolBefore) or 0
+        local jackpotPayoutRate = jackpotPoolBefore > 0 and (result.jackpotAmount or 0) / jackpotPoolBefore * 100 or 0
+        log_info("第{0}局玩家[{1}]分走JP:{2}, 开奖前奖池:{3}, 当前奖池:{4}, 分走比例:{5}%",
+            tostring(roundId), tostring(self:getUid()), tostring(result.jackpotAmount or 0),
+            tostring(jackpotPoolBefore), tostring(jackpotPoolCurrent), string.format("%.2f", jackpotPayoutRate))
         detail.sp.nJackpot = (detail.sp.nJackpot or 0) + 1
         self.scene:onJackpotHint({
             userName = self:getPlayer():getName() or "",

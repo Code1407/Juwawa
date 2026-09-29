@@ -37,6 +37,7 @@ export default class RankStart extends cc.Component {
         ins.setScale(cc.Vec3.ONE.multiplyScalar(fitSize / 720));
         ins.position = cc.Vec3.ZERO;
         (<any>window).destoryRank = () => {
+            console.warn("destoryRank");
             ins.destroy();
             rankButton.destroy();
             awardButton.destroy();

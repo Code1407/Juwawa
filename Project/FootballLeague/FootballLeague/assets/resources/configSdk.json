@@ -1,0 +1,9 @@
+﻿{
+    "serverAdress": "http://192.168.31.13:8090/adress",
+    "token": "qwertyuiop123",
+    "platKey": "abc",
+    "platId": 101,
+    "serverIndex": 1,
+    "gameId": 67,
+    "uId": "4456"
+}

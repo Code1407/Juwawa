@@ -164,7 +164,7 @@ export async function StopGame(str: string) {
         setActive(GlobalViews.Instance?.userStatusErrorView2, true, "maintenanceView2");
         StopGame(`用户异常`);
     }
-    else{
+    else if(code==-3){
         setActive(GlobalViews.Instance?.maintenanceView, true, "maintenanceView");
     }
     if (code != ETradeCode.success) {

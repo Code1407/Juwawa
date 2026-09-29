@@ -107,7 +107,7 @@ export default class MailModel extends Singleton<MailModel>() {
         
         let mailLang = mailLangMap[lang];
         if(mailLang){
-            return mailLang.lang[langKey];
+            return mailLang.lang[langKey] || "";
         }
         return "";
     }

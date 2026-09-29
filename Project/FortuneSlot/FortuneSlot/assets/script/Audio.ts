@@ -48,8 +48,26 @@ export default class Audio extends cc.Component {
         return cc.find("Audio").getComponent(Audio);
     }
 
-    set volume(value: number) {
+    Setvolume(value: number,SetBoole:boolean=false) {
         this.Volume = value;
+        if(SetBoole){
+            if((<any>window).showonGameSound){
+                if(value>0){
+                    (<any>window).showonGameSound.enable=true;
+                    (<any>window).showonGameSound.musicEnable=true;
+                    (<any>window).showonGameSound.soundEnable=true;
+                    (<any>window).showonGameSound.musicVolume=value*100;
+                    (<any>window).showonGameSound.soundVolume=value*100;
+                }
+                else{
+                    (<any>window).showonGameSound.enable=false;
+                    (<any>window).showonGameSound.musicEnable=false;
+                    (<any>window).showonGameSound.soundEnable=false;
+                    (<any>window).showonGameSound.musicVolume=0;
+                    (<any>window).showonGameSound.soundVolume=0;            
+                }
+            }
+        }
         if(value > 0) {
             this.audioOn = true;
             if(this.ids[0].length == 0) this.playBgm();
@@ -59,11 +77,19 @@ export default class Audio extends cc.Component {
         }
         gGameData.soundVol = value;
         for(let i = 0; i < this.ids.length; i++){
-            for(let j = 0; j < this.ids[i].length; j++){
-                cc.audioEngine.setVolume(this.ids[i][j], value);
+            if(i!=0){
+                for(let j = 0; j < this.ids[i].length; j++){
+                    cc.audioEngine.setVolume(this.ids[i][j], this.normalVolume());
+                }
+            }
+            else{
+                for(let j = 0; j < this.ids[i].length; j++){
+                    cc.audioEngine.setVolume(this.ids[i][j], this.bgmVolume());
+                }
             }
         }
     }
+
 
     stopAllSounds() {
         this.stop();
@@ -80,10 +106,76 @@ export default class Audio extends cc.Component {
 
     playBgm() {
         this.stopBgm();
-        if (this.audioOn){
+        if (this.getAudioOnBgm()){
             let bgmId = cc.audioEngine.playEffect(this.bgm.clip, true);
-            cc.audioEngine.setVolume(bgmId, this.Volume);
+            cc.audioEngine.setVolume(bgmId, this.bgmVolume());
             this.ids[0].push(bgmId);
+        }
+    }
+    
+    bgmVolume(){
+        if((<any>window).showonGameSound){
+            if((<any>window).showonGameSound.enable){
+                if((<any>window).showonGameSound.musicEnable){
+                    return (<any>window).showonGameSound.musicVolume/100
+                }
+                else{
+                    return 0
+                }
+            }
+            else{
+                return 0
+            }
+        }
+        else{
+            return this.Volume
+        }
+    }
+
+    normalVolume(){
+        if((<any>window).showonGameSound){
+            if((<any>window).showonGameSound.enable){
+                if((<any>window).showonGameSound.soundEnable){
+                    return (<any>window).showonGameSound.soundVolume/100
+                }
+                else{
+                    return 0
+                }
+            }
+            else{
+                return 0
+            }
+        }
+        else{
+            return this.Volume
+        }
+    }
+
+    getAudioOnBgm(){
+        if((<any>window).showonGameSound){
+            if((<any>window).showonGameSound.enable){
+                return (<any>window).showonGameSound.musicEnable
+            }
+            else{
+                return false
+            }
+        }
+        else{
+            return this.audioOn
+        }
+    }
+
+    getAudioOnNormal(){
+        if((<any>window).showonGameSound){
+            if((<any>window).showonGameSound.enable){
+                return (<any>window).showonGameSound.musicEnable
+            }
+            else{
+                return false
+            }
+        }
+        else{
+            return this.audioOn
         }
     }
 
@@ -96,81 +188,81 @@ export default class Audio extends cc.Component {
 
     playExtra() {
         this.ids[1] = [];
-        if (this.audioOn){
+        if (this.getAudioOnNormal()){
             let extraId = cc.audioEngine.playEffect(this.extra.clip, false);
-            cc.audioEngine.setVolume(extraId, this.Volume);
+            cc.audioEngine.setVolume(extraId, this.normalVolume());
             this.ids[1].push(extraId);
         }
     }
 
     playWin() {
         this.ids[2] = [];
-        if (this.audioOn){
+        if (this.getAudioOnNormal()){
             let winId = cc.audioEngine.playEffect(this.win.clip, false);
-            cc.audioEngine.setVolume(winId, this.Volume);
+            cc.audioEngine.setVolume(winId, this.normalVolume());
             this.ids[2].push(winId);
         }
     }
 
     playFly() {
         this.ids[3] = [];
-        if (this.audioOn){
+        if (this.getAudioOnNormal()){
             let flyId = cc.audioEngine.playEffect(this.fly.clip, false);
-            cc.audioEngine.setVolume(flyId, this.Volume);
+            cc.audioEngine.setVolume(flyId, this.normalVolume());
             this.ids[3].push(flyId);
         }
     }
 
     playCombine() {
         this.ids[4] = [];
-        if (this.audioOn){
+        if (this.getAudioOnNormal()){
             let combineId = cc.audioEngine.playEffect(this.combine.clip, false);
-            cc.audioEngine.setVolume(combineId, this.Volume);
+            cc.audioEngine.setVolume(combineId, this.normalVolume());
             this.ids[4].push(combineId);
         }
     }
 
     playFlyDiamond() {
         this.ids[5] = [];
-        if (this.audioOn){
+        if (this.getAudioOnNormal()){
             let flyDiamondId = cc.audioEngine.playEffect(this.flyDiamond.clip, false);
-            cc.audioEngine.setVolume(flyDiamondId, this.Volume);
+            cc.audioEngine.setVolume(flyDiamondId, this.normalVolume());
             this.ids[5].push(flyDiamondId);
         }
     }
 
     playClick() {
         this.ids[6] = [];
-        if (this.audioOn){
+        if (this.getAudioOnNormal()){
             let clickId = cc.audioEngine.playEffect(this.click.clip, false);
-            cc.audioEngine.setVolume(clickId, this.Volume);
+            cc.audioEngine.setVolume(clickId, this.normalVolume());
             this.ids[6].push(clickId);
         }
     }
 
     playClickSpin() {
         this.ids[7] = [];
-        if (this.audioOn){
+        if (this.getAudioOnNormal()){
             let clickSpinId = cc.audioEngine.playEffect(this.clickSpin.clip, false);
-            cc.audioEngine.setVolume(clickSpinId, this.Volume);
+            cc.audioEngine.setVolume(clickSpinId, this.normalVolume());
             this.ids[7].push(clickSpinId);
         }
     }
 
     playWild() {
         this.ids[8] = [];
-        if (this.audioOn){
+        if (this.getAudioOnNormal()){
             let wildId = cc.audioEngine.playEffect(this.wild.clip, false);
-            cc.audioEngine.setVolume(wildId, this.Volume);
+            cc.audioEngine.setVolume(wildId, this.normalVolume());
             this.ids[8].push(wildId);
         }
     }
 
     playBow() {
         this.stopBow();
-        if (this.audioOn) {
+        if (this.getAudioOnNormal()) {
             let bowId = cc.audioEngine.playEffect(this.bow.clip, false);
-            cc.audioEngine.setVolume(bowId, this.Volume);
+            cc.audioEngine.setVolume(bowId, this.normalVolume());
             this.ids[9].push(bowId);
         }
     }
@@ -184,9 +276,9 @@ export default class Audio extends cc.Component {
 
     playRoll() {
         this.stopRoll();
-        if (this.audioOn) {
+        if (this.getAudioOnNormal()) {
             let rollId = cc.audioEngine.playEffect(this.roll.clip, false);
-            cc.audioEngine.setVolume(rollId, this.Volume);
+            cc.audioEngine.setVolume(rollId, this.normalVolume());
             this.ids[10].push(rollId);
         }
     }
@@ -200,18 +292,18 @@ export default class Audio extends cc.Component {
 
     playEnd() {
         this.ids[11] = [];
-        if (this.audioOn){
+        if (this.getAudioOnNormal()){
             let endId = cc.audioEngine.playEffect(this.end.clip, false);
-            cc.audioEngine.setVolume(endId, this.Volume);
+            cc.audioEngine.setVolume(endId, this.normalVolume());
             this.ids[11].push(endId);
         }
     }
 
     playWheel() {
         this.stopWheel();
-        if (this.audioOn) {
+        if (this.getAudioOnNormal()) {
             let wheelId = cc.audioEngine.playEffect(this.wheel.clip, false);
-            cc.audioEngine.setVolume(wheelId, this.Volume);
+            cc.audioEngine.setVolume(wheelId, this.normalVolume());
             this.ids[12].push(wheelId);
         }
     }
@@ -225,9 +317,9 @@ export default class Audio extends cc.Component {
 
     playWheelStop() {
         this.ids[13] = [];
-        if (this.audioOn){
+        if (this.getAudioOnNormal()){
             let wheelStopId = cc.audioEngine.playEffect(this.wheelStop.clip, false);
-            cc.audioEngine.setVolume(wheelStopId, this.Volume);
+            cc.audioEngine.setVolume(wheelStopId, this.normalVolume());
             this.ids[13].push(wheelStopId);
         }
     }

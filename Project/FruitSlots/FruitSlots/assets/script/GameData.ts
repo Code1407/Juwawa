@@ -8,7 +8,7 @@ const connectedIndex: number[] = [];
 const hists: string[] = [];
 
 export const clientJackpotAmountPool: IJackpotAmountPool = {};
-export let gBetAmounts = [1, 10, 100, 1000];
+export let gBetAmounts = [300, 900, 3000, 9000,30000];
 
 function normalizeBetAmounts(values: any): number[] {
     if (!Array.isArray(values)) return [];
@@ -42,7 +42,6 @@ export function initBetAmounts(): boolean {
     const initialized = setBetAmounts(betGrade && betGrade.getGradeAmounts
         ? betGrade.getGradeAmounts()
         : betGrade && betGrade.gradeAmounts);
-    console.log("initBetAmounts-------------", gBetAmounts);
     return initialized;
 }
 

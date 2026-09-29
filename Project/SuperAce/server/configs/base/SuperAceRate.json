@@ -1,0 +1,93 @@
+{
+  "1": {
+    "section": "slotReel",
+    "symbolId": 0,
+    "symbolName": "Scatter",
+    "column1": 0,
+    "column2": 0,
+    "column3": 0,
+    "column4": 0,
+    "column5": 0
+  },
+  "2": {
+    "section": "slotReel",
+    "symbolId": 1,
+    "symbolName": "梅花",
+    "column1": 27,
+    "column2": 10,
+    "column3": 27,
+    "column4": 10,
+    "column5": 27
+  },
+  "3": {
+    "section": "slotReel",
+    "symbolId": 2,
+    "symbolName": "方块",
+    "column1": 10,
+    "column2": 27,
+    "column3": 10,
+    "column4": 27,
+    "column5": 10
+  },
+  "4": {
+    "section": "slotReel",
+    "symbolId": 3,
+    "symbolName": "红桃",
+    "column1": 11,
+    "column2": 15,
+    "column3": 11,
+    "column4": 15,
+    "column5": 11
+  },
+  "5": {
+    "section": "slotReel",
+    "symbolId": 4,
+    "symbolName": "黑桃",
+    "column1": 15,
+    "column2": 11,
+    "column3": 15,
+    "column4": 11,
+    "column5": 15
+  },
+  "6": {
+    "section": "slotReel",
+    "symbolId": 5,
+    "symbolName": "J",
+    "column1": 15,
+    "column2": 7,
+    "column3": 15,
+    "column4": 7,
+    "column5": 15
+  },
+  "7": {
+    "section": "slotReel",
+    "symbolId": 6,
+    "symbolName": "Q",
+    "column1": 7,
+    "column2": 15,
+    "column3": 7,
+    "column4": 15,
+    "column5": 7
+  },
+  "8": {
+    "section": "slotReel",
+    "symbolId": 7,
+    "symbolName": "K",
+    "column1": 8,
+    "column2": 7,
+    "column3": 8,
+    "column4": 7,
+    "column5": 8
+  },
+  "9": {
+    "section": "slotReel",
+    "symbolId": 8,
+    "symbolName": "A",
+    "column1": 7,
+    "column2": 8,
+    "column3": 7,
+    "column4": 8,
+    "column5": 7
+  },
+  "10": { "section": "freeTrigger", "rate": 0.003 }
+}

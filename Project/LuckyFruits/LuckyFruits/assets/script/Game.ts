@@ -14,7 +14,7 @@ import BetView from "./view/BetView"
 import Account from "./Account";
 import PlayerAccount from "./PlayerAccount";
 import RoundFinal from "./view/RoundFinal";
-import { IRoundStep, IEnterGameResp, IRoundResult, IBetResp, IAllBetResp, IRankListItem, arraySum, IRewardResp, IBatListResp, setNewRank, gConst, calNumber, BET_POSITION_COUNT, createEmptyBetNum, createEmptyBetPositions, getBetGradeAmounts, normalizeProtocolNumberArray } from "./interface/ILuckyFruits";
+import { IRoundStep, IEnterGameResp, IRoundResult, IBetResp, IAllBetResp, arraySum, IRewardResp, IBatListResp, setNewRank, gConst, calNumber, BET_POSITION_COUNT, createEmptyBetNum, createEmptyBetPositions, getBetGradeAmounts, normalizeProtocolNumberArray } from "./interface/ILuckyFruits";
 import RankUI from "./ui/RankUI";
 import RepeatBetUI from "./ui/RepeatBetUI";
 import GameRecordView from "./view/GameRecordView";
@@ -36,6 +36,7 @@ import BetNumLimitView from "./view/BetNumLimitView";
 import ImageCache from "./image/ImageCache";
 import EffRPS from "./effect/EffRPS";
 import Audio from "./Audio";
+import { IPlayerBetList, normalizeProtocolArray, normalizeProtocolBetNum } from "./interface/ILuckyFruits";
 
 const { ccclass, property } = cc._decorator;
 
@@ -187,10 +188,19 @@ export default class Game extends cc.Component {
     firstIn: Boolean = true;
     curRound = 0;//记录当前round，不随心跳更变。
     private resultAnimationRound: number = -1;
+    private roundAllBetNum: number[][] = [];
     private resultAnimationEpoch: number = 0;
     private serverClockOffsetMs: number = 0;
     private resultTimelineStartedAtLocalMs: number = 0;
     private resultTimelineLogicalOffsetMs: number = 0;
+    private readonly addGoldStartY: number = 0;
+    private readonly addGoldEndY: number = 60;
+    private readonly addGoldMoveDuration: number = 2.0;
+    private pendingMindRewardCount: number = 0;
+    private pendingMindRewardBeforeShow: () => void = null;
+    private pendingMindRewardFallbackTimer: any = null;
+    private foregroundSynchronizing: boolean = false;
+    private foregroundSyncQueued: boolean = false;
     wheelSelected: number[] = [];
     autoBetLastTime: number = 0;
     isSendAutoBetOnce: boolean = false;
@@ -201,11 +211,14 @@ export default class Game extends cc.Component {
     isBigWin: boolean = false;
     soundPlayed: boolean = false;
     TvTime: boolean = false;
-    isMySelf: boolean = false;
     bad01: boolean = false;
     bad02: boolean = false;
     notInTime: boolean = true;
     //private lifecycle: number;
+
+
+    WheelEffectbad01: boolean = false;
+    WheelEffectbad02: boolean = false;
 
     static get Instance() {
         return cc.find("Canvas/Game").getComponent(Game);
@@ -417,6 +430,8 @@ export default class Game extends cc.Component {
      * reconnect 可能发生在同一局内，不能只依赖 curRound 变化来终止旧动画。
      */
     private cancelResultPresentation(suppressRound: number = -1) {
+        if (this.cards) this.cards.cancelFinalPresentation();
+        this.ClearPendingMindRewardCount();
         this.resultAnimationEpoch++;
         this.resultAnimationRound = suppressRound;
         this.resultTimelineStartedAtLocalMs = 0;
@@ -465,7 +480,7 @@ export default class Game extends cc.Component {
             && incomingRemain > currentRemain;
     }
 
-    changeGameStatus(_roundStep: IRoundStep) {
+    changeGameStatus(_roundStep: IRoundStep, hasBetSnapshot: boolean = false) {
         if (!_roundStep || this.isOlderRoundStep(_roundStep)) return;
         this.syncServerClock(_roundStep);
         //if (gGameData.status == _roundStep.status) return;
@@ -504,6 +519,12 @@ export default class Game extends cc.Component {
                 this.cards.ReadyView.hideImmediate();
                 if (this.curRound !== gGameData.roundStep.todayRound) {
                     this.cancelResultPresentation();
+                    // 心跳切入新局时必须主动清理，不能依赖 final,-1 的收尾分支。
+                    // 入场/同步已恢复新局下注快照时则保留这些已确认的下注。
+                    if (!hasBetSnapshot) {
+                        this.clearStaleRoundBetState();
+                        this.inReady();
+                    }
                 }
                 if (this.firstIn) {
                     this.firstIn = false;
@@ -558,8 +579,8 @@ export default class Game extends cc.Component {
                 break;
             case EGameStatus.final:
                 const finalRemainSecond = Math.ceil(Number(gGameData.roundStep.remainSecond) || 0);
-                // 玩家首次进入/重连时，结算阶段只剩最后 5 秒则不补显示开奖结果。
-                // 这段时间只保留 ReadyView 倒计时；-1 用于让 ReadyView 执行结束淡出。
+                // 等待期进入时中央显示倒计时，外圈开奖结果仍常亮到下一局。
+                // -1 仅用于让 ReadyView 执行结束淡出。
                 if (this.firstIn && finalRemainSecond >= -1 && finalRemainSecond <= 5) {
                     this.roundFinal.hideImmediate();
                     this.firstInHandler(finalRemainSecond);
@@ -579,7 +600,7 @@ export default class Game extends cc.Component {
 
                 if (this.roundFinal.endTrue) {
                     this.inReady();     //重置下注上局金额信息
-                    this.wheeleffect.init()
+                    // 外圈中奖高亮在下一局 bet 到达时统一清除。
                 }
                 break;
         }
@@ -594,10 +615,37 @@ export default class Game extends cc.Component {
         this.player = await PlayerAccount.createPlayer(this.account);
         let enterGameResp = await this.player.enterGame();
         this.initPlayerData(enterGameResp, true);
-        this.firstInBetHandler(enterGameResp);
         this.EffRPS.Play();
 
     }
+
+    private async syncLatestForForeground(recordShowAction: boolean = true) {
+        if (!this.player) return;
+        if (this.foregroundSynchronizing) {
+            this.foregroundSyncQueued = true;
+            return;
+        }
+
+        this.foregroundSynchronizing = true;
+        try {
+            do {
+                this.foregroundSyncQueued = false;
+                gGameData.Gamefocus = true;
+                try {
+                    let enterGameResp = await this.player.synchronize();
+                    if (recordShowAction) {
+                        this.player.actionRecord("show");
+                    }
+                    this.initPlayerData(enterGameResp, false, true);
+                } catch (error) {
+                    console.error("foreground synchronize failed", error);
+                }
+            } while (this.foregroundSyncQueued);
+        } finally {
+            this.foregroundSynchronizing = false;
+        }
+    }
+
     private initPlayerData(enterGameResp: IEnterGameResp, isFirstCall: boolean = false, isReconnect: boolean = false) {
         //console.log("玩家进入游戏："+JSON.stringify(enterGameResp));
         if (!enterGameResp || !enterGameResp.roundStep) return;
@@ -635,6 +683,7 @@ export default class Game extends cc.Component {
             this.todayRoundLabel.string = enterGameResp.roundStep.todayRound.toString();
         }
         const snapshotRoundChanged = this.curRound != enterGameResp.roundStep.todayRound;
+        if (!snapshotIsOlder && snapshotRoundChanged) this.clearStaleRoundBetState();
         if (!snapshotIsOlder && (isFirstCall || (snapshotRoundChanged && enterGameResp.roundStep.status != EGameStatus.bet))) {
             // 从 run/final 阶段进入或重连时也要建立当前局号，否则权威结果会被当成过期消息。
             this.curRound = enterGameResp.roundStep.todayRound;
@@ -648,8 +697,6 @@ export default class Game extends cc.Component {
         this.MyHistoryView.setHistoryValue(enterGameResp.myHistory);
         this.player.uid = enterGameResp.uid;
         this.player.setDiamon(enterGameResp.account.diamond);
-        this.RankUI.setRankData(enterGameResp.rankList);
-        this.todayRankList = enterGameResp.rankList;
         const playerSettings = enterGameResp.playerSettings || {};
         gGameData.betAmountIndex = playerSettings.lastBetAmountButton ?? gGameData.betAmountIndex;
         const serverSoundVol = playerSettings.soundVol;
@@ -662,8 +709,7 @@ export default class Game extends cc.Component {
         gGameData.soundVol = targetSoundVol;
         Audio.Instance.audioOn = targetSoundVol > 0;
         if (!Audio.Instance.audioOn) {
-            cc.audioEngine.stopAll();
-            cc.audioEngine.stopMusic();
+            Audio.Instance.stopAllSounds();
         }
         if (hasAudioOverride && serverSoundVol !== targetSoundVol) {
             this.player.updateSettings({
@@ -681,23 +727,30 @@ export default class Game extends cc.Component {
         // enterGame/synchronize 已携带权威回合状态，立即驱动一次界面状态机；
         // 不再依赖下一秒的 onRoundStep 推送才能启动或恢复游戏流程。
         if (!snapshotIsOlder) {
-            this.changeGameStatus(enterGameResp.roundStep);
+            // 先恢复本人下注和筹码金额，再驱动状态机及开奖时间轴。
+            // 同一局重连也必须刷新，且金额不能随着重复同步累加。
+            this.restoreRoundBets(enterGameResp, isFirstCall || snapshotRoundChanged);
+            this.changeGameStatus(enterGameResp.roundStep, true);
             if (canResumeRunTimeline) {
                 this.resumeResultTimeline(enterGameResp.roundStep);
             } else if (enterGameResp.roundStep.status == EGameStatus.final
-                && Number(enterGameResp.roundStep.winPos) >= 0
-                && !this.cards.ReadyView.node.active) {
-                // 真正结算阶段只恢复最终盘面，绝不补播或压缩开奖动画。
-                // ReadyView 正在显示表示玩家是在最后 5 秒进入，按规则不恢复本局结果。
-                this.TvTime = true;
+                && Number(enterGameResp.roundStep.winPos) >= 0) {
+                // 等待期也恢复外圈的中奖格；中央倒计时继续保留，不补播开奖。
+                const showCenter = !this.cards.ReadyView.node.active;
+                this.TvTime = showCenter;
                 this.wheeleffect.restoreCompletedResult(
                     Number(enterGameResp.roundStep.winPos),
                     normalizeProtocolNumberArray((<any>enterGameResp.roundStep).resultDetail),
-                    normalizeProtocolNumberArray((<any>enterGameResp.roundStep).resultPos)
+                    normalizeProtocolNumberArray((<any>enterGameResp.roundStep).resultPos),
+                    showCenter
                 );
             }
         }
-        //this.firstInChipHandler(betCount);
+        if (snapshotIsOlder && Number(enterGameResp.roundStep.todayRound) === Number(this.curRound)) {
+            // 心跳先到只代表阶段/倒计时更新，不能因此丢掉同一局的下注快照。
+            // 同局下注只增不减；按档位取较大值，保留快照之后已收到的下注推送。
+            this.restoreRoundBets(enterGameResp, false, true);
+        }
     }
 
     private resumeResultTimeline(roundStep: IRoundStep) {
@@ -712,56 +765,65 @@ export default class Game extends cc.Component {
         };
         this.onResultHandler(result, this.getPhaseElapsedMs(roundStep));
     }
-    private firstInBetHandler(enterGameResp: IEnterGameResp) {
-        if (enterGameResp.curRoundAllWheelAmount.length > 0 && enterGameResp.roundStep.status == EGameStatus.bet) {
-            let betCount: number[][] = createEmptyBetNum();
-
-            for (let index = 0; index < enterGameResp.curRoundAllWheelAmount.length; index++) {
-                const element = enterGameResp.curRoundAllWheelAmount[index];
-                for (let i = 0; i < Math.min(element.betGradeNum.length, BET_POSITION_COUNT); i++) {
-                    const list = element.betGradeNum[i];
-                    for (let j = 0; j < betCount[i].length; j++) {
-                        const element = list[j];
-                        betCount[i][j] += Number(element) || 0;
-                    }
-                }
-                if (element.uid == this.player.uid) {
-                    this.FlyChip({ batIndex: element.betGradeArr, num: element.betGradeNum });
-                    let betTotal = 0;
-                    for (let i = 0; i < Math.min(element.betGradeNum.length, BET_POSITION_COUNT); i++) {
-                        betTotal += calNumber(element.betGradeNum[i]);
-                    }
-                    gGameData.BetTotalNumber += betTotal;
-                }
-                else {
-                    let oldPlayer: boolean = false;
-                    if (this.todayRankList.length > 0) {
-                        for (let k = 0; k < this.todayRankList.length; k++) {
-                            if (this.todayRankList[k].uid == element.uid) {
-                                if (k < 5) {
-                                    this.OnbatListRound({ uid: element.uid, flyPlayerPos: k, batIndex: element.betGradeArr, num: element.betGradeNum });
-                                }
-                                else {
-                                    this.OnbatListRound({ uid: element.uid, flyPlayerPos: 5, batIndex: element.betGradeArr, num: element.betGradeNum });
-                                }
-                                oldPlayer = true;
-                                break;
-                            }
-                        }
-                    }
-                    if (oldPlayer == false) {
-                        this.OnbatListRound({ uid: element.uid, flyPlayerPos: 5, batIndex: element.betGradeArr, num: element.betGradeNum });
-                    }
-                }
-            }
-
-            this.cards.setAllBatNum(betCount);
-            this.cards.setMyBatNum(enterGameResp.curRoundWheelAmount);
-
-            for (let index = 0; index < enterGameResp.curRoundWheelAmount.length; index++) {
-                this.player.curBetLimit[index] = arraySum(enterGameResp.curRoundWheelAmount[index]) > 0 ? 1 : 0;
+    private restoreRoundBets(enterGameResp: IEnterGameResp, replayChips: boolean, preserveNewer: boolean = false) {
+        const myBets = normalizeProtocolBetNum(enterGameResp.curRoundWheelAmount);
+        if (preserveNewer) {
+            const current = normalizeProtocolBetNum(this.player.wheelAmount);
+            for (let i = 0; i < myBets.length; i++) {
+                for (let j = 0; j < myBets[i].length; j++) myBets[i][j] = Math.max(myBets[i][j], current[i][j]);
             }
         }
+        this.player.setMyBatNum(myBets);
+        this.player.curRoundWheelAmount = myBets;
+        this.player.itemAmount = [];
+        this.player.curBetLimit = createEmptyBetPositions();
+        gGameData.BetTotalNumber = 0;
+        for (let i = 0; i < BET_POSITION_COUNT; i++) {
+            const row = myBets[i] || [];
+            this.player.curBetLimit[i] = arraySum(row) > 0 ? 1 : 0;
+            gGameData.BetTotalNumber += calNumber(row);
+        }
+        this.cards.setMyBatNum(myBets);
+
+        const allBets = normalizeProtocolArray<IPlayerBetList>(enterGameResp.curRoundAllWheelAmount)
+            .map(item => ({
+                uid: item.uid,
+                betGradeArr: normalizeProtocolNumberArray(item.betGradeArr),
+                betGradeNum: normalizeProtocolBetNum(item.betGradeNum),
+            }));
+        this.player.curRoundAllWheelAmount = allBets;
+        const hasTotalSnapshot = normalizeProtocolArray(enterGameResp.curRoundTotalWheelAmount).length > 0;
+        const betCount = normalizeProtocolBetNum(enterGameResp.curRoundTotalWheelAmount);
+        for (const element of allBets) {
+            // 兼容尚未提供累计值的旧服务端，才从全场玩家明细汇总。
+            if (!hasTotalSnapshot) {
+                for (let i = 0; i < BET_POSITION_COUNT; i++) {
+                    const row = element.betGradeNum[i] || [];
+                    for (let j = 0; j < betCount[i].length; j++) {
+                        betCount[i][j] += Number(row[j]) || 0;
+                    }
+                }
+            }
+            if (!replayChips || enterGameResp.roundStep.status != EGameStatus.bet) continue;
+            if (element.uid == this.player.uid) {
+                this.FlyChip({ batIndex: element.betGradeArr, num: element.betGradeNum });
+            } else {
+                this.OnbatListRound({
+                    uid: element.uid,
+                    flyPlayerPos: 5,
+                    batIndex: element.betGradeArr,
+                    num: element.betGradeNum,
+                });
+            }
+        }
+        // 同一秒内也可能先收到新下注广播，再收到旧快照；全场累计不能倒退。
+        // roundAllBetNum 在切局时清空，因此不会混入上一局金额。
+        const currentTotal = normalizeProtocolBetNum(this.roundAllBetNum);
+        for (let i = 0; i < betCount.length; i++) {
+            for (let j = 0; j < betCount[i].length; j++) betCount[i][j] = Math.max(betCount[i][j], currentTotal[i][j]);
+        }
+        this.roundAllBetNum = betCount;
+        this.cards.setAllBatNum(betCount);
     }
     private firstInChipHandler(list: number[][]) {
         if (list.length > 0) {
@@ -799,6 +861,20 @@ export default class Game extends cc.Component {
         // this.cards.inReady(gGameData.roundStep.remainSecond);
         this.player.curBetLimit = createEmptyBetPositions();
         this.player.setMyBatNum(createEmptyBetNum());
+        this.player.itemAmount = [];
+        gGameData.roundBetCount = 0;
+        gGameData.BetTotalNumber = 0;
+    }
+
+    /**
+     * 切换回合时清理客户端上一局的下注展示和临时限制状态。
+     * 新局下注由随后的快照恢复；心跳切局则由 inReady 清空玩家下注。
+     */
+    private clearStaleRoundBetState() {
+        this.cards.onClear();
+        this.roundAllBetNum = [];
+        this.sumBet00(0);
+        this.player.curBetLimit = createEmptyBetPositions();
         this.player.itemAmount = [];
         gGameData.roundBetCount = 0;
         gGameData.BetTotalNumber = 0;
@@ -955,6 +1031,13 @@ export default class Game extends cc.Component {
 
         await this.playResultRollTimeline(rollEvents, targetIndex, phaseElapsedMs, isAnimationActive);
         if (!isAnimationActive()) return;
+
+        this.TvTime = false;
+
+        this.WheelEffectbad01 = result.winPos == 13;
+        this.WheelEffectbad02 = result.winPos == 14;
+        
+        this.wheeleffect.tvStart();  //滚动结束调用
 
         if (isAnimationActive()) {
             if (isNormalResult) {            //普通中奖
@@ -1191,19 +1274,16 @@ export default class Game extends cc.Component {
 
     }
     OnbatNoticeAll(resp: IAllBetResp) {
-        this.cards.setAllBatNum(resp.wheelAmount);
-        if (resp) {
-            if (this.isMySelf) {
-                this.isMySelf = false;
-                return;
-            }
-            cc.tween(cc.find("Canvas/Game/BottomView/Ranking/an_players/players"))      //上下抖动
-                .to(0.06, { y: 9 })
-                .to(0.06, { y: 0 })
-                .to(0.06, { y: -9 })
-                .to(0.06, { y: 0 })
-                .start();
-        }
+        if (!resp) return;
+        this.roundAllBetNum = normalizeProtocolBetNum(resp.wheelAmount);
+        this.cards.setAllBatNum(this.roundAllBetNum);
+        if (this.player && String(resp.uid) === String(this.player.uid)) return;
+        cc.tween(cc.find("Canvas/Game/BottomView/Ranking/an_players/players"))      //上下抖动
+            .to(0.06, { y: 9 })
+            .to(0.06, { y: 0 })
+            .to(0.06, { y: -9 })
+            .to(0.06, { y: 0 })
+            .start();
     }
     OnRewardHandler(roundResult: IRewardResp) {
         roundResult.resultDetail = normalizeProtocolNumberArray((<any>roundResult).resultDetail);
@@ -1213,12 +1293,6 @@ export default class Game extends cc.Component {
         // console.log("OnRewardHandler====================" +roundResult.resultDetail);
         this.player.OnRewardHandler(winId, roundResult.resultDetail);
         // this.WinHistory.getComponent(cc.Sprite).spriteFrame = this.IconItems[winId];
-    }
-    todayRankList: IRankListItem[] = [];
-    onRankListChange(resp: IRankListItem[]) {
-        this.RankUI.setRankData(resp);
-        this.roundFinal.setRankData(resp);
-        this.todayRankList = resp;
     }
     // OnHistoryHandler(resp:IMyHistoryItem[]){
     //     this.player.setHistoryData(resp);
@@ -1231,7 +1305,6 @@ export default class Game extends cc.Component {
         this.FlyChipMind(data, this.RankUI.letpos);
     }
     FlyChipMind(data: any, nodes: {}) {
-        this.isMySelf = true;
         if (this.Betitems != null && this.Betitems.length > 0) {
             let player;
             let targetPos;
@@ -1264,9 +1337,9 @@ export default class Game extends cc.Component {
     }
     FlyChipByPos(pos: number, betGrade: number): cc.Node {
         let player = this.Betitems[betGrade];       ///this.Betitems[betGrade]从各自档位飞出     this.FlyFromNode从多人icon飞出
-        this.isMySelf = true;
         let targetPos = this.RankUI.letpos[pos];
         Audio.Instance.playSendBet();
+
         let flyChip = this.chips.getChip(betGrade) || ImageCache.Instance.betAmount[betGrade];
         return Effect.FlyChipSingle(player, targetPos, flyChip, 1, this.DiamonIcon);//投注，飞筹码
     }
@@ -1324,12 +1397,6 @@ export default class Game extends cc.Component {
 
         (<any>window).onReconnect = async () => {
             let enterGameResp = await this.player.enterGame();
-            const snapshotIsOlder = !enterGameResp?.roundStep || this.isOlderRoundStep(enterGameResp.roundStep);
-            if (!snapshotIsOlder && this.curRound != enterGameResp.roundStep.todayRound) {
-                this.player.setMyBatNum(createEmptyBetNum());
-                gGameData.roundBetCount = 0;
-                gGameData.BetTotalNumber = 0;
-            }
             this.initPlayerData(enterGameResp, false, true);
         };
 
@@ -1343,15 +1410,14 @@ export default class Game extends cc.Component {
         };
 
         (<any>window).hideAllSounds = () => {
-            //将所有声音的音量调到0
+            //立即停止所有声音
             Audio.Instance.stopAllSounds();
-            Audio.Instance.audioOn = false;
 
         };
 
         (<any>window).showAllSounds = () => {
-            //恢复所有声音的音量
-            Audio.Instance.audioOn = true;
+            //恢复声音并重新播放背景音乐
+            Audio.Instance.setAudioEnabled(true);
         };
 
         (<any>window).stopGame = () => {
@@ -1405,11 +1471,7 @@ export default class Game extends cc.Component {
                 return;
             }
             Audio.Instance.resumeFromBackground();
-            //console.log(cc.game.EVENT_SHOW);
-            let enterGameResp = await this.player.synchronize();
-            this.player.actionRecord("show");
-            gGameData.Gamefocus = true;
-            this.initPlayerData(enterGameResp, false, true);
+            await this.syncLatestForForeground();
         });
     }
     ShowStopBetView() {
@@ -1451,31 +1513,80 @@ export default class Game extends cc.Component {
         this.ResultView.rewardNum.getComponent(cc.Label).string = num + "";
         Audio.Instance.playpattiwin();
     }
+    PrepareMindRewardCount(num: number, beforeShow: () => void = null) {
+        this.ClearPendingMindRewardCount();
+        if (num <= 0) {
+            return;
+        }
+
+        this.pendingMindRewardCount = num;
+        this.pendingMindRewardBeforeShow = beforeShow;
+        this.pendingMindRewardFallbackTimer = setTimeout(() => {
+            this.PlayPendingMindRewardCount();
+        }, 3000);
+    }
+    PlayPendingMindRewardCount() {
+        if (this.pendingMindRewardCount <= 0) {
+            return;
+        }
+
+        const rewardCount = this.pendingMindRewardCount;
+        const beforeShow = this.pendingMindRewardBeforeShow;
+        this.ClearPendingMindRewardCount();
+        if (beforeShow) {
+            beforeShow();
+        }
+        this.ShowMindRewardCount(rewardCount);
+    }
+    ClearPendingMindRewardCount() {
+        if (this.pendingMindRewardFallbackTimer) {
+            clearTimeout(this.pendingMindRewardFallbackTimer);
+            this.pendingMindRewardFallbackTimer = null;
+        }
+        this.pendingMindRewardCount = 0;
+        this.pendingMindRewardBeforeShow = null;
+    }
     ShowMindRewardCount(num: number) {
         let addGoldLabel: cc.Node = cc.find("addgold", this.DiamonIcon);
-        if (num > 0) {
-            addGoldLabel.getComponent(cc.Label).string = "+" + (num < 1000 ? num.toString() : num / 1000 + "k");
-            addGoldLabel.active = true;
-            addGoldLabel.opacity = 0;
-            //this.RewardingView.runAction(cc.fadeIn(0.3));
-
-            addGoldLabel.runAction(
-                cc.sequence(
-                    cc.fadeIn(0.3),
-                    cc.delayTime(1),
-                    cc.fadeOut(0.3),
-                    cc.callFunc(() => {
-                        addGoldLabel.active = false;
-                    })
-                )
-            );
+        if (num <= 0 || !cc.isValid(addGoldLabel, true)) {
+            return;
         }
+        let label = addGoldLabel.getComponent(cc.Label);
+        if (!label) {
+            return;
+        }
+        label.string = "+" + (num < 1000 ? num.toString() : num / 1000 + "k");
+        this.playAddGoldLabel(addGoldLabel);
+    }
+
+    private playAddGoldLabel(addGoldLabel: cc.Node) {
+        if (!cc.isValid(addGoldLabel, true)) {
+            return;
+        }
+
+        cc.Tween.stopAllByTarget(addGoldLabel);
+        addGoldLabel.stopAllActions();
+        addGoldLabel.opacity = 255;
+        addGoldLabel.setScale(1.0);
+        addGoldLabel.setPosition(addGoldLabel.x, this.addGoldStartY);
+        addGoldLabel.active = true;
+
+
+        //移动过程中放大1.5倍  移动与放大并行执行 
+        cc.tween(addGoldLabel)
+            .parallel(
+                cc.tween().to(this.addGoldMoveDuration, { scale: 1.5 }),
+                cc.tween().to(this.addGoldMoveDuration, { y: this.addGoldEndY })
+            )
+            .call(() => {
+                addGoldLabel.active = false;
+                addGoldLabel.setPosition(addGoldLabel.x, this.addGoldStartY);
+            })
+            .start();
     }
     async synchronize() {
         //console.log(cc.game.EVENT_SHOW);
-        let enterGameResp = await this.player.synchronize();
-        gGameData.Gamefocus = true;
-        this.initPlayerData(enterGameResp, false, true);
+        await this.syncLatestForForeground(false);
     }
     async userRechargeSuccess() {
         return (<any>window).updateBalance?.();

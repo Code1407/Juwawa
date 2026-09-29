@@ -93,12 +93,8 @@ export enum ETradeCode {
 	UserStatusError = -12, //用户状态异常
 	ObeRepair       = -20, //layla 定制
 	Ignore          = -21, //sungo 定制
+    CoinsFrozen     = -24, //币种冻结
 	Nothing         = -99997,
 	UserException   = -99998,
 	Unknow          = -99999,
-
-
-     /** 自己定 */
-    BetCountError = 10011,      // 下注次数超出
-    BetTypeCountError = 10012,  // 下注种类超出数量
 }

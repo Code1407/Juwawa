@@ -45,6 +45,9 @@ export default class WheelEffect extends cc.Component {
     isApple: boolean = false;
     // LIFE-CYCLE CALLBACKS:
 
+    @property({type:cc.SpriteFrame,displayName:"霉运"})
+    wheelItemsSpriteFrames: cc.SpriteFrame[] = [];
+
     // onLoad () {}
 
     start() {
@@ -135,7 +138,7 @@ export default class WheelEffect extends cc.Component {
     }
 
     /** 静默恢复已经完成的停奖状态。 */
-    seekFinalIndex(index: number) {
+    seekFinalIndex(index: number, showCenter: boolean = true) {
         if (this.wheelItems.length == 0) return;
         const normalizedIndex = ((index % this.wheelItems.length) + this.wheelItems.length) % this.wheelItems.length;
         this.clearPreviousRollingHighlight(true);
@@ -145,12 +148,12 @@ export default class WheelEffect extends cc.Component {
         effect.isSelect = true;
         effect.isEnd = true;
         Game.Instance.fruitIndex(normalizedIndex);
-        this.CenterSprite.active = true;
+        this.CenterSprite.active = showCenter;
         this.activeRollingIndex = normalizedIndex;
         this.wheelIndex = normalizedIndex;
         this.lastWinningIndex = normalizedIndex;
         this.isEnd = true;
-        this.tvStart();
+        if (showCenter) this.tvStart();
     }
 
     /** 静默补齐特殊奖项中已经发生的选中格。 */
@@ -171,7 +174,7 @@ export default class WheelEffect extends cc.Component {
     }
 
     /** 登录时已经处于结算阶段：只恢复最终盘面，不启动任何开奖动画。 */
-    restoreCompletedResult(winPos: number, resultDetail: number[], resultPos: number[]) {
+    restoreCompletedResult(winPos: number, resultDetail: number[], resultPos: number[], showCenter: boolean = true) {
         if (this.wheelItems.length == 0 || winPos < 0) return;
         this.darkAll();
         this.selectCancle();
@@ -179,7 +182,7 @@ export default class WheelEffect extends cc.Component {
 
         if (winPos >= 0 && winPos < 9) {
             const target = Number(resultPos && resultPos[0]);
-            if (Number.isFinite(target)) this.seekFinalIndex(target);
+            if (Number.isFinite(target)) this.seekFinalIndex(target, showCenter);
             return;
         }
         if (winPos == 9) {
@@ -190,7 +193,7 @@ export default class WheelEffect extends cc.Component {
                 finalIndex = Number(resultPos[i]);
                 this.selectIndexInstant(finalIndex);
             }
-            this.seekFinalIndex(finalIndex);
+            this.seekFinalIndex(finalIndex, showCenter);
             return;
         }
 
@@ -199,7 +202,7 @@ export default class WheelEffect extends cc.Component {
         for (let i = 0; i < selectedIndexes.length; i++) {
             this.selectIndexInstant(selectedIndexes[i]);
         }
-        this.seekFinalIndex(target);
+        this.seekFinalIndex(target, showCenter);
     }
 
     getGoodLuckTargetIndex(result: number): number {
@@ -462,7 +465,15 @@ export default class WheelEffect extends cc.Component {
             } else {    //普通
                 this.CenterSprite.getComponent(cc.Sprite).spriteFrame = this.wheelItems[this.fruitIndex00].getChildByName("good").getComponent(cc.Sprite).spriteFrame;
             }
+        }else{
+            //小电视图片轮转结束
+            if (Game.Instance.WheelEffectbad01) {  //蓝霉运
+                this.CenterSprite.getComponent(cc.Sprite).spriteFrame = this.wheelItemsSpriteFrames[0];
+            }else if (Game.Instance.WheelEffectbad02) {//红霉运
+                this.CenterSprite.getComponent(cc.Sprite).spriteFrame = this.wheelItemsSpriteFrames[1];
+            }
         }
+
     }
 
     /**

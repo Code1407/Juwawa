@@ -1,14 +1,1 @@
-{
-  "1": {
-    "Type": 1,
-    "ViewType": 1,
-    "ContentLangKey": "common_email_Content1",
-    "TabLangKey": "common_email_Tab1"
-  },
-  "2": {
-    "Type": 1,
-    "ViewType": 1,
-    "ContentLangKey": "common_email_Content2",
-    "TabLangKey": "common_email_Tab1"
-  }
-}
+{"1":{"Type":1,"ViewType":1,"ContentLangKey":"common_email_Content1","TabLangKey":"common_email_Tab1"},"2":{"Type":1,"ViewType":1,"ContentLangKey":"common_email_Content2","TabLangKey":"common_email_Tab1"}}

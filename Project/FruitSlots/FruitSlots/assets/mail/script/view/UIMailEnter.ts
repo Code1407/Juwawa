@@ -27,7 +27,7 @@ export default class UIMailEnter extends cc.Component {
 
     start() {
         let openMail = MailModel.getInstance().get_mail_open_state();
-        this.nodEnter.active = openMail;
+        //this.nodEnter.active = openMail;
         if(openMail){
             this.on_mail_data_update();
         }
@@ -39,9 +39,9 @@ export default class UIMailEnter extends cc.Component {
         if(!openMail){
             return;
         }
-        if(!this.nodEnter.active){
-            this.nodEnter.active = true;
-        }
+        // if(!this.nodEnter.active){
+        //     this.nodEnter.active = true;
+        // }
         this.on_redpoint_refresh();
         if(this.uiMailMain.node.active){
             this.uiMailMain.refresh();
@@ -57,6 +57,10 @@ export default class UIMailEnter extends cc.Component {
      
     private on_redpoint_refresh() {
         let mails = MailModel.getInstance().get_mails();
+        this.nodEnter.active = mails.size > 0;
+        if(mails.size <= 0){
+            return;
+        }
         let haveRp = false;
         let mailList = Array.from(mails.values());
         for (const mail of mailList) {

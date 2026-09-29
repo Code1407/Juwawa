@@ -43,11 +43,11 @@ export class UISeven7RewardItem extends GameComponent {
     }
 
     updateWorldBetNum(num: number) {
-        this.labelBetWorld.string = num.toLocaleString();
+        this.labelBetWorld.string = num.toLocaleString('en-US');
     }
 
     updateSlefBetNum(num: number) {
-        this.labelBetSelf.string = num.toLocaleString();
+        this.labelBetSelf.string = num.toLocaleString('en-US');
     }
 
     showWorldBet(show:boolean){

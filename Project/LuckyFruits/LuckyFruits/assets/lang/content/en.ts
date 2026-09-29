@@ -17,16 +17,9 @@ const codeText = langInCodes[lang] = new LangInCode;
 text.game.autoPlay= `Auto
 内测
 专用`;
-text.game.stopAuto =`Auto
+text.game.stopAuto =`Stop
 内测
 专用`;
-text.game.players = "players";
-text.game.card1Pot = "Pot:";
-text.game.card1Mine = "Mine:";
-text.game.card2Pot = "Pot:";
-text.game.card2Mine = "Mine:";
-text.game.card3Pot = "Pot:";
-text.game.card3Mine = "Mine:";
 text.game.todayRound = "Round:";
 
 text.ready.content = "Ready Time";
@@ -36,42 +29,29 @@ text.myHistory.date = "Date";
 text.myHistory.betDetail = "Cost Detail";
 text.myHistory.result = "Result";
 text.myHistory.revenue = "Revenue";
-
+text.rewarding.content = "Is rewarding, please wait!";
+codeText.globalContent.round = "Round: "
+codeText.globalContent.betMaxLimit = "You can only cost {0} each round";
 text.help.title = "Game Rules";
 text.help.content =
 `
-Each fruit symbol has two possible outcomes. If "x2" appears below the winning symbol, the reward is calculated using the displayed multiplier; otherwise, the default payout rate applies.
-
-x2 Apple
-x2 Banana
-x2 Lemon
-x2 Watermelon
-
-Default fruit payouts
-x3 Grand Apple
-x6 Grand Banana
-x8 Grand Lemon
-x12 Grand Watermelon
+The default betting options and fruit bonus multipliers are:
+x3 Extra Large Apple
+x6 Extra Large Banana
+x8 Extra Large Lemon
+x12 Extra Large Watermelon
 x30 BAR
 
-Special rewards:
-1. Rainbow Luck (two modes)
-- Every reward in the upper half-circle wins once.
-- Apple Time: play continues until Apple wins.
+If you land on a fruit displaying "x2", the multiplier will be doubled.
 
-2. Yellow Luck (two modes)
-- Every reward in the lower half-circle wins once.
-- All fruits win once.
+Special Bonuses:
+1. Rainbow Luck (Two Modes)
+- Receive one of each bonus in the upper semicircle.
+- Apple Time: Bonuses will continue to spin until an apple is revealed.
 
-Note: Either Luck mode may enter "Bad Luck Time," during which no reward is awarded.
+2. Yellow Luck (Two Modes)
+- Receive one of each bonus in the lower semicircle.
+- Receive one of each fruit.
+
+Note: Both Luck modes may enter "Unlucky Time," in which case no bonus will be awarded.
 `
-
-text.betLimit.content = "You can only cost no more than 500,000 per round!";
-
-codeText.pokerLevel.highCard = "high card"
-codeText.pokerLevel.pair = "pair";
-codeText.pokerLevel.straight = "straight";
-codeText.pokerLevel.flush = "flush";
-codeText.pokerLevel.straightFlush = "straight flush";
-codeText.pokerLevel.fullHouse = "three of a king";
-codeText.globalContent.round = "Round: "

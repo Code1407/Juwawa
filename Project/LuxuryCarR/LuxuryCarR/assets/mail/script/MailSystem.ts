@@ -94,6 +94,9 @@ export default class MailSystem extends Singleton<MailSystem>() {
             console.error("CsMailRewardReceiveResp is nil");
             return;
         }
+        if(msg.errorCode && msg.errorCode !== 0){
+            return;
+        }
         MailProxy.getInstance().set_mail_reward_received(msg.mailId);
         if(msg.reward.resType == EResourceType.Coins && msg.reward.resId == 1 && msg.reward.resCount > 0){
             let args = {mailId : msg.mailId, res: msg.reward};

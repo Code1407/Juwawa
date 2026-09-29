@@ -175,7 +175,34 @@ export interface IBetResp {
 
 // 全场景下注响应：广播全场景的下注聚合
 export interface IAllBetResp {
+    uid: string;
     wheelAmount: number[][];
+}
+
+/** Lua 列表既可能是数组，也可能是以 1 开始的数字键对象。 */
+export function normalizeProtocolArray<T>(values: any): T[] {
+    if (Array.isArray(values)) return values.slice();
+    if (!values || typeof values !== "object") return [];
+    return Object.keys(values).filter(key => /^\d+$/.test(key))
+        .sort((a, b) => Number(a) - Number(b)).map(key => values[key]);
+}
+
+/** 固定位置和档位的矩阵不能过滤/压缩空项，否则金额会移到其他下注位。 */
+export function normalizeProtocolBetNum(values: any): number[][] {
+    const read = (source: any, index: number) => {
+        if (!source || typeof source !== "object") return undefined;
+        const base = Array.isArray(source) || Object.prototype.hasOwnProperty.call(source, "0") ? 0 : 1;
+        return source[index + base];
+    };
+    const result = createEmptyBetNum();
+    for (let i = 0; i < result.length; i++) {
+        const row = read(values, i);
+        for (let j = 0; j < result[i].length; j++) {
+            const count = Number(read(row, j));
+            result[i][j] = Number.isSafeInteger(count) && count >= 0 ? count : 0;
+        }
+    }
+    return result;
 }
 
 // 场景事件监听接口：服务器推送消息的回调签名
@@ -184,7 +211,6 @@ export interface ISceneListen {
     onResultHandler(roundResult: IRoundResult);      // 服务器下发派牌的结果
     onbatNoticeAll(resp:IAllBetResp);                // 有人下注派发
     onRewardHandler(roundResult:IRewardResp);        // 发奖，结果的挡位
-    onRankListChange(resp:IRankListItem[]);          // 同步排行榜
     onbatListRound(data:IBatListResp);               // 服务器下发派奖的动画参数
     onPlayerUpdate(playerResult: ICountDownPlayerUpdate);  // 玩家账户更新
 }
@@ -245,7 +271,6 @@ export interface IEnterGameResp {
     uid:string,
     roundStep: IRoundStep,
     //historyResults: number[],
-    rankList: IRankListItem[],
 
     // 个人信息
     account: IAccount,
@@ -253,6 +278,7 @@ export interface IEnterGameResp {
     lastWheelAmount: number[][],           // 存在的上一局的下注信息
     curRoundWheelAmount: number[][],       // 当前局的下注信息
     curRoundAllWheelAmount: IPlayerBetList[], // 当前局所有人的下注信息
+    curRoundTotalWheelAmount?: number[][], // 当前局全场累计筹码，进入/重连立即刷新总下注
     gameHistory: IHistoryItem[],           // 游戏历史记录（全服）
     myHistory: IMyHistoryItem[],           // 玩家个人历史记录
     playerSettings: IPlayerSettings        // 玩家个人设置

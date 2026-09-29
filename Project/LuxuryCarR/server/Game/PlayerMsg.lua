@@ -102,7 +102,7 @@ function Player:CsGetTodayRealTimeRankReq() if rank(self) then rank(self):CsGetT
 
 --- 路由：按日期获取排行列表
 -- @param msg 客户端消息体（包含日期字符串等）
-function Player:CsGetRankListByDateStrReq(msg) if rank(self) then rank(self):CsGetRankListByDateStrReq(msg) end end
+function Player:CsGetRankListByDateStrReq(msg) if rank(self) then rank(self):CsGetRankListByDateStrReq(msg.dateStr) end end
 
 --- 路由：领取日榜奖励
 function Player:CsDayRankAwardReq() if rank(self) then rank(self):CsDayRankAwardReq() end end

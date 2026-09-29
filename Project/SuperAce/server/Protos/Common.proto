@@ -1,0 +1,96 @@
+PlayerBaseData{
+	uint64 playerId
+	string playerUid
+	string name
+	string avatarUrl
+	uint64 coins
+}
+
+//登录成功
+ScLoginSucPush{
+	PlayerBaseData pBaseData
+}
+
+//时间同步
+CsSyncTimeReq{
+	uint64 cTime
+}
+CsSyncTimeResp{
+	uint64 cTime
+	uint64 sTime
+}
+
+//玩家基本数据更新
+CsPlayerBaseDataReq{
+}
+CsPlayerBaseDataResp{
+	PlayerBaseData pBaseData
+}
+
+//玩家积分改变同步
+ScCoinsUpdatePush{
+	uint64 coins
+}
+
+//Sdk状态同步
+ScSdkStatePush{
+	int32 state
+}
+
+//通用资源数据
+ResourceData{
+	uint32 resType
+	uint32 resId
+	uint64 resCount
+	int32 oddsType
+	map<string, string> gemeExt
+	uint64 roundId
+}
+
+//邮件系统
+MailData{
+	string uId
+	uint64 mailId
+	uint32 mailCfgId
+	uint32 gameId
+	array<ResourceData> rewards
+	uint32 rewardState
+	string extraJson
+	uint64 sendTime
+	bool read
+}
+
+CsMailListReq{
+}
+CsMailListResp{
+	array<MailData> mails
+}
+
+ScNewMailPush{
+	MailData mail
+}
+
+CsMailReadReq{
+	array<uint64> mails
+}
+CsMailReadResp{
+	array<uint64> mails
+}
+
+CsMailDeleteReq{
+	array<uint64> mails
+}
+CsMailDeleteAllReadReq{
+}
+CsMailDeleteResp{
+	array<uint64> mails
+}
+
+CsMailRewardReceiveReq{
+	array<uint64> mails
+}
+CsMailRewardReceiveResp{
+	int64 errorCode
+	uint64 mailId
+	ResourceData reward
+}

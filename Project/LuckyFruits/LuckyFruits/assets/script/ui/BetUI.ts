@@ -85,7 +85,8 @@ export default class BetUI extends cc.Component {
         let thisBet = calNumber(betNum);
         if (gGameData.betMax > 0 && gGameData.BetTotalNumber + thisBet > gGameData.betMax) {
             // Game.Instance.audio.playClick();
-            let str = "You can only bet " + gGameData.betMax + " each round"
+            const langInCode = (<any>window).langInCode;
+            let str = (langInCode && langInCode.globalContent.betMaxLimit || "You can only cost {0} each round").replace("{0}", gGameData.betMax.toString());
             Game.Instance.BetNumLimitView.setLabelValue(str);
             Game.Instance.BetNumLimitView.node.active = true;
             return;

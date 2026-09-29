@@ -84,7 +84,7 @@ export default class GlobalRankUI extends cc.Component {
     @property(cc.Node)
     coinFxPrefab: cc.Node = null;
 
-    timerInterval: any = 0;
+    timerInterval = 0;
     ChangeToAwardButton() {
         if (!gNewRank) {
             this.awardButton.active = false;
@@ -109,31 +109,17 @@ export default class GlobalRankUI extends cc.Component {
 
     initUserRank() {
         if (!gNewRank) {
-            console.log("[LuxuryCarRank] initUserRank skipped, gNewRank false");
+            console.log("gNewRank false");
             return;
         }
-        console.log("[LuxuryCarRank] initUserRank request start", {
-            hasRankAward: !!this.rankAward
-        });
-        if (!this.rankAward) {
-            console.warn("[LuxuryCarRank] initUserRank skipped, rankAward is nil");
-            return;
-        }
+        console.log("initUserRank");
         this.rankAward.csGetTodayRealTimeRankReq();
         this.rankAward.csDayRankAwardReq();
         this.rankAward.csWeekRankAwardReq();
     }
 
     async initRankUI(msgRouter: MessageRouter) {
-        console.log("[LuxuryCarRank] GlobalRankUI.initRankUI start", {
-            hasMsgRouter: !!msgRouter,
-            windowEnableRank: (<any>window).enableRank,
-            hasRankStart: !!RankStart.Instance
-        });
         initGNewRank()
-        console.log("[LuxuryCarRank] GlobalRankUI.initRankUI after initGNewRank", {
-            gNewRank: gNewRank
-        });
         RankStart.Instance.LoadRank();
         GlobalRankUI.Instance = this;
         (<any>window).globalRankUI = this;
@@ -141,7 +127,7 @@ export default class GlobalRankUI extends cc.Component {
         this.awardButton.active = false;
         this.rankButton.active = false;
         if (!gNewRank) {
-            console.log("[LuxuryCarRank] GlobalRankUI.initRankUI stop, gNewRank false");
+            console.log("gNewRank false");
             return;
         }
         cc.game.on(cc.game.EVENT_SHOW, () => {
@@ -155,9 +141,6 @@ export default class GlobalRankUI extends cc.Component {
             this.updateTimer();
         }, 200);
         this.rankAward = new RankRouter(msgRouter);
-        console.log("[LuxuryCarRank] RankRouter created", {
-            hasRankAward: !!this.rankAward
-        });
         //this.rankAward.csIsNetworkReadyReq();
         this.node.setParent((<any>window).rankViewPos);
         this.node.position = cc.Vec3.ZERO;
@@ -172,10 +155,6 @@ export default class GlobalRankUI extends cc.Component {
         this.initUserRank();
         const rankViewRoot = this.node.getChildByName('RankView');
         this.rankView = (rankViewRoot && rankViewRoot.getComponent(GlobalRankView)) || null;
-        console.log("[LuxuryCarRank] rank view lookup", {
-            hasRankViewRoot: !!rankViewRoot,
-            hasRankView: !!this.rankView
-        });
         if (this.rankView) this.rankView.initGlobalRankView();
         this.awardButton.on(cc.Node.EventType.TOUCH_START, async () => {
             console.log("GlobalRankUI TOUCH_START");
@@ -318,7 +297,7 @@ export default class GlobalRankUI extends cc.Component {
     csGetTodayRealTimeRankResp(msg: IRankRealTimeMsg) {
         if (msg) {
             brachData.realTimeRank = msg
-            console.log("[LuxuryCarRank] GlobalRankUI realtime rank resp", brachData.realTimeRank);
+            console.log(`brachData.realTimeRank`, brachData.realTimeRank);
             if (brachData.realTimeRank && brachData.realTimeRank.rank) {
                 this.txRank.string = brachData.realTimeRank.rank.toString();
             } else {
@@ -332,7 +311,6 @@ export default class GlobalRankUI extends cc.Component {
 
     async csReceiveDayAwardResp(msg: IRankAwardResp) {
         if (msg) {
-            console.log("[LuxuryCarRank] receive day award resp", msg);
             if (msg.code == ETradeCode.success && msg.accountDiamond) {
                 // todo: 客户端余额 = resp.accountDiamond
                 openUI(this.rankAwardView.node, true, true);
@@ -354,7 +332,6 @@ export default class GlobalRankUI extends cc.Component {
 
     async csReceiveWeekAwardResp(msg: IRankAwardResp) {
         if (msg) {
-            console.log("[LuxuryCarRank] receive week award resp", msg);
             if (msg.code == ETradeCode.success && msg.accountDiamond) {
                 // todo: 客户端余额 = resp.accountDiamond
                 openUI(this.rankAwardView.node, true, true);

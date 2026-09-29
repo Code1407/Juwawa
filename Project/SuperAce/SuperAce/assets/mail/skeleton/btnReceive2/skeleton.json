@@ -1,0 +1,46 @@
+{
+"skeleton": { "hash": "OdXNQ/zsI7ibBTZLgab+aR4t3CM", "spine": "3.8.75", "x": -103, "y": -38, "width": 207, "height": 76.54 },
+"bones": [
+	{ "name": "root" }
+],
+"slots": [
+	{ "name": "大领取2", "bone": "root", "attachment": "大领取2" },
+	{ "name": "大领取按钮", "bone": "root", "attachment": "大领取按钮" }
+],
+"skins": [
+	{
+		"name": "default",
+		"attachments": {
+			"大领取2": {
+				"大领取2": { "x": 0.5, "y": 6.54, "width": 193, "height": 64 }
+			},
+			"大领取按钮": {
+				"大领取按钮": { "x": 0.5, "width": 207, "height": 76 }
+			}
+		}
+	}
+],
+"animations": {
+	"1": {
+		"slots": {
+			"大领取按钮": {
+				"color": [
+					{ "color": "ffffffff" },
+					{ "time": 0.0667, "color": "ffffff00", "curve": "stepped" },
+					{ "time": 0.1667, "color": "ffffff00" },
+					{ "time": 0.2333, "color": "ffffffff" }
+				]
+			}
+		}
+	},
+	"none": {
+		"slots": {
+			"大领取按钮": {
+				"color": [
+					{ "time": 0.0333, "color": "ffffffff" }
+				]
+			}
+		}
+	}
+}
+}

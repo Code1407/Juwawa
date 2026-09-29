@@ -99,7 +99,7 @@ export default class RoundFinal extends cc.Component {
                     this.enterFinal();
                     this.LongRank;
                 }
-                Game.Instance.sumBet.string = "0";
+                // 本局 Cost 保留到新局统一清理，避免覆盖重连刚恢复的投注总额。
 
                 if (this.endTrue) {
                     this.endTrue = false;

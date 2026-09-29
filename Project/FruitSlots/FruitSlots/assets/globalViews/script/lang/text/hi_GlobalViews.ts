@@ -5,50 +5,52 @@ let lang = ELang.hi;
 
 let text = textsMap[lang] = new Path();
 
-text.path3 = `आपका कनेक्शन टूट गया है।				
+text.path3 = `आपका कनेक्शन टूट गया है।
 क्या आपने किसी अन्य डिवाइस में लॉग इन किया है?`;
-text.path4 = "रिकनेक्ट";
-text.path5 = "बाहर निकलना";
-text.path6 = "आपका कनेक्शन टूट गया है।";
-text.path7 = "रिकनेक्ट";
-text.path8 = "बाहर निकलना";
-text.path9 = `Account anomaly, unable to participate in the game currently, please contact the CS team`;
-text.path10 = "बाहर निकलना";
-text.path11 = `नेटवर्क समस्या के कारण ऑर्डर संसाधित नहीं किया जा सका। कृपया बाद में पुनः प्रयास करें।`;
-text.path12 = "रिचार्ज";
-text.path13 = "बाहर निकलना";
-text.path14 = `शेष राशि पर्याप्त नहीं है, अब रिचार्ज करें?`;
-text.path15 = "रिचार्ज";
-text.path16 = "रद्द करना";
-text.path17 = "रद्द करना";
-text.path18 = `Tips`;
-text.path19 = `You enter the game for entertainment. Any wins or losses in the game are borne by you personally. If you are willing, please click 'Start' and enjoy the game.`
-text.path20 = `Start`;
-text.path21 = `Close`;
+text.path4 = `रिकनेक्ट`;
+text.path5 = `बाहर निकलें`;
+text.path6 = `आपका कनेक्शन टूट गया है।`;
+text.path7 = `रिकनेक्ट`;
+text.path8 = `बाहर निकलें`;
+text.path9 = `यह खाता इस गेम में भाग नहीं ले सकता।`;
+text.path10 = `बाहर निकलें`;
+text.path11 = `नेटवर्क में उतार-चढ़ाव; कृपया पुनः प्रयास करें!`;
+text.path12 = `पुष्टि करें`;
+text.path13 = `बाहर निकलें`;
+text.path14 = `शेष राशि पर्याप्त नहीं है!
+अभी रिचार्ज करें?`;
+text.path15 = `पुष्टि करें`;
+text.path16 = `रद्द करें`;
+text.path17 = `रद्द करें`;
+text.path18 = `सूचना`;
+text.path19 = `आप मनोरंजन के लिए गेम में प्रवेश कर रहे हैं। गेम में कोई भी जीत या हानि आपकी अपनी जिम्मेदारी है। यदि आप सहमत हैं, तो कृपया 'शुरू करें' पर क्लिक करें और गेम का आनंद लें।`;
+text.path20 = `शुरू करें`;
+text.path21 = `बंद करें`;
 
-text.path22 = `Tips`;
-text.path23 = `Dear friend, you played too many games today, it would be better if you take a rest`;
-text.path24 = `Continue the game`;
-text.path25 = `Calm down 24H`;
+text.path22 = `सूचना`;
+text.path23 = `प्रिय मित्र, आपने आज बहुत अधिक गेम खेल लिए हैं, थोड़ा आराम करना बेहतर होगा`;
+text.path24 = `गेम जारी रखें`;
+text.path25 = `24 घंटे आराम`;
 
-text.path26 = `Tips`;
-text.path27 = `Dear friend, after entering the cooling-off period, you will not be able to play the game for the next 24 hours. Do you want to enter the cooling-off period?`;
-text.path28 = `Continue the game`;
-text.path29 = `Confirm to enter`;
+text.path26 = `सूचना`;
+text.path27 = `प्रिय मित्र, कूलिंग-ऑफ पीरियड में प्रवेश करने के बाद अगले 24 घंटे तक आप गेम नहीं खेल पाएंगे। क्या आप कूलिंग-ऑफ पीरियड में प्रवेश करना चाहते हैं?`;
+text.path28 = `गेम जारी रखें`;
+text.path29 = `प्रवेश की पुष्टि करें`;
 
-text.path30 = `Game is freezing`;
-text.path31 = `You have chosen to enter the cooling-off period, the freezing time is remaining`;
-text.path32 = `Exit the game`;
+text.path30 = `गेम कूलिंग-ऑफ पीरियड में है`;
+text.path31 = `आपने कूलिंग-ऑफ पीरियड में प्रवेश चुना है, शेष समय:`;
+text.path32 = `गेम से बाहर निकलें`;
 
 text.path33 = `बहुत लंबे समय तक निष्क्रिय रहने के कारण, उल्टी गिनती के बाद लाइन काट दी जाएगी।`;
 text.path34 = `ओह! आपने बहुत समय से खेल नहीं खेला है~ कृपया खेल में पुनः प्रवेश करें और अपना कौशल दिखाएं!`;
-text.path35 = `रेज़्यूमे`;
+text.path35 = `जारी रखें`;
 
-text.path36 = `चेतावनी, कृपया खेल के नियमों का पालन करें।`;
-text.path37 = `रेज़्यूमे`;
+text.path36 = `चेतावनी, कृपया खेल के नियमों का पालन करें!`;
+text.path37 = `जारी रखें`;
 
-text.path38 = `गेम सर्वर मेंटेनेंस में है और इसे कुछ समय के लिए नहीं खेला जा सकता। कृपया बाद में फिर से कोशिश करें।`;
-text.path39 =  "बाहर निकलना";
+text.path38 = `गेम सर्वर मेंटेनेंस में है और इसे कुछ समय के लिए नहीं खेला जा सकता।
+कृपया बाद में फिर से कोशिश करें।`;
+text.path39 = `बाहर निकलें`;
 
 text.path40 = `सिक्के अस्थायी रूप से फ़्रीज़ हैं, कृपया आधिकारिक ऑपरेशन टीम से संपर्क करें।`;
 text.path41 = `बाहर निकलें`;

@@ -62,13 +62,13 @@ export default class SettingView extends cc.Component {
             Audio.Instance.playClick();
             let volume = Audio.Instance.Volume;
             if(volume > 0){
-                Audio.Instance.volume = volume - 0.33;
-                if(volume < 0) Audio.Instance.volume = 0;
+                Audio.Instance.Setvolume(volume - 0.33,true)
+                if(volume < 0)  Audio.Instance.Setvolume(0,true)
             }
             this.switchBar();
             let playerSettings = {
                 lastBetAmountButton: gGameData.betAmountIndex,
-                soundVol: Audio.Instance.Volume
+                soundVol: Audio.Instance.Volume*100
             }
             Game.Instance.player.updateSettings(playerSettings);
         });
@@ -77,13 +77,13 @@ export default class SettingView extends cc.Component {
             Audio.Instance.playClick();
             let volume = Audio.Instance.Volume;
             if(volume < 1){
-                Audio.Instance.volume =volume + 0.33;
-                if(volume > 1) Audio.Instance.volume = 1;
+                Audio.Instance.Setvolume(volume + 0.33,true)
+                if(volume > 1) Audio.Instance.Setvolume( 1,true)
             }
             this.switchBar();
             let playerSettings = {
                 lastBetAmountButton: gGameData.betAmountIndex,
-                soundVol: Audio.Instance.Volume
+                soundVol: Audio.Instance.Volume*100
             }
             Game.Instance.player.updateSettings(playerSettings);
         });
@@ -115,11 +115,11 @@ export default class SettingView extends cc.Component {
 
     volumeChanged(volume: number): void {
         Audio.Instance.playClick();
-        Audio.Instance.volume = volume;
+        Audio.Instance.Setvolume(volume,true)
         this.switchBar();
         let playerSettings = {
             lastBetAmountButton: gGameData.betAmountIndex,
-            soundVol: Audio.Instance.Volume
+            soundVol: Audio.Instance.Volume*100
         }
         Game.Instance.player.updateSettings(playerSettings);
     }
@@ -127,27 +127,27 @@ export default class SettingView extends cc.Component {
     switchBar(){
         let volume = Audio.Instance.Volume;
         for(let i = 0; i < this.bars.length; i++) this.bars[i].active = false;
-        if(volume > 0 && volume < 0.4) {
-            Audio.Instance.volume = 0.33;
+        if(volume > 0.1 && volume < 0.4) {
+            Audio.Instance.Setvolume(0.33,true)
             this.bars[0].active = true;
         }
         else if(volume >= 0.4 && volume < 0.7) {
-            Audio.Instance.volume = 0.66;
+            Audio.Instance.Setvolume(0.66,true)
             this.bars[0].active = true;
             this.bars[1].active = true;
         }
         else if(volume >= 0.7 && volume <= 1) {
-            Audio.Instance.volume = 1;
+            Audio.Instance.Setvolume(1,true)
             this.bars[0].active = true;
             this.bars[1].active = true;
             this.bars[2].active = true;
         }
         else if(volume < 0) {
-            Audio.Instance.volume = 0;
+           Audio.Instance.Setvolume(0,true)
             this.switchBar();
         }
         else if(volume > 1) {
-            Audio.Instance.volume = 1;
+            Audio.Instance.Setvolume(1,true)
             this.switchBar();
         }
     }

@@ -12,9 +12,9 @@ text.path5 = `Exit`;
 text.path6 = `You've disconnected.`;
 text.path7 = `Reconnect`;
 text.path8 = `Exit`;
-text.path9 = `Account anomaly, unable to participate in the game currently, please contact the CS team`;
+text.path9 = `This account cannot participate in this game.`;
 text.path10 = `Exit`;
-text.path11 = `Order processing failed due to a network issue. Please try again later.`;
+text.path11 = `Network fluctuation.\n please try again!`;
 text.path12 = `Confirm`;
 text.path13 = `Exit`;
 text.path14 = `Insufficient balance!
@@ -45,10 +45,10 @@ text.path33 = `Due to idle for too long, the line will be disconnected after the
 text.path34 = `Oops! You haven't played for a long time~ Please re-enter the game and show off your skills!`;
 text.path35 = `resume`;
 
-text.path36 = `Warning, please follow the game rules!`
+text.path36 = `Warning, please follow the game rules!`;
 text.path37 = `resume`;
 
-text.path38 = `The game server is under maintenance and cannot be played temporarily.
+text.path38 = `The game server is under maintenance and cannot be played temporarily. 
 Please try again later.`;
 text.path39 =  `Exit`;
 

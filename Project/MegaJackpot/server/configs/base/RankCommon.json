@@ -1,0 +1,9 @@
+{
+  "1": {
+    "DayBonusRate": 0.0008,
+    "WeekBonusRate": 0.0006,
+    "DayMaxBonusExchange": 300,
+    "WeekMaxBonusExchange": 2400,
+    "AwardRate": [45, 20, 13, 8, 5, 3, 2, 2, 1, 1]
+  }
+}

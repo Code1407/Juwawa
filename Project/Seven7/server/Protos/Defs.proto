@@ -154,6 +154,15 @@ CsSelfBetHistoryResp{
 	array<HistoryData> list
 }
 
+CsGameLatelyHistoryReq{}
+CsGameLatelyHistoryResp{
+	array<uint16> list
+}
+ScGameLatelyHistoryPush{
+	array<uint16> list
+	uint16 jpRewardCount
+}
+
 //音频开关变更
 CsAudioChangeReq{
 	bool openAudio

@@ -1,0 +1,83 @@
+
+jb.png
+size: 1024,1024
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+coin_001
+  rotate: false
+  xy: 947, 842
+  size: 51, 51
+  orig: 51, 51
+  offset: 0, 0
+  index: -1
+coin_002
+  rotate: false
+  xy: 947, 948
+  size: 52, 51
+  orig: 52, 51
+  offset: 0, 0
+  index: -1
+coin_003
+  rotate: true
+  xy: 947, 747
+  size: 45, 51
+  orig: 51, 51
+  offset: 5, 0
+  index: -1
+coin_004
+  rotate: true
+  xy: 511, 713
+  size: 37, 51
+  orig: 52, 51
+  offset: 10, 0
+  index: -1
+coin_005
+  rotate: true
+  xy: 672, 726
+  size: 24, 50
+  orig: 51, 51
+  offset: 15, 0
+  index: -1
+coin_006
+  rotate: true
+  xy: 618, 726
+  size: 24, 52
+  orig: 51, 52
+  offset: 13, 0
+  index: -1
+coin_007
+  rotate: true
+  xy: 564, 714
+  size: 36, 52
+  orig: 52, 52
+  offset: 6, 0
+  index: -1
+coin_008
+  rotate: true
+  xy: 947, 794
+  size: 46, 52
+  orig: 51, 52
+  offset: 1, 0
+  index: -1
+coin_009
+  rotate: true
+  xy: 947, 895
+  size: 51, 52
+  orig: 52, 52
+  offset: 0, 0
+  index: -1
+guang1
+  rotate: false
+  xy: 2, 748
+  size: 507, 251
+  orig: 527, 251
+  offset: 10, 0
+  index: -1
+guang2
+  rotate: false
+  xy: 511, 752
+  size: 434, 247
+  orig: 453, 251
+  offset: 3, 4
+  index: -1

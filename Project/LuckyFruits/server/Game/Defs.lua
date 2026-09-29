@@ -59,12 +59,12 @@
     { name = "enterGameResp", type = 7, objs = {
         uid = {type = 4, range = {min = 0, max = 256},},
         roundStep = {type = 7, obj = "LuckyFruitsRoundStep"},
-        rankList = {type = 5, range = {min = 0, max = 256}, value = {type = 7, obj = "LuckyFruitsRankItem"},},
         account = {type = 7, obj = "Account"},
         todayRevenue = {type = 2, range = {min = 0, max = 9223372036854775807},},
         lastWheelAmount = {type = 5, range = {min = 0, max = 256}, value = {type = 5, range = {min = 0, max = 256}, value = {type = 2, range = {min = 0, max = 4294967295},},},},
         curRoundWheelAmount = {type = 5, range = {min = 0, max = 256}, value = {type = 5, range = {min = 0, max = 256}, value = {type = 2, range = {min = 0, max = 4294967295},},},},
         curRoundAllWheelAmount = {type = 5, range = {min = 0, max = 256}, value = {type = 7, obj = "LuckyFruitsPlayerBetList"},},
+        curRoundTotalWheelAmount = {type = 5, range = {min = 0, max = 256}, value = {type = 5, range = {min = 0, max = 256}, value = {type = 2, range = {min = 0, max = 9223372036854775807},},},},
         gameHistory = {type = 5, range = {min = 0, max = 256}, value = {type = 7, obj = "LuckyFruitsHistoryItem"},},
         myHistory = {type = 5, range = {min = 0, max = 256}, value = {type = 7, obj = "LuckyFruitsMyHistoryItem"},},
         lastBetAmountButton = {type = 2, range = {min = -2147483648, max = 2147483647},},
@@ -98,12 +98,12 @@
     { name = "synchronizeResp", type = 7, objs = {
         uid = {type = 4, range = {min = 0, max = 256},},
         roundStep = {type = 7, obj = "LuckyFruitsRoundStep"},
-        rankList = {type = 5, range = {min = 0, max = 256}, value = {type = 7, obj = "LuckyFruitsRankItem"},},
         account = {type = 7, obj = "Account"},
         todayRevenue = {type = 2, range = {min = 0, max = 9223372036854775807},},
         lastWheelAmount = {type = 5, range = {min = 0, max = 256}, value = {type = 5, range = {min = 0, max = 256}, value = {type = 2, range = {min = 0, max = 4294967295},},},},
         curRoundWheelAmount = {type = 5, range = {min = 0, max = 256}, value = {type = 5, range = {min = 0, max = 256}, value = {type = 2, range = {min = 0, max = 4294967295},},},},
         curRoundAllWheelAmount = {type = 5, range = {min = 0, max = 256}, value = {type = 7, obj = "LuckyFruitsPlayerBetList"},},
+        curRoundTotalWheelAmount = {type = 5, range = {min = 0, max = 256}, value = {type = 5, range = {min = 0, max = 256}, value = {type = 2, range = {min = 0, max = 9223372036854775807},},},},
         gameHistory = {type = 5, range = {min = 0, max = 256}, value = {type = 7, obj = "LuckyFruitsHistoryItem"},},
         myHistory = {type = 5, range = {min = 0, max = 256}, value = {type = 7, obj = "LuckyFruitsMyHistoryItem"},},
         lastBetAmountButton = {type = 2, range = {min = -2147483648, max = 2147483647},},
@@ -141,14 +141,12 @@
         resultPos = {type = 5, range = {min = 0, max = 256}, value = {type = 2, range = {min = -2147483648, max = 2147483647},},},
     },},
     { name = "onbatNoticeAll", type = 7, objs = {
+        uid = {type = 4, range = {min = 0, max = 256},},
         wheelAmount = {type = 5, range = {min = 0, max = 256}, value = {type = 5, range = {min = 0, max = 256}, value = {type = 2, range = {min = 0, max = 4294967295},},},},
     },},
     { name = "onRewardHandler", type = 7, objs = {
         winCard = {type = 4, range = {min = 0, max = 256},},
         resultDetail = {type = 5, range = {min = 0, max = 256}, value = {type = 2, range = {min = -2147483648, max = 2147483647},},},
-    },},
-    { name = "onRankListChange", type = 7, objs = {
-        rankList = {type = 5, range = {min = 0, max = 256}, value = {type = 7, obj = "LuckyFruitsRankItem"},},
     },},
     { name = "onbatListRound", type = 7, objs = {
         uid = {type = 4, range = {min = 0, max = 256},},

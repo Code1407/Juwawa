@@ -144,7 +144,7 @@ export class UISeven7Main extends GameComponent {
         this.game.init();
         this.refresh_bet_fruit_max();
         GameModelMgr.seven7Model.cs_cur_game_info_req();
-        GameModelMgr.seven7Model.cs_game_history_req();
+        //GameModelMgr.seven7Model.cs_game_history_req();
         this.initAudioState();
     }
 
@@ -182,7 +182,7 @@ export class UISeven7Main extends GameComponent {
         this.UIPlayerInfo.refresh_coins_icon();
         this.refresh_bet_fruit_max();
         GameModelMgr.seven7Model.cs_cur_game_info_req();
-        GameModelMgr.seven7Model.cs_game_history_req();
+        //GameModelMgr.seven7Model.cs_game_history_req();
     }
 
     private on_net_dis_connect() {
@@ -201,7 +201,7 @@ export class UISeven7Main extends GameComponent {
         let curRound = GameModelMgr.seven7Model.get_cur_round();
         this.update_round_info(curRound);
         let prepareTime = GameModelMgr.seven7Model.get_cur_prepareTime_Time()
-        this.gameHistoryView.show_game_history_by_client();
+        //this.gameHistoryView.show_game_history_by_client();
 
         //还在押注期间显示倒计时
         if (this.check_bet_is_valid(prepareTime)) {
@@ -318,7 +318,7 @@ export class UISeven7Main extends GameComponent {
         this._rewardInfo = msg;
         this._gameState = GameState.OPENREWARD;
         if (this._gameHide) {
-            this.gameHistoryView.openRewards(msg.rewardID);
+            //this.gameHistoryView.openRewards(msg.rewardID);
             return;
         }
         this.open_reward();

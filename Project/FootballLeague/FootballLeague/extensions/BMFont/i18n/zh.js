@@ -1,0 +1,1 @@
+"use strict";module.exports={open_panel:"BMFont生成工具",send_to_panel:"发送消息给面板",description:"BMFont生成工具"};

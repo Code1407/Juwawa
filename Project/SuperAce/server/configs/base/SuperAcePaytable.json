@@ -1,0 +1,58 @@
+{
+  "1": {
+    "symbolId": 1,
+    "symbolName": "梅花",
+    "multiple3": 0.05,
+    "multiple4": 0.15,
+    "multiple5": 0.25
+  },
+  "2": {
+    "symbolId": 2,
+    "symbolName": "方块",
+    "multiple3": 0.05,
+    "multiple4": 0.15,
+    "multiple5": 0.25
+  },
+  "3": {
+    "symbolId": 3,
+    "symbolName": "红桃",
+    "multiple3": 0.1,
+    "multiple4": 0.3,
+    "multiple5": 0.5
+  },
+  "4": {
+    "symbolId": 4,
+    "symbolName": "黑桃",
+    "multiple3": 0.1,
+    "multiple4": 0.3,
+    "multiple5": 0.5
+  },
+  "5": {
+    "symbolId": 5,
+    "symbolName": "J",
+    "multiple3": 0.2,
+    "multiple4": 0.6,
+    "multiple5": 1
+  },
+  "6": {
+    "symbolId": 6,
+    "symbolName": "Q",
+    "multiple3": 0.3,
+    "multiple4": 0.9,
+    "multiple5": 1.5
+  },
+  "7": {
+    "symbolId": 7,
+    "symbolName": "K",
+    "multiple3": 0.4,
+    "multiple4": 1.2,
+    "multiple5": 2
+  },
+  "8": {
+    "symbolId": 8,
+    "symbolName": "A",
+    "multiple3": 0.5,
+    "multiple4": 1.5,
+    "multiple5": 2.5
+  }
+}

@@ -12,7 +12,8 @@ import { Effect } from "./effect/FlyChip";
 import ChangeChip from "./image/ChangeChip";
 import Game from "./Game";
 import Audio from "./Audio";
-import { calNumber } from "./interface/ILuckyFruits";
+import { calNumber, normalizeProtocolNumberArray } from "./interface/ILuckyFruits";
+import { EGameStatus } from "../shared3/interface/IGame";
 
 import BetUI from "./ui/BetUI";
 
@@ -76,106 +77,112 @@ export default class Cards extends cc.Component {
         // },500)
     }
 
-    inFinal() {
+    private finalTimers: any[] = [];
+    private finalPresentationEpoch: number = 0;
 
-        gGameData.WinChip = {}
-        for (let key in ChangeChip.Instance.chips) {
+    cancelFinalPresentation() {
+        this.finalPresentationEpoch++;
+        for (const timer of this.finalTimers) clearTimeout(timer);
+        this.finalTimers = [];
+    }
+
+    private scheduleFinalCallback(callback: () => void, delayMs: number) {
+        const round = gGameData.roundStep.todayRound;
+        const epoch = this.finalPresentationEpoch;
+        const timer = setTimeout(() => {
+            this.finalTimers = this.finalTimers.filter(value => value !== timer);
+            if (!cc.isValid(this, true) || !cc.isValid(this.node, true)
+                || epoch !== this.finalPresentationEpoch
+                || round !== gGameData.roundStep.todayRound
+                || gGameData.roundStep.status !== EGameStatus.final) return;
+            callback();
+        }, delayMs);
+        this.finalTimers.push(timer);
+    }
+
+    private returnWinningChips(container: cc.Node, rewardObj: { [name: string]: number }): number {
+        if (!cc.isValid(container, true)) return 0;
+        const gradeList = { 3: 10, 6: 100, 9: 1000, 12: 10000 };
+        let maxFlyDuration = 0;
+        // 飞币会销毁/移动节点，遍历副本并先校验筹码结构和返回目标。
+        for (const child of container.children.slice()) {
+            if (!cc.isValid(child, true)) continue;
+            const spriteNode = child.getChildByName("sprite");
+            const sprite = cc.isValid(spriteNode, true) && spriteNode.getComponent(cc.Sprite);
+            const destination = child["setFromPos"] as cc.Node;
+            if (!sprite || !sprite.spriteFrame
+                || !cc.isValid(destination, true) || !cc.isValid(destination.parent, true)
+                || !cc.isValid(child.parent, true)) continue;
+            const amount = gradeList[Number.parseInt(sprite.spriteFrame.name)] || 0;
+            const playerName = destination.name;
+            maxFlyDuration = Math.max(maxFlyDuration, Effect.FlyChip2(child, destination, child.parent));
+            Audio.Instance.playSendBet();
+            if (Object.prototype.hasOwnProperty.call(rewardObj, playerName)) {
+                rewardObj[playerName] += amount;
+            }
+        }
+        return maxFlyDuration;
+    }
+
+    inFinal() {
+        this.cancelFinalPresentation();
+        gGameData.WinChip = {};
+        for (const key in ChangeChip.Instance.chips) {
             gGameData.WinChip[ChangeChip.Instance.chips[key].name] = 0;
         }
-        for (let Card of this.node.children) {
-            let chip = cc.find("pos/chip", Card);
-            let result = JSON.parse(JSON.stringify(gGameData.ResultDetail));
-            for (let i = 0; i < result.length; i++) {
-                if (result[i] >= 9) continue;
-                switch (result[i]) {
-                    case 8: result[i] = 4; break;
-                    default: result[i] = result[i] % 4; break;
-                }
-            }
-            if (!result.includes(chip.getComponent(BetUI).indexRank - 1)) {
-                for (let child of cc.find("pos/chip1", Card).children) {
-                    // Effect.FlyChip2(child, cc.find("Canvas/Game/test"),child.parent);//飞往庄家
-                    child.destroy();
-                }
+        const result = normalizeProtocolNumberArray(gGameData.ResultDetail)
+            .map(value => value >= 9 ? value : value === 8 ? 4 : value % 4);
+        const winningCards: cc.Node[] = [];
+        for (const card of this.node.children) {
+            const chip = cc.find("pos/chip", card);
+            const betUI = chip && chip.getComponent(BetUI);
+            if (!betUI) continue;
+            if (result.includes(betUI.indexRank - 1)) {
+                winningCards.push(card);
             } else {
-                // for(let child of cc.find("pos/chip1",Card).children){
-                //     let name=child.getChildByName("sprite").getComponent(cc.Sprite).spriteFrame.name
-                //     gGameData.WinChip[name]++;
-                //     gGameData.WinChip[name]["formNode"] = child["setFromPos"];
-                // }
-                // this.timeout1 = setTimeout(()=>{
-                //     for(let child of cc.find("pos/chip1",Card).children){
-                //             let name=child.getChildByName("sprite").getComponent(cc.Sprite).spriteFrame.name;
-                //             //gGameData.WinChip[name]++;
-                //             let fromNode=cc.find("Canvas/Game/test");
-                //             let toNode=cc.find("pos/chip2",Card);
-                //             let sprite=Game.Instance.chips.getChipBySt(name);
-                //             Effect.FlyChip(fromNode,toNode,sprite,1,child["setFromPos"]);//飞往赢牌区
-                //             Effect.FlyChip(fromNode,toNode,sprite,1,child["setFromPos"]);//飞往赢牌区
-                //     }
-
-                // },1000)
-                this.timeout2 = setTimeout(() => {
-                    let rewardObj = {};
-                    rewardObj["player1"] = 0;
-                    rewardObj["player2"] = 0;
-                    rewardObj["player3"] = 0;
-                    rewardObj["player4"] = 0;
-                    rewardObj["player5"] = 0;
-                    rewardObj["an_players"] = 0;
-                    let gradeList2 = {
-                        3: 10,
-                        6: 100,
-                        9: 1000,
-                        12: 10000
-                    }
-                    // setTimeout(() => {
-                    for (let child of cc.find("pos/chip1", Card).children) {
-                        Effect.FlyChip2(child, child["setFromPos"], child.parent);//赢得的筹码返回
-                        Audio.Instance.playSendBet();
-
-                        let name = Number.parseInt(child.getChildByName("sprite").getComponent(cc.Sprite).spriteFrame.name);
-                        rewardObj[child["setFromPos"].name] += gradeList2[name];
-                    }
-                    for (let child of cc.find("pos/chip2", Card).children) {
-                        Effect.FlyChip2(child, child["setFromPos"], child.parent);//赢得的筹码返回
-                        Audio.Instance.playSendBet();
-
-                        let name = Number.parseInt(child.getChildByName("sprite").getComponent(cc.Sprite).spriteFrame.name);
-                        rewardObj[child["setFromPos"].name] += gradeList2[name];
-                    }
-                    // }, 1000)
-
-                    Game.Instance.ShowRewardCount(rewardObj);
-                }, 500)
-                this.timeout3 = setTimeout(() => {
-                    cc.find("pos/chip1", Card).removeAllChildren();
-                    cc.find("pos/chip2", Card).removeAllChildren();
-                }, 4000)
+                const container = cc.find("pos/chip1", card);
+                if (container) {
+                    for (const child of container.children.slice()) child.destroy();
+                }
             }
         }
-        this.timeout4 = setTimeout(() => {
-            for (let Card of this.node.children) {
-                cc.find("pos/AllNumber/num", Card).getComponent(cc.Label).string = "0"
-                cc.find("pos/MineNumber/num", Card).getComponent(cc.Label).string = "0"
-            }
-        }, 2000)
-        setTimeout(() => {
-            let rewardObj = {};
-            rewardObj["player1"] = 0;
-            rewardObj["player2"] = 0;
-            rewardObj["player3"] = 0;
-            rewardObj["player4"] = 0;
-            rewardObj["player5"] = 0;
-            rewardObj["an_players"] = 0;
-            let gradeList2 = {
-                3: 10,
-                6: 100,
-                9: 1000,
-                12: 10000
+        this.scheduleFinalCallback(() => {
+            const rewardObj = { player1: 0, player2: 0, player3: 0, player4: 0, player5: 0, an_players: 0 };
+            let maxBackDuration = 0;
+            for (const card of winningCards) {
+                if (!cc.isValid(card, true)) continue;
+                maxBackDuration = Math.max(maxBackDuration, this.returnWinningChips(cc.find("pos/chip1", card), rewardObj));
+                maxBackDuration = Math.max(maxBackDuration, this.returnWinningChips(cc.find("pos/chip2", card), rewardObj));
             }
             Game.Instance.ShowRewardCount(rewardObj);
-        }, 500)
+            if (maxBackDuration > 0) {
+                this.scheduleFinalCallback(() => {
+                    Game.Instance.PlayPendingMindRewardCount();
+                }, maxBackDuration * 1000);
+            }
+        }, 500);
+        this.scheduleFinalCallback(() => {
+            for (const card of winningCards) {
+                if (!cc.isValid(card, true)) continue;
+                for (const name of ["pos/chip1", "pos/chip2"]) {
+                    const container = cc.find(name, card);
+                    if (cc.isValid(container, true)) container.removeAllChildren();
+                }
+            }
+        }, 4000);
+        this.scheduleFinalCallback(() => {
+            for (const card of this.node.children) {
+                for (const name of ["pos/AllNumber/num", "pos/MineNumber/num"]) {
+                    const node = cc.find(name, card);
+                    const label = node && node.getComponent(cc.Label);
+                    if (label) label.string = "0";
+                }
+            }
+        }, 2000);
+    }
+
+    onDestroy() {
+        this.cancelFinalPresentation();
     }
 
     light(winPos: number) {
@@ -222,6 +229,7 @@ export default class Cards extends cc.Component {
     onLoad() { }
 
     onClear() {
+        this.cancelFinalPresentation();
         clearTimeout(this.timeout1);
         clearTimeout(this.timeout2);
         clearTimeout(this.timeout3);

@@ -75,7 +75,46 @@ FRJackpotCountProbability012 = {0.5, 0.3, 0.2, 0, 0, 0} -- 普通模式下Jackpo
 FRJackpotCountProbability345 = {0, 0, 0, 0.7, 0.3, 0}   -- 命中模式下Jackpot符号数量分布
 FRJackpotPercentage = {0, 0, 0, 0.05, 0.15, 0.5}        -- N个Jackpot符号对应的奖池提取比例
 FRDefaultRateType = FRRateType.normal       -- 默认赔率类型
-FRBetAmounts = {100, 1000, 10000, 100000}   -- 服务端权威单线下注档位
+FRBetAmounts = {300, 900, 3000, 9000,30000}   -- 服务端权威单线下注档位
+
+FRJackpotPoolDefaultVersion = 3
+FRInitJackpotAmountPool = {
+    [1] = 1888,
+    [5] = 8888,
+    [10] = 18888,
+    [20] = 38888,
+    [50] = 88888,
+    [100] = 188888,
+    [200] = 388888,
+    [500] = 888888,
+    [1000] = 1888888,
+    [5000] = 8888888,
+}
+
+FRInitJackpotLineBetAmounts = {1, 5, 10, 20, 50, 100, 200, 500, 1000, 5000}
+
+function FruitSlotsLineBetAmount(totalBetAmount)
+    return (tonumber(totalBetAmount) or 0)
+        / math.max(1, tonumber(FRLineCount) or 1)
+end
+
+function FruitSlotsDefaultJackpotPoolAmount(totalBetAmount)
+    local lineBetAmount = FruitSlotsLineBetAmount(totalBetAmount)
+    local exactLineBet = FRRoundInt(lineBetAmount)
+    if math.abs(lineBetAmount - exactLineBet) > 0.000001 then
+        return 0
+    end
+
+    local fallbackLineBet = 0
+    for _, lineBet in ipairs(FRInitJackpotLineBetAmounts) do
+        if lineBet <= exactLineBet then
+            fallbackLineBet = lineBet
+        else
+            break
+        end
+    end
+    return tonumber(FRInitJackpotAmountPool[fallbackLineBet]) or 0
+end
 
 function FruitSlotsGetBetAmounts()
     local commonConfig = gApp and gApp.getProjCommon and gApp:getProjCommon() or nil

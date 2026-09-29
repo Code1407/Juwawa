@@ -44,6 +44,8 @@ export default class Game extends cc.Component {
     private isEnterGame = false;
     private isRecoveringFreeRound = false;
     private isBackground = false;
+    private restoringGameStateDepth = 0;
+    private suppressRecoveredFreeGameView = false;
 
     static get Instance() {
         return cc.find("Canvas/Game").getComponent(Game);
@@ -244,14 +246,24 @@ export default class Game extends cc.Component {
                 }
             } else {
                 this.player.increaseAmount(winAmount, true);
-                if (gGameData.freeCount) Views.Instance.showFreeGameView(gGameData.freeCount);
+                // 登录、重连或前后台同步时，服务端返回的免费次数表示玩家已经
+                // 处于免费模式；只有正常结算首次触发免费游戏时才展示次数提示。
+                if (gGameData.freeCount
+                    && this.restoringGameStateDepth == 0
+                    && !this.suppressRecoveredFreeGameView) {
+                    Views.Instance.showFreeGameView(gGameData.freeCount);
+                }
             }
 
             this.remainSecond = this.getFinalRemainSecond(betAmount, winAmount);
             Bottombar.Instance.hideSpin();
 
             Bottombar.Instance.setFreeTime(gGameData.freeCount);
-            if (gGameData.freeCount == 0) Bottombar.Instance.setBetAmount(gBetAmounts[gGameData.betAmountIndex]);
+            if (gGameData.freeCount == 0) {
+                Bottombar.Instance.setBetAmount(gBetAmounts[gGameData.betAmountIndex]);
+                // 已恢复的免费模式到这里才真正结束，之后的新触发应正常展示提示。
+                this.suppressRecoveredFreeGameView = false;
+            }
             this.setRoundResult(null);
         } else {
             console.log("enterFinal return");
@@ -302,10 +314,25 @@ export default class Game extends cc.Component {
         restoreRoundStatus: boolean = true
     ): Promise<boolean> {
         if (!enterGameResp) return false;
-        await this.initPlayerData(enterGameResp, isFirstCall);
-        if (!enterGameResp.roundStep) return false;
-        await this.player.restoreRoundStep(enterGameResp.roundStep, restoreRoundStatus);
-        return true;
+        const recoveredFreeCount = Math.max(
+            Number(enterGameResp.lastResult?.freeCount) || 0,
+            Number(enterGameResp.roundStep?.results?.freeCount) || 0
+        );
+        this.suppressRecoveredFreeGameView = recoveredFreeCount > 0;
+        this.restoringGameStateDepth++;
+        try {
+            await this.initPlayerData(enterGameResp, isFirstCall);
+            if (this.suppressRecoveredFreeGameView) {
+                // 旧回合的转动/结算协程可能在恢复完成后才继续执行，因此抑制状态
+                // 必须保持到整轮免费游戏结束，不能只覆盖本次同步调用。
+                Views.Instance.hideFreeGameView();
+            }
+            if (!enterGameResp.roundStep) return false;
+            await this.player.restoreRoundStep(enterGameResp.roundStep, restoreRoundStatus);
+            return true;
+        } finally {
+            this.restoringGameStateDepth--;
+        }
     }
 
     private async restoreAfterInterruption(enterGameResp: IEnterGameResp) {
@@ -347,7 +374,7 @@ export default class Game extends cc.Component {
                 gGameData.freeCount = enterGameResp.lastResult.freeCount;
                 gGameData.freeWinAmount = enterGameResp.lastResult.freeWinAmount;
                 gGameData.jackpotAmount = enterGameResp.lastResult.jackpotAmount;
-                gGameData.jackpotAmountPool = enterGameResp.lastResult.jackpotAmountPool;
+                // 奖池使用本次入场的实时快照，不能被上局结果中的旧奖池覆盖。
                 if (gGameData.freeCount > 0) {
                     Bottombar.Instance.initBottomData();
                     Bottombar.Instance.setFreeTime(enterGameResp.lastResult.freeCount);

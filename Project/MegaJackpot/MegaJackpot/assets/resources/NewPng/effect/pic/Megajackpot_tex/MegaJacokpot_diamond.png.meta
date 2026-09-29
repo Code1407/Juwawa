@@ -1,0 +1,38 @@
+{
+  "ver": "2.3.7",
+  "uuid": "43924bb6-07be-487f-9469-7d83b5a852b6",
+  "importer": "texture",
+  "type": "sprite",
+  "wrapMode": "clamp",
+  "filterMode": "bilinear",
+  "premultiplyAlpha": false,
+  "genMipmaps": false,
+  "packable": true,
+  "width": 735,
+  "height": 298,
+  "platformSettings": {},
+  "subMetas": {
+    "MegaJacokpot_diamond": {
+      "ver": "1.0.6",
+      "uuid": "6e67accb-79a4-409e-ae76-421d825aefc0@f9941",
+      "importer": "sprite-frame",
+      "rawTextureUuid": "43924bb6-07be-487f-9469-7d83b5a852b6",
+      "trimType": "auto",
+      "trimThreshold": 1,
+      "rotated": false,
+      "offsetX": 0,
+      "offsetY": 0,
+      "trimX": 1,
+      "trimY": 0,
+      "width": 733,
+      "height": 298,
+      "rawWidth": 735,
+      "rawHeight": 298,
+      "borderTop": 0,
+      "borderBottom": 0,
+      "borderLeft": 0,
+      "borderRight": 0,
+      "subMetas": {}
+    }
+  }
+}

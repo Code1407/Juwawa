@@ -235,6 +235,15 @@
     { name = "CsSelfBetHistoryResp", type = 7, objs = {
         list = {type = 5, range = {min = 0, max = 256}, value = {type = 7, obj = "HistoryData"},},
     },},
+    { name = "CsGameLatelyHistoryReq", type = 7, objs = {
+    },},
+    { name = "CsGameLatelyHistoryResp", type = 7, objs = {
+        list = {type = 5, range = {min = 0, max = 256}, value = {type = 2, range = {min = 0, max = 65535},},},
+    },},
+    { name = "ScGameLatelyHistoryPush", type = 7, objs = {
+        list = {type = 5, range = {min = 0, max = 256}, value = {type = 2, range = {min = 0, max = 65535},},},
+        jpRewardCount = {type = 2, range = {min = 0, max = 65535},},
+    },},
     { name = "CsAudioChangeReq", type = 7, objs = {
         openAudio = {type = 1,},
     },},

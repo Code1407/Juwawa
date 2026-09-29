@@ -22,7 +22,7 @@ local defaults = {
     finalSeconds = 6,          -- 结算阶段时长动画（秒）
     rankSize = 6,               -- 本回合排行榜容量
     -- 当前按TS原始相对权重开奖；均衡97%方案保存在LuckyFruitsProbabilityPresets.rtp97。
-    resultProbability = LuckyFruitsProbabilityPresets.tsOriginal,
+    resultProbability = LuckyFruitsProbabilityPresets.rtp97,
     wheelMultiple = { 2, 2, 2, 2, 3, 6, 8, 12, 30 },                       -- 转盘倍率（9档）
 }
 

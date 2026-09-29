@@ -35,11 +35,6 @@ export default class UIMailMain extends cc.Component {
         this.mailContent.node.active = false;
     }
 
-    onEnable(): void {
-        //当前父节点节点在其父节点上 改为顶层
-        this.node.parent.zIndex = this.node.parent.parent.children.length;
-    }
-
     open_mail_main_view(){
         this.node.active = true;
         this.refresh();

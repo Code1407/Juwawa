@@ -50,7 +50,6 @@ interface enterGame {
 interface enterGameResp {
     roundStep: LuxuryCarRRoundStep
     historyResults: number[]
-    rankList: LuxuryCarRRankItem[]
     uid: string
     account: Account
     todayRevenue: number
@@ -98,7 +97,6 @@ interface synchronize {
 interface synchronizeResp {
     roundStep: LuxuryCarRRoundStep
     historyResults: number[]
-    rankList: LuxuryCarRRankItem[]
     uid: string
     account: Account
     todayRevenue: number
@@ -126,9 +124,6 @@ interface dbmHeartbeatResp {
     code: number
 }
 
-interface onRankListChange {
-    rankList: LuxuryCarRRankItem[]
-}
 
 interface onRoundStep {
     todayRound: number

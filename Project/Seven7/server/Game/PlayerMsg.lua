@@ -128,6 +128,13 @@ function Player:CsSelfBetHistoryReq()
     SvrSystem.Seven7Main.csSelfBetHistoryReq(self)
 end
 
+function Player:CsGameLatelyHistoryReq()
+    local data = SvrSystem.Seven7Main.csGameLatelyHistoryReq()
+    if data then
+        Router.Client.CsGameLatelyHistoryResp(data, self)
+    end
+end
+
 function Player:CsAudioChangeReq(msg)
     if msg then
         self:csAudioChangeReq(msg.openAudio)

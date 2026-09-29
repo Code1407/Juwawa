@@ -125,7 +125,7 @@ export class Game extends GameComponent {
 
         this.wheelArrow[0].active = true;
         this.angleOffset = this.wheel.angle % 360;
-        this.gameHistoryView.updateItems(GameModelMgr.seven7Model.getCurRewardID());
+        //this.gameHistoryView.updateItems(GameModelMgr.seven7Model.getCurRewardID());
 
         let winNum = GameModelMgr.seven7Model.get_self_win();
 

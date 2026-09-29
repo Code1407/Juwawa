@@ -5,50 +5,52 @@ let lang = ELang.th;
 
 let text = textsMap[lang] = new Path();
 
-text.path3 = 'คุณตัดการเชื่อมต่อแล้ว	คุณลงชื่อเข้าใช้อุปกรณ์อื่นหรือไม่';
-text.path4 = "เชื่อมต่อ";
-text.path5 = "เข้า";
-text.path6 = "คุณตัดการเชื่อมต่อแล้ว";
-text.path7 = "เชื่อมต่อ";
-text.path8 = "เข้า";
-text.path9 = `Account anomaly, unable to participate in the game currently, please contact the CS team`;
-text.path10 = "เข้า";
-text.path11 = `การดำเนินการคำสั่งซื้อล้มเหลวเนื่องจากปัญหาเครือข่าย โปรดลองอีกครั้งในภายหลัง`;
-text.path12 = "ยกเลิก";
-text.path13 = "เข้า";
-text.path14 = `ยอดคงเหลือไม่เพียงพอเติมเงินตอนนี้?`;
-text.path15 = "เดิมเงิน";
-text.path16 = "ยกเลิก";
-text.path17 = "ยกเลิก";
-text.path18 = `Tips`;
-text.path19 = `You enter the game for entertainment. Any wins or losses in the game are borne by you personally. If you are willing, please click 'Start' and enjoy the game.`
-text.path20 = `Start`;
-text.path21 = `Close`;
+text.path3 = `การเชื่อมต่อของคุณถูกตัดแล้ว
+คุณลงชื่อเข้าใช้อุปกรณ์อื่นหรือไม่?`;
+text.path4 = `เชื่อมต่อใหม่`;
+text.path5 = `ออก`;
+text.path6 = `การเชื่อมต่อของคุณถูกตัดแล้ว`;
+text.path7 = `เชื่อมต่อใหม่`;
+text.path8 = `ออก`;
+text.path9 = `บัญชีนี้ไม่สามารถเข้าร่วมเกมนี้ได้`;
+text.path10 = `ออก`;
+text.path11 = `เครือข่ายไม่เสถียร กรุณาลองอีกครั้ง!`;
+text.path12 = `ยืนยัน`;
+text.path13 = `ออก`;
+text.path14 = `ยอดคงเหลือไม่เพียงพอ!
+ต้องการเติมเงินตอนนี้หรือไม่?`;
+text.path15 = `ยืนยัน`;
+text.path16 = `ยกเลิก`;
+text.path17 = `ยกเลิก`;
+text.path18 = `คำแนะนำ`;
+text.path19 = `คุณเข้าสู่เกมเพื่อความบันเทิง การชนะหรือแพ้ใดๆ ในเกมเป็นความรับผิดชอบของคุณเอง หากคุณยินยอม โปรดคลิก 'เริ่ม' และสนุกกับเกม`;
+text.path20 = `เริ่ม`;
+text.path21 = `ปิด`;
 
-text.path22 = `Tips`;
-text.path23 = `Dear friend, you played too many games today, it would be better if you take a rest`;
-text.path24 = `Continue the game`;
-text.path25 = `Calm down 24H`;
+text.path22 = `คำแนะนำ`;
+text.path23 = `เพื่อนที่รัก วันนี้คุณเล่นเกมมากเกินไปแล้ว ควรพักผ่อนสักหน่อยจะดีกว่า`;
+text.path24 = `เล่นเกมต่อ`;
+text.path25 = `พัก 24 ชม.`;
 
-text.path26 = `Tips`;
-text.path27 = `Dear friend, after entering the cooling-off period, you will not be able to play the game for the next 24 hours. Do you want to enter the cooling-off period?`;
-text.path28 = `Continue the game`;
-text.path29 = `Confirm to enter`;
+text.path26 = `คำแนะนำ`;
+text.path27 = `เพื่อนที่รัก หลังเข้าสู่ช่วงพักเกม คุณจะไม่สามารถเล่นเกมได้เป็นเวลา 24 ชั่วโมงข้างหน้า คุณต้องการเข้าสู่ช่วงพักเกมหรือไม่?`;
+text.path28 = `เล่นเกมต่อ`;
+text.path29 = `ยืนยันเข้าสู่ช่วงพัก`;
 
-text.path30 = `Game is freezing`;
-text.path31 = `You have chosen to enter the cooling-off period, the freezing time is remaining`;
-text.path32 = `Exit the game`;
+text.path30 = `เกมอยู่ในช่วงพัก`;
+text.path31 = `คุณเลือกเข้าสู่ช่วงพักเกมแล้ว เวลาที่เหลือ:`;
+text.path32 = `ออกจากเกม`;
 
 text.path33 = `เนื่องจากไม่ได้ใช้งานเป็นเวลานานเกินไป สายจะถูกตัดการเชื่อมต่อหลังจากการนับถอยหลัง`;
 text.path34 = `อุ๊ย! คุณไม่ได้เล่นมานานแล้ว~ โปรดเข้าเกมอีกครั้งและแสดงทักษะของคุณ!`;
-text.path35 = `ประวัติย่อ`;
+text.path35 = `ดำเนินการต่อ`;
 
-text.path36 = `คำเตือน โปรดปฏิบัติตามกฎของเกม`;
-text.path35 = `ประวัติย่อ`;
+text.path36 = `คำเตือน! โปรดปฏิบัติตามกฎของเกม`;
+text.path37 = `ดำเนินการต่อ`;
 
 text.path38 = `เซิร์ฟเวอร์เกมกำลังอยู่ในระหว่างการปรับปรุงและไม่สามารถเล่นได้ชั่วคราว
 โปรดลองใหม่อีกครั้งในภายหลัง`;
-text.path39 = "เข้า";
+text.path39 = `ออก`;
 
 text.path40 = `เหรียญถูกระงับชั่วคราว กรุณาติดต่อทีมงานปฏิบัติการอย่างเป็นทางการ`;
 text.path41 = `ออก`;

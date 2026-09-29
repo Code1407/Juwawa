@@ -15,6 +15,8 @@ export default class PlayerAccount extends ClientPlayer {
 
     accountDiamond: number = 0;
     roundId: number = 0;
+    private balanceIncreaseDeferralDepth: number = 0;
+    private deferredAccountDiamond: number = null;
     private static instance: PlayerAccount;
 
     private constructor(msgRouter: MessageRouter, private account: Account, private scene: ClientScene) {
@@ -127,6 +129,20 @@ export default class PlayerAccount extends ClientPlayer {
         this.account.setAccountDiamond(this.accountDiamond);
     }
 
+    syncAccountDiamond(amount: number) {
+        if (!Number.isFinite(amount) || amount < 0) return;
+
+        // 派彩可能在中奖表现播放期间先由服务端推送。上涨的余额先暂存，
+        // 待赢奖数字飘出后再刷新；下注扣款等下降变化仍即时显示。
+        if (this.balanceIncreaseDeferralDepth > 0 && amount > this.accountDiamond) {
+            this.deferredAccountDiamond = amount;
+            return;
+        }
+
+        this.deferredAccountDiamond = null;
+        this.setAccountDiamond(amount);
+    }
+
     decreaseAmount(amount: number) {
         this.accountDiamond -= amount;
         this.account.setAccountDiamond(this.accountDiamond);
@@ -136,15 +152,27 @@ export default class PlayerAccount extends ClientPlayer {
         if (!amount) return;
 
         if (flyDiamond) {
-            await new Promise(resolve => setTimeout(resolve, 1000));
-            let frequency = 0;
-            let multiple = amount / gBetAmounts[gGameData.betAmountIndex];
-            if (multiple > 60) frequency = 30;
-            else if (multiple > 20) frequency = Math.round(multiple / 2);
-            else frequency = Math.min(amount, 10);
-            Effect.flyDiamond(Bottombar.Instance.getWinAmountLabel().node, Bottombar.Instance.diamondImage, frequency);
-            let delay = Bottombar.Instance.isAutoBet() ? 500 : 1000;
-            await new Promise(resolve => setTimeout(resolve, delay));
+            this.balanceIncreaseDeferralDepth++;
+            try {
+                await new Promise(resolve => setTimeout(resolve, 1000));
+                let frequency = 0;
+                let multiple = amount / gBetAmounts[gGameData.betAmountIndex];
+                if (multiple > 60) frequency = 30;
+                else if (multiple > 20) frequency = Math.round(multiple / 2);
+                else frequency = Math.min(amount, 10);
+                Effect.flyDiamond(Bottombar.Instance.getWinAmountLabel().node, Bottombar.Instance.diamondImage, frequency);
+                let delay = Bottombar.Instance.isAutoBet() ? 500 : 1000;
+                await new Promise(resolve => setTimeout(resolve, delay));
+                Bottombar.Instance.showIncreaseAmount(amount);
+            } finally {
+                this.balanceIncreaseDeferralDepth--;
+                if (this.balanceIncreaseDeferralDepth == 0 && this.deferredAccountDiamond != null) {
+                    const deferredAccountDiamond = this.deferredAccountDiamond;
+                    this.deferredAccountDiamond = null;
+                    this.setAccountDiamond(deferredAccountDiamond);
+                }
+            }
+            return;
         }
         // 派彩已经由服务端计入账户，并通过 ScCoinsUpdatePush 下发。
         // 这里仅播放中奖表现，不能再次在客户端累加余额。

@@ -579,8 +579,7 @@ function RankCommon:updateRankList(cb, uid, score, name, avatar)
     local userInfo = { name = name, avatar = avatar }
     infoUsers[uid] = userInfo
 
-    if not self.dayRankData or type(self.dayRankData.updateRankList) ~= "function" or
-       not self.weekRankData or type(self.weekRankData.updateRankList) ~= "function" then
+    if not self.dayRankData or not self.weekRankData then
         -- 异常情况下从当前存档恢复，不能从空榜继续累计。
         self:rebuildRuntimeRankData()
     end
@@ -602,7 +601,7 @@ function RankCommon:updateRankList(cb, uid, score, name, avatar)
     end
 
     cb()
-    --log_info("RankCommon updateRankList uid = {}, score = {}", uid, score)
+    log_info("RankCommon updateRankList uid = {}, score = {}", uid, score)
 end
 
 function RankCommon:initRankAwardDay(yesterdayKey)

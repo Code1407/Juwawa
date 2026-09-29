@@ -1,0 +1,70 @@
+{
+  "ver": "1.0.27",
+  "importer": "image",
+  "imported": true,
+  "uuid": "08374972-05e2-4b41-bbbd-723c7135f61a",
+  "files": [
+    ".json",
+    ".png"
+  ],
+  "subMetas": {
+    "yh_tx": {
+      "ver": "1.0.6",
+      "uuid": "ca22fbf2-3cdb-4be0-83a2-d0519dacb6d6",
+      "importer": "sprite-frame",
+      "rawTextureUuid": "08374972-05e2-4b41-bbbd-723c7135f61a",
+      "trimType": "auto",
+      "trimThreshold": 1,
+      "rotated": false,
+      "offsetX": 0,
+      "offsetY": 0,
+      "trimX": 2,
+      "trimY": 2,
+      "width": 636,
+      "height": 239,
+      "rawWidth": 640,
+      "rawHeight": 243,
+      "borderTop": 0,
+      "borderBottom": 0,
+      "borderLeft": 0,
+      "borderRight": 0,
+      "subMetas": {},
+      "imported": false,
+      "files": [],
+      "userData": {},
+      "displayName": "",
+      "id": "",
+      "name": ""
+    },
+    "6c48a": {
+      "importer": "texture",
+      "uuid": "08374972-05e2-4b41-bbbd-723c7135f61a@6c48a",
+      "displayName": "yh_tx",
+      "id": "6c48a",
+      "name": "texture",
+      "userData": {
+        "wrapModeS": "repeat",
+        "wrapModeT": "repeat",
+        "minfilter": "linear",
+        "magfilter": "linear",
+        "mipfilter": "none",
+        "anisotropy": 0,
+        "isUuid": true,
+        "imageUuidOrDatabaseUri": "08374972-05e2-4b41-bbbd-723c7135f61a",
+        "visible": false
+      },
+      "ver": "1.0.22",
+      "imported": true,
+      "files": [
+        ".json"
+      ],
+      "subMetas": {}
+    }
+  },
+  "userData": {
+    "hasAlpha": true,
+    "type": "texture",
+    "fixAlphaTransparencyArtifacts": false,
+    "redirect": "08374972-05e2-4b41-bbbd-723c7135f61a@6c48a"
+  }
+}

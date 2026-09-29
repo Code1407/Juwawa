@@ -44,10 +44,15 @@ export default class BetAmounView extends cc.Component {
     }
 
     private refreshFromConfig(): void {
-        const formatBetAmount = (amount: number): string =>
-            (amount >= 1000 && amount % 1000 === 0) //筹码数值转换显示
-                ? (amount / 1000) + "k"
-                : amount.toString();
+        const formatBetAmount = (amount: number): string => {
+            if (amount >= 1000000 && amount % 1000000 === 0) {
+                return (amount / 1000000) + "m";
+            }
+            if (amount >= 1000 && amount % 1000 === 0) {
+                return (amount / 1000) + "k";
+            }
+            return amount.toString();
+        };
 
         let betGrade = (<any>window).betGrade;
         let betGradeAmounts = getBetGradeAmounts();
@@ -84,7 +89,6 @@ export default class BetAmounView extends cc.Component {
 
             let amountLabel = cc.find("BetAmount/Label/New Label", item);
             amountLabel.getComponent(cc.Label).string = formatBetAmount(betGradeAmounts[i]);
-
             if (chip && labelSprite.spriteFrame === chip) {
                 amountLabel.active = false;
                 Label.scale = 1.2;

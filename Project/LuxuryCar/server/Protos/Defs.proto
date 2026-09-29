@@ -69,7 +69,6 @@ enterGame {
 enterGameResp {
     LuxuryCarRoundStep roundStep
     array<int32> historyResults
-    array<LuxuryCarRankItem> rankList
     string uid
     Account account
     uint64 todayRevenue
@@ -123,7 +122,6 @@ synchronize {
 synchronizeResp {
     LuxuryCarRoundStep roundStep
     array<int32> historyResults
-    array<LuxuryCarRankItem> rankList
     string uid
     Account account
     uint64 todayRevenue
@@ -159,10 +157,6 @@ dbmHeartbeatResp {
 // 服务端推送
 // ------------------------------
 
-// 排行榜变化推送
-onRankListChange {
-    array<LuxuryCarRankItem> rankList
-}
 
 // 轮次状态变化推送
 onRoundStep {

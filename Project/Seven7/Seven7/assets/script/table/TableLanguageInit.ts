@@ -23,8 +23,8 @@ export class TableLanguageInit {
         return this.data.AR;
     }
     /** 越南语 */
-    get VN(): string {
-        return this.data.VN;
+    get VI(): string {
+        return this.data.VI;
     }
     /** 孟加拉语 */
     get BN(): string {
@@ -59,8 +59,12 @@ export class TableLanguageInit {
         return this.data.UR;
     }
     /** 菲律宾语 */
-    get VI(): string {
-        return this.data.VI;
+    get TL(): string {
+        return this.data.TL;
+    }
+    /** 俄语 */
+    get RU(): string {
+        return this.data.RU;
     }
 }
     

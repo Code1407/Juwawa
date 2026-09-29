@@ -51,6 +51,7 @@ function Player:onLeave()
     SvrSystem.Seven7Main.playerEnterOrLeave(0)
 end
 
+--SDK回调
 function Player:onSdkChanged()
     PlayerBase.onSdkChanged(self)
     if self:isOnline() then

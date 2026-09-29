@@ -72,6 +72,10 @@ export default class Views extends cc.Component {
         this.freeGameView.active = true;
     }
 
+    hideFreeGameView() {
+        this.freeGameView.active = false;
+    }
+
     // LIFE-CYCLE CALLBACKS:
 
     // onLoad () {}

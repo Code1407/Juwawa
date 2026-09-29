@@ -5,51 +5,52 @@ let lang = ELang.pt;
 
 let text = textsMap[lang] = new Path();
 
-text.path3 = `Você se desconectou.
+text.path3 = `Você foi desconectado.
 Você fez login em outro dispositivo?`;
-text.path4 = "Reconectar";
-text.path5 = "Sair";
-text.path6 = "Você desconectou.";
-text.path7 = "Reconectar";
-text.path8 = "Sair";
-text.path9 = `Account anomaly, unable to participate in the game currently, please contact the CS team`;
-text.path10 = "Sair";
-text.path11 = `Não foi possível processar o pedido devido a um problema de rede. Tente novamente mais tarde.`;
-text.path12 = "Recarregue";
-text.path13 = "Sair";
-text.path14 = `O saldo não é suficiente, recarregue agora?`;
-text.path15 = "Recarregue";
-text.path16 = "Cancelar";
-text.path17 = "Cancelar";
-text.path18 = `Tips`;
-text.path19 = `You enter the game for entertainment. Any wins or losses in the game are borne by you personally. If you are willing, please click 'Start' and enjoy the game.`
-text.path20 = `Start`;
-text.path21 = `Close`;
+text.path4 = `Reconectar`;
+text.path5 = `Sair`;
+text.path6 = `Você foi desconectado.`;
+text.path7 = `Reconectar`;
+text.path8 = `Sair`;
+text.path9 = `Esta conta não pode participar deste jogo.`;
+text.path10 = `Sair`;
+text.path11 = `Flutuação de rede; tente novamente!`;
+text.path12 = `Confirmar`;
+text.path13 = `Sair`;
+text.path14 = `Saldo insuficiente!
+Deseja recarregar agora?`;
+text.path15 = `Confirmar`;
+text.path16 = `Cancelar`;
+text.path17 = `Cancelar`;
+text.path18 = `Aviso`;
+text.path19 = `Você entra no jogo por entretenimento. Qualquer ganho ou perda no jogo é de sua responsabilidade pessoal. Se você concorda, clique em 'Começar' e aproveite o jogo.`;
+text.path20 = `Começar`;
+text.path21 = `Fechar`;
 
-text.path22 = `Tips`;
-text.path23 = `Dear friend, you played too many games today, it would be better if you take a rest`;
-text.path24 = `Continue the game`;
-text.path25 = `Calm down 24H`;
+text.path22 = `Aviso`;
+text.path23 = `Querido amigo, você jogou demais hoje, seria melhor descansar um pouco`;
+text.path24 = `Continuar o jogo`;
+text.path25 = `Descansar 24H`;
 
-text.path26 = `Tips`;
-text.path27 = `Dear friend, after entering the cooling-off period, you will not be able to play the game for the next 24 hours. Do you want to enter the cooling-off period?`;
-text.path28 = `Continue the game`;
-text.path29 = `Confirm to enter`;
+text.path26 = `Aviso`;
+text.path27 = `Querido amigo, ao entrar no período de reflexão, você não poderá jogar nas próximas 24 horas. Deseja entrar no período de reflexão?`;
+text.path28 = `Continuar o jogo`;
+text.path29 = `Confirmar entrada`;
 
-text.path30 = `Game is freezing`;
-text.path31 = `You have chosen to enter the cooling-off period, the freezing time is remaining`;
-text.path32 = `Exit the game`;
+text.path30 = `O jogo está em período de reflexão`;
+text.path31 = `Você escolheu entrar no período de reflexão, tempo restante:`;
+text.path32 = `Sair do jogo`;
 
 text.path33 = `Devido à inatividade por muito tempo, a linha será desconectada após a contagem regressiva.`;
 text.path34 = `Ops! Você não joga há muito tempo~ Entre novamente no jogo e mostre suas habilidades!`;
 text.path35 = `retomar`;
 
-text.path36 = `Atenção, por favor, siga as regras do jogo.`;
-text.path35 = `retomar`;
+text.path36 = `Atenção: por favor, siga as regras do jogo!`;
+text.path37 = `retomar`;
 
 text.path38 = `O servidor de jogo está em manutenção e não está disponível temporariamente.
 Por favor, tente mais tarde.`;
-text.path39 = "Sair";
+text.path39 = `Sair`;
 
 text.path40 = `As moedas estão temporariamente congeladas, por favor entre em contato com a equipe de operações oficial.`;
 text.path41 = `Sair`;

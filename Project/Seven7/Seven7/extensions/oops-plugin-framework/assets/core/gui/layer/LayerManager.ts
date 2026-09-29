@@ -215,6 +215,8 @@ export class LayerManager {
             this.showAccounErrortUI();
         }else if(errCode == ETradeCode.Insufficient){
             this.showRechargeUI();
+        }else if(errCode == ETradeCode.CoinsFrozen){
+            this.showCoinsFrozentUI();
         }
         else{
             this.showNoticeById(errCode);
@@ -395,7 +397,27 @@ export class LayerManager {
             title: "common_hint",
             iconPath: CommomIconPath.UserStatusError,
             content: oops.language.getLangByID("common_block_5001"),
-            okWord: "common_cancel",
+            okWord: "common_exit",
+            needCancel: false,
+            okFunc: () => {
+                oops.network.quit();
+            }
+        }
+        this.openAsync(UIID.Confirm, params);
+    }
+
+    /**
+    * 显示币种冻结异常提示界面
+    */
+    showCoinsFrozentUI() {
+        if (this.has(UIID.Confirm)) {
+            this.remove(UIID.Confirm);
+        }
+        let params = {
+            title: "common_hint",
+            iconPath: CommomIconPath.UserStatusError,
+            content: oops.language.getLangByID("common_block_24"),
+            okWord: "common_exit",
             needCancel: false,
             okFunc: () => {
                 oops.network.quit();

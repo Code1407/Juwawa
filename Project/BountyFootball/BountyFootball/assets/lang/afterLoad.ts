@@ -6,41 +6,18 @@ export function afterLoad() {
     if (lang && lang.length > 2) lang = lang.substring(0, 2);
     if (![ELang.ar, ELang.en, ELang.id, ELang.tr, ELang.ur, ELang.hi, ELang.vn].includes(lang as ELang)) lang = ELang.en;
 
-    langNode[lang] = {
+    langNode[lang] = <any>{
         game: { 
-            autoPlay: "Canvas/Game/BottomBar/AutoBet/Button/bg1/New Label",
-            stopAuto: "Canvas/Game/BottomBar/AutoBet/Button/bg2/New Label",
-            players: "Canvas/Game/BottomBar/Ranking/an_players/New Label",
             balance: "Canvas/Game/BottomBar/Account/MyDiamond/BalanceBg/Number/MyName/Balance",
             todayRound: "Canvas/Game/TodayRound/TodayRoundstr",
-            totalCost: "Canvas/Game/TotalCost/TotalCoststr",
-            myTotalCost: "Canvas/Game/MyTotalCost/MyTotalCoststr",
             finalRoundResult: "Canvas/Views/RoundFinal/RoundFinalView/MyResult/Result/Label",
             finalRoundWin: "Canvas/Views/RoundFinal/RoundFinalView/MyResult/Earnings/Label1",
             finalRoundCost: "Canvas/Views/RoundFinal/RoundFinalView/MyResult/Bet/Label1",
             finalRoundRankTitle: "Canvas/Views/RoundFinal/RoundFinalView/Rank/Label",
-            card1Pot: "Canvas/Game/Cards/Card1/pos/AllNumber/name",
-            card1Mine: "Canvas/Game/Cards/Card1/pos/MineNumber/Mine",
-            card2Pot: "Canvas/Game/Cards/Card2/pos/AllNumber/name",
-            card2Mine: "Canvas/Game/Cards/Card2/pos/MineNumber/Mine",
-            card3Pot: "Canvas/Game/Cards/Card3/pos/AllNumber/name",
-            card3Mine: "Canvas/Game/Cards/Card3/pos/MineNumber/Mine",
         },
         help: {
             title: "Canvas/Views/RuleView/RuleWindow/Title",
             content: "Canvas/Views/RuleView/RuleWindow/RuleLabel"
-        },
-        ready: {
-            content: "Canvas/Views/ReadyView/Label"
-        },
-        start: {
-            content: "Canvas/Views/BetView/Label"
-        },
-        gameHistory: {
-            title: "Canvas/Views/GameRecordView/New Label"
-        },
-        betLimit: {
-            content: "Canvas/Views/BetLimitView/panel/Content",
         },
         history: {
             title: "Canvas/Views/MyHistoryView/MyHistoryWindow/Title",

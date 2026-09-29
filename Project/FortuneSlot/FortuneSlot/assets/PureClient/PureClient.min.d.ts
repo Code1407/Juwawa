@@ -77,7 +77,15 @@ declare class JsSdk {
     //监听事件
     // `onQueryUser`：请求更新玩家sdk数据
     // `onGameBgHide`：请求隐藏背景图，参数为是否隐藏
-    // `onGameView`: 请求适配游戏尺寸，三个参数，分别是屏幕大小，游戏区域大小，游戏区域偏移
+    // `onGameView`: 请求适配游戏尺寸，四个参数，分别是屏幕大小，游戏区域大小，游戏区域偏移，游戏区域缩放
+    // `onGameSound`: 通知声音相关设置，会动态通知：
+    //{
+    //    enable: true, //全局开关
+    //    soundEnable: true, //音效开关
+    //    soundVolume: 100, //音效音量
+    //    musicEnable: true, //背景音乐开关
+    //    musicVolume: 100 //背景音乐音量
+    //}
     addEvent(name: string, func: EventCall): boolean;
 
     //派发事件

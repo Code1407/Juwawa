@@ -103,7 +103,7 @@ export default class PoppusViewUI extends cc.Component {
             __this.rule.scaleX = this.rule.scaleY = 1.2;
         });
         this.rankList.on(cc.Node.EventType.TOUCH_START, () => {
-            __this.rankListView.active = true;
+            // 排行榜入口走全局 Rank 模块，旧游戏内小榜不再打开。
         });
         this.myHistory.on(cc.Node.EventType.TOUCH_START, () => {
             __this.myHistoryView.active = true;

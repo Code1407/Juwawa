@@ -55,10 +55,10 @@ export class UISeven7CurBetResult extends GameComponent {
         avatar.init(rankData.avatarUrl, rankData.name);
 
         let lb_bet = find("bet/bg/value", nod).getComponent(Label);
-        lb_bet.string = (rankData.bet || 0).toLocaleString();
+        lb_bet.string = (rankData.bet || 0).toLocaleString('en-US');
 
         let lb_win = find("win/bg/value", nod).getComponent(Label);
-        lb_win.string = (rankData.win || 0).toLocaleString();
+        lb_win.string = (rankData.win || 0).toLocaleString('en-US');
 
         let nod_bet = find("bet", nod);
         nod_bet.active = this.showWorldBet;
@@ -75,8 +75,8 @@ export class UISeven7CurBetResult extends GameComponent {
 
     private show_self_info() {
         this.selfAvatar.initSelf();
-        this.lb_self_bet.string = GameModelMgr.seven7Model.get_self_bet().toLocaleString();
-        this.lb_self_win.string = GameModelMgr.seven7Model.get_self_win().toLocaleString();
+        this.lb_self_bet.string = GameModelMgr.seven7Model.get_self_bet().toLocaleString('en-US');
+        this.lb_self_win.string = GameModelMgr.seven7Model.get_self_win().toLocaleString('en-US');
     }
 
     private btn_close() {

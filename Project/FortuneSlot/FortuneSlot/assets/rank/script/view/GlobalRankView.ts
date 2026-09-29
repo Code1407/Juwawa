@@ -293,6 +293,11 @@ export default class GlobalRankView extends cc.Component {
         let rankInfo = this.rankInfos[this.dateStr[this.weekDaySelect]];
         if (rankInfo == null) return;
 
+        let jsNet = (<any>window).jsnet;
+        const cfg = jsNet && jsNet.getCommonConfig();
+        let showRankNum = cfg && cfg.custom && cfg.custom["Showrankplayer"] || 0;
+        rankInfo = showRankNum > 0 ? rankInfo.slice(0, showRankNum) : rankInfo;
+
         const thisDay = this.GetThisDay();
         this.currentUpdateHead = this.cdUpdateHead == null || !this.cdUpdateHead.IsCoolDown();
         this.currentIsLast = this.weekDaySelect < thisDay;

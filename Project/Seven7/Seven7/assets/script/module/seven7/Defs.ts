@@ -287,6 +287,18 @@ interface CsSelfBetHistoryResp {
     list: HistoryData[]
 }
 
+interface CsGameLatelyHistoryReq {
+}
+
+interface CsGameLatelyHistoryResp {
+    list: number[]
+}
+
+interface ScGameLatelyHistoryPush {
+    list: number[]
+    jpRewardCount: number
+}
+
 interface CsAudioChangeReq {
     openAudio: boolean
 }

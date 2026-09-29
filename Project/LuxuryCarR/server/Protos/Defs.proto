@@ -7,7 +7,7 @@
 // 3. 消息命名规范：
 //    - 请求消息：动词原形（如 bet、enterGame）
 //    - 响应消息：动词原形 + Resp（如 betResp、enterGameResp）
-//    - 推送消息：on + 事件名（如 onRoundStep、onRankListChange）
+//    - 推送消息：on + 事件名（如 onRoundStep）
 
 // ------------------------------
 // 基础数据结构
@@ -75,7 +75,6 @@ enterGame {
 enterGameResp {
     LuxuryCarRRoundStep roundStep                          // 当前轮次状态
     array<int32> historyResults                            // 历史开奖结果（最近若干局，用于展示走势）
-    array<LuxuryCarRRankItem> rankList                     // 今日排行榜
     string uid                                             // 当前玩家UID
     Account account                                        // 玩家账户信息
     uint64 todayRevenue                                    // 今日盈亏
@@ -129,7 +128,6 @@ synchronize {
 synchronizeResp {
     LuxuryCarRRoundStep roundStep                          // 当前轮次状态
     array<int32> historyResults                            // 历史开奖结果
-    array<LuxuryCarRRankItem> rankList                     // 今日排行榜
     string uid                                             // 当前玩家UID
     Account account                                        // 玩家账户信息
     uint64 todayRevenue                                    // 今日盈亏
@@ -164,11 +162,6 @@ dbmHeartbeatResp {
 // ------------------------------
 // 服务端推送（Push消息，服务端主动下发）
 // ------------------------------
-
-// 排行榜变化推送：排行榜数据发生更新时推送给所有在线玩家
-onRankListChange {
-    array<LuxuryCarRRankItem> rankList     // 更新后的排行榜列表
-}
 
 // 轮次状态变化推送：游戏进入下一阶段（等待→下注→动画→结算）时推送
 onRoundStep {

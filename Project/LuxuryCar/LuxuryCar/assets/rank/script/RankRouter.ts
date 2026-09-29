@@ -10,7 +10,7 @@ export class RankRouter implements IRankAward, IRankAwardListen {
     coolDown = false;
     constructor(private jsNet: any) {
         let _this = this;
-      
+
         // this.on('CsIsNetworkReadyResp', function (data) {
         //     isNetworkReady = true;
         // });
@@ -49,22 +49,19 @@ export class RankRouter implements IRankAward, IRankAwardListen {
 
     on(routerName: string, cb: any) {
         if (!this.jsNet) {
-            console.warn("[LuxuryCarRank] listen failed, jsNet is nil", routerName);
             return;
         }
-        
         this.jsNet.listenMsg(routerName, (data: any) => {
             cb(data);
         });
     }
 
     csDayRankAwardResp(msg: IRankAwardMsg) {
-        if (!gNewRank) {
-            return;
-        }
+        if (!gNewRank) return;
         if (msg.bonus) msg.bonus = Math.floor(msg.bonus);
         brachData.dayRankAward = msg;
         // 如果bonus不为0，则显示领奖图标
+        console.log("onDayRankAward", msg.bonus);
         if (msg.bonus > 0 || GlobalRankUI.Instance.IsAwardable(brachData.weekRankAward)) {
             GlobalRankUI.Instance.ChangeToAwardButton();
         } 
@@ -74,13 +71,12 @@ export class RankRouter implements IRankAward, IRankAwardListen {
     }
 
     csWeekRankAwardResp(msg: IRankAwardMsg) {
-        if (!gNewRank) {
-            return;
-        }
+        if (!gNewRank) return;
         if (msg.bonus) msg.bonus = Math.floor(msg.bonus);
         brachData.weekRankAward = msg;
 
         // 如果bonus不为0，则显示领奖图标
+        console.log("onWeekRankAward", msg.bonus);
         if (msg.bonus > 0 || GlobalRankUI.Instance.IsAwardable(brachData.dayRankAward)) {
             GlobalRankUI.Instance.ChangeToAwardButton();
         } 
@@ -97,10 +93,7 @@ export class RankRouter implements IRankAward, IRankAwardListen {
     // }
 
     csTodayRealTimeRankResp(msg: IRankRealTimeMsg) {
-        if (!gNewRank) {
-            return;
-        }
-    
+        if (!gNewRank) return;
         GlobalRankUI.Instance.txRank.string = msg.rank ? msg.rank.toString() : "";
         UpdateOffset(msg.timestamp, msg.timezone, `onTodayRealTimeRank`);
     }
@@ -128,33 +121,26 @@ export class RankRouter implements IRankAward, IRankAwardListen {
     }
 
     csDayRankAwardReq() {
-        if (!gNewRank) {
-            return;
-        }
+        if (!gNewRank) return;
         this.push("CsDayRankAwardReq", {});
     }
 
     csWeekRankAwardReq() {
-        if (!gNewRank) {
-            return;
-        }
+        if (!gNewRank) return;
         this.push("CsWeekRankAwardReq", {});
     }
 
     /** 按日期串拉榜上行：`rankQuery` 为 `today?`、`thisweek?` 或 `YYYY-MM-DD`。 */
     csGetRankListByDateStrReq(dateStr: string) {
-        if (!gNewRank) {
-            return;
-        }
+        if (!gNewRank) return;
         this.push("CsGetRankListByDateStrReq", { dateStr: dateStr });
     }
 
     csGetRankListByDateStrResp(msg: IRankListByDateStrMsg) {
-        if (!gNewRank) {
-            return;
-        }
+        if (!gNewRank) return;
         let view = GlobalRankUI.Instance?.rankView;
         if (view) view.onRankListByDateStrMsg(msg);
+        console.log("csGetRankListByDateStrResp", msg); 
     }
 
     csRankTestReq(score: number) {

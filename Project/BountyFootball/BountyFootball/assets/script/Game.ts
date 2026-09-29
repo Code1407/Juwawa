@@ -16,7 +16,6 @@ import BetAmountSelector from "./BetAmountSelector";
 import { arraySum, IRoundStep, IEnterGameResp, IBetListResp, IPlayerBetList, IAllBetResp } from "./interface/IBountyFootball";
 import PoppusViewUI from "./ui/PopupsViewUI";
 import MyHistoryView from "./view/MyHistoryView";
-import RankListView from "./view/RankListView";
 import PlayerAccount from "./PlayerAccount";
 import { EGameStatus, ETradeCode } from "../shared3/interface/IGame";
 import { Effect } from "./effect/FlyDiamond";
@@ -172,7 +171,6 @@ export default class Game extends cc.Component {
     private initPlayerData(enterGameResp: IEnterGameResp, isFirstCall: boolean) {
         if (!enterGameResp?.roundStep || !enterGameResp.account) return;
         enterGameResp.historyResults = normalizeList<number>(enterGameResp.historyResults);
-        enterGameResp.rankList = normalizeList(enterGameResp.rankList);
         enterGameResp.wheelAmount = normalizeList<number>(enterGameResp.wheelAmount);
         enterGameResp.totalWheelAmount = normalizeList<number>(enterGameResp.totalWheelAmount);
         enterGameResp.curRoundAllWheelAmount = normalizeList(enterGameResp.curRoundAllWheelAmount);
@@ -204,11 +202,6 @@ export default class Game extends cc.Component {
 
         this.results.assignValue(enterGameResp.historyResults);
         this.poppusViewUI.myHistoryView.getComponent(MyHistoryView).setMyHistoryValues(enterGameResp.myHistory);
-        this.poppusViewUI.rankListView.getComponent(RankListView).setRankListValues(enterGameResp.rankList);
-
-        if (enterGameResp.rankList?.length >= 1) {
-            this.poppusViewUI.setRankListNo1Value(enterGameResp.rankList[0]);
-        }
         BetAmountSelector.Instance.swichBetAmountButton();
 
         gGameData.totalWheelAmount = enterGameResp.totalWheelAmount;
@@ -436,14 +429,6 @@ export default class Game extends cc.Component {
                     if (betResp && (await betResp).code == ETradeCode.success) {
                         for (let k = 0; k < flyNum; k++) {
                             Effect.FlyDiamond2(ChipMoveNodeUI.Instance.mineNode[j], ChipMoveNodeUI.Instance.items[index], j, index, true, 2000);
-
-                            if (this.player.accountDiamond >= Game.Instance.balanceNum) {
-                                for (let i = 0; i < Game.Instance.bettingBox.myBetNum.length; i++) {
-                                    Game.Instance.bettingBox.myBetNum[index].active = true;
-                                    Game.Instance.bettingBox.allBetNum[index].active = true;
-
-                                }
-                            }
                         }
                     }
                 }
@@ -477,14 +462,6 @@ export default class Game extends cc.Component {
                     if (betResp && (await betResp).code == ETradeCode.success) {
                         for (let k = 0; k < flyNum; k++) {
                             Effect.FlyDiamond2(ChipMoveNodeUI.Instance.mineNode[j], ChipMoveNodeUI.Instance.items[index], j, index, true, 2000);
-
-                            if (this.player.accountDiamond >= Game.Instance.balanceNum) {
-                                for (let i = 0; i < Game.Instance.bettingBox.myBetNum.length; i++) {
-                                    Game.Instance.bettingBox.myBetNum[index].active = true;
-                                    Game.Instance.bettingBox.allBetNum[index].active = true;
-
-                                }
-                            }
                         }
                     }
                 }

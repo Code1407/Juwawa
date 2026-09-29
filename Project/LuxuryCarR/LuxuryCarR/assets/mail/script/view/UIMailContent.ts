@@ -89,11 +89,11 @@ export default class UIMailContent extends cc.Component {
         let lang = MailModel.getInstance().get_mail_lang(this.mailData.get_content_lang_key());
 
          if(this.mailData.get_mail_cfg_id() == MAIL_CFG_ID.AWARD_REISSUE_HAND){
-            this.labContent.string = GameUtil.getLanguage(lang, gameName)
+            this.labContent.string = GameUtil.getLanguage(lang, gameName) || "";
         }else if(this.mailData.get_mail_cfg_id() == MAIL_CFG_ID.AWARD_REISSUE_AUTO){        
             let round = this.mailData.get_round() || "";
             let time = this.mailData.get_send_time_format() || "";
-            this.labContent.string = GameUtil.getLanguage(lang, gameName, time, round)
+            this.labContent.string = GameUtil.getLanguage(lang, gameName, time, round) || "";
         }else{
             this.labContent.string = lang;
         }     

@@ -1,0 +1,46 @@
+{
+"skeleton": { "hash": "j2OCD/HF6qB+Eh3IJ6h2ysmVOuU", "spine": "3.8.75", "x": -103, "y": -38, "width": 207, "height": 76 },
+"bones": [
+	{ "name": "root" }
+],
+"slots": [
+	{ "name": "删除按钮2", "bone": "root", "attachment": "删除按钮2" },
+	{ "name": "删除按钮1", "bone": "root", "attachment": "删除按钮1" }
+],
+"skins": [
+	{
+		"name": "default",
+		"attachments": {
+			"删除按钮1": {
+				"删除按钮1": { "x": 0.5, "width": 207, "height": 76 }
+			},
+			"删除按钮2": {
+				"删除按钮2": { "x": 0.5, "y": 4.12, "width": 193, "height": 64 }
+			}
+		}
+	}
+],
+"animations": {
+	"1": {
+		"slots": {
+			"删除按钮1": {
+				"color": [
+					{ "color": "ffffffff" },
+					{ "time": 0.0667, "color": "ffffff00", "curve": "stepped" },
+					{ "time": 0.1667, "color": "ffffff00" },
+					{ "time": 0.2333, "color": "ffffffff" }
+				]
+			}
+		}
+	},
+	"none": {
+		"slots": {
+			"删除按钮1": {
+				"color": [
+					{ "time": 0.0333, "color": "ffffffff" }
+				]
+			}
+		}
+	}
+}
+}

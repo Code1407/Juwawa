@@ -61,12 +61,12 @@ enterGame {}
 enterGameResp {
     string uid
     LuckyFruitsRoundStep roundStep
-    array<LuckyFruitsRankItem> rankList
     Account account
     uint64 todayRevenue
     array<array<uint32>> lastWheelAmount
     array<array<uint32>> curRoundWheelAmount
     array<LuckyFruitsPlayerBetList> curRoundAllWheelAmount
+    array<array<uint64>> curRoundTotalWheelAmount
     array<LuckyFruitsHistoryItem> gameHistory
     array<LuckyFruitsMyHistoryItem> myHistory
     int32 lastBetAmountButton
@@ -100,12 +100,12 @@ synchronize {}
 synchronizeResp {
     string uid
     LuckyFruitsRoundStep roundStep
-    array<LuckyFruitsRankItem> rankList
     Account account
     uint64 todayRevenue
     array<array<uint32>> lastWheelAmount
     array<array<uint32>> curRoundWheelAmount
     array<LuckyFruitsPlayerBetList> curRoundAllWheelAmount
+    array<array<uint64>> curRoundTotalWheelAmount
     array<LuckyFruitsHistoryItem> gameHistory
     array<LuckyFruitsMyHistoryItem> myHistory
     int32 lastBetAmountButton
@@ -134,12 +134,14 @@ onResultHandler {
     array<int32> resultDetail
     array<int32> resultPos
 }
-onbatNoticeAll { array<array<uint32>> wheelAmount }
+onbatNoticeAll {
+    string uid
+    array<array<uint32>> wheelAmount
+}
 onRewardHandler {
     string winCard
     array<int32> resultDetail
 }
-onRankListChange { array<LuckyFruitsRankItem> rankList }
 onbatListRound {
     string uid
     int32 flyPlayerPos

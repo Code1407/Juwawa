@@ -176,6 +176,86 @@ function FruitSlotsMachine:findTargetCount(arr, target)
     return count
 end
 
+local function jackpotCountByStage(stage)
+    return math.max(0, math.floor(tonumber(stage) or 0)) + 3
+end
+
+local function jackpotStageByCount(count)
+    count = math.floor(tonumber(count) or 0)
+    if count < 3 then return nil end
+    return count - 3
+end
+
+local function normalizeJackpotStageMax(value)
+    local stageMax = tonumber(value)
+    if stageMax == nil then return nil end
+    return math.max(0, math.floor(stageMax))
+end
+
+local function getRewardLimit(control, betAmount)
+    control = control or {}
+    local rawRewardMax = tonumber(control.rewardMax) or 0
+    local hasRewardLimit = rawRewardMax ~= 0
+    local rewardMax = math.max(0, rawRewardMax)
+    local rewardRateMax = math.max(0, tonumber(control.rewardRateMax) or 0)
+    local waterRuler = math.max(0, tonumber(control.waterRuler) or 0)
+
+    local rateLimit = rewardRateMax > 0
+        and FRRoundInt((betAmount or 0) * rewardRateMax / 10000) or 0
+    if rateLimit > 0 and (not hasRewardLimit or rateLimit < rewardMax) then
+        rewardMax = rateLimit
+        hasRewardLimit = true
+    end
+    if waterRuler > 0 and (not hasRewardLimit or waterRuler < rewardMax) then
+        rewardMax = waterRuler
+        hasRewardLimit = true
+    end
+    return hasRewardLimit, rewardMax
+end
+
+local function trimJackpotIndexs(jackpotIndexs, targetCount)
+    targetCount = math.max(0, math.floor(tonumber(targetCount) or 0))
+    while #jackpotIndexs > targetCount do
+        table.remove(jackpotIndexs)
+    end
+end
+
+local function removeIndexs(arr, values)
+    for _, value in ipairs(values or {}) do
+        for index = #arr, 1, -1 do
+            if arr[index] == value then
+                table.remove(arr, index)
+                break
+            end
+        end
+    end
+end
+
+function FruitSlotsMachine:selectJackpotStage(jackpotIndexs, jackpotPoolAmount, lineWinAmount, betAmount, control)
+    local stage = jackpotStageByCount(#jackpotIndexs)
+    if stage == nil then
+        return #jackpotIndexs, 0, 0
+    end
+
+    local stageMax = normalizeJackpotStageMax(control and control.jpPotStageMax)
+    if stageMax ~= nil and stage > stageMax then
+        stage = stageMax
+    end
+
+    local hasRewardLimit, rewardMax = getRewardLimit(control, betAmount)
+    while stage >= 0 do
+        local jackpotCount = jackpotCountByStage(stage)
+        local jackpotPercentage = self:getJackpotPercentage(jackpotCount)
+        local jackpotAmount = FRRoundInt((jackpotPoolAmount or 0) * jackpotPercentage)
+        if jackpotAmount > 0 and (not hasRewardLimit or (lineWinAmount or 0) + jackpotAmount <= rewardMax) then
+            return jackpotCount, jackpotPercentage, jackpotAmount
+        end
+        stage = stage - 1
+    end
+
+    return 0, 0, 0
+end
+
 -- 核心结果生成函数
 -- 根据下注金额、Jackpot标记、免费游戏状态生成完整的游戏结果
 -- 包含：基础符号随机、中奖线匹配、Jackpot触发、免费游戏触发
@@ -205,11 +285,13 @@ function FruitSlotsMachine:generateResults(betAmount, jackpot, freeWinAmount, fr
     local lineSames = self:lineSamesByResults(results)  -- 检测中奖线结果
     local multiples = self:calculateMultiples(lineSames) -- 计算各线倍率
     local multiple = FRArraySum(multiples)                -- 总倍率
+    local winAmount = FRRoundInt(FruitSlotsLineBetAmount(betAmount) * multiple)
     local connectedIndex = self:collectConnectedIndex(lineSames)       -- 已中奖格子
     local notConnectedIndex = self:collectNotConnectedIndex(connectedIndex) -- 未中奖格子
 
     local jackpotPercentage = 0
     local jackpotAmount = 0
+    local jackpotPoolBefore = 0
     -- 只有总倍率小于大赢阈值时，才会触发Jackpot和免费游戏
     if multiple < FRBigWinMultiple then
         local jackpotPoolAmount = self.scene:getJackpotPoolAmount(betAmount)
@@ -222,24 +304,27 @@ function FruitSlotsMachine:generateResults(betAmount, jackpot, freeWinAmount, fr
         -- Jackpot触发：奖池金额足够时才检查
         if (freeCount or 0) == 0 and jackpotPoolAmount > minJackpotPoolAmount then
             local jackpotCountProbability = jackpot and FRJackpotCountProbability345 or FRJackpotCountProbability012
-            local jackpotIndexs = self:randomNotConnectedIndex(jackpotCountProbability, notConnectedIndex)
-            local stageMax = math.floor(tonumber(control.jpPotStageMax) or 0)
-            if stageMax > 0 then
-                while #jackpotIndexs > stageMax do table.remove(jackpotIndexs) end
-            end
+            local jackpotIndexs = self:randomNotConnectedIndex(jackpotCountProbability, FRCloneTable(notConnectedIndex))
+            local jackpotCount = #jackpotIndexs
             -- 新玩家保护：限制Jackpot符号数量
             if self.playerSys:getBetDetail(betAmount).betCount < FRNewUserRoundDefault then
-                while #jackpotIndexs > 3 do
-                    table.remove(jackpotIndexs)
-                end
+                jackpotCount = math.min(jackpotCount, 3)
             end
+
+            trimJackpotIndexs(jackpotIndexs, jackpotCount)
+            jackpotCount, jackpotPercentage, jackpotAmount =
+                self:selectJackpotStage(jackpotIndexs, jackpotPoolAmount, winAmount, betAmount, control)
+            if jackpotAmount > 0 then
+                -- 保留扣款前奖池，供开奖日志计算玩家实际分走比例。
+                jackpotPoolBefore = jackpotPoolAmount
+            end
+            trimJackpotIndexs(jackpotIndexs, jackpotCount)
+            removeIndexs(notConnectedIndex, jackpotIndexs)
             -- 将Jackpot符号（9号）替换到选定位置
             local targetCount = self:findTargetCount(results, 9)
             for index = targetCount + 1, #jackpotIndexs do
                 results[jackpotIndexs[index] + 1] = 9
             end
-            jackpotPercentage = self:getJackpotPercentage(#jackpotIndexs)
-            jackpotAmount = FRRoundInt(jackpotPoolAmount * jackpotPercentage)
             self.scene:decreaseJackpotPoolAmount(betAmount, jackpotAmount) -- 从奖池扣除
         end
 
@@ -269,18 +354,18 @@ function FruitSlotsMachine:generateResults(betAmount, jackpot, freeWinAmount, fr
     end
 
     -- 将赢取金额的一部分注入Jackpot奖池
-    local winAmount = FRRoundInt((betAmount or 0) * multiple)
     self.scene:increaseJackpotPoolAmount(betAmount, winAmount * FRJackpotPoolIncrRate)
 
     return {
         betAmount = FRRoundInt(betAmount or 0),
         results = results,
         lineSames = lineSames,
-        multiple = multiple,
+        multiple = (betAmount or 0) > 0 and winAmount / betAmount or 0, -- 相对整局总下注的实际派奖倍率
         multiples = multiples,
         freeWinAmount = FRRoundInt((freeWinAmount or 0) + winAmount), -- 累计免费赢取
         freeCount = freeCount,
         jackpotAmount = jackpotAmount,
+        jackpotPoolBefore = jackpotPoolBefore,
         jackpotAmountPool = self.scene:getAllJackpotPool(),
     }
 end
@@ -342,8 +427,9 @@ function FruitSlotsMachine:generateControlledResults(betAmount, jackpot, freeWin
     local poolBefore = FRCloneTable(self.scene:getAllJackpotPool())                 -- 备份奖池状态
     local rewardRateMax = math.max(0, tonumber(analy.rewardRateMax) or 0)
     local waterRuler = math.max(0, tonumber(analy.waterRuler) or 0)
+
     local rateLimit = rewardRateMax > 0
-        and FRRoundInt((betAmount or 0) * FRLineCount * rewardRateMax / 10000) or 0
+        and FRRoundInt((betAmount or 0) * rewardRateMax / 10000) or 0
     if rateLimit > 0 and (not hasRewardLimit or rateLimit < rewardMax) then
         rewardMax = rateLimit
         hasRewardLimit = true

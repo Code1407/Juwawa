@@ -23,6 +23,9 @@ export default class Seven7System extends IMvc {
 
         oops.network.listenMsg(NetEvent.NET_CS_GAME_HISTORY_RESP, this.cs_game_history_resp);
         oops.network.listenMsg(NetEvent.NET_CS_SELF_BET_HISTORY_RESP, this.cs_self_bet_history_resp);
+
+        oops.network.listenMsg(NetEvent.NET_CS_GAME_LATELY_HISTORY_RESP, this.cs_game_lately_history_resp);
+        oops.network.listenMsg(NetEvent.NET_SC_GAME_LATELY_HISTORY_PUSH, this.sc_game_lately_history_push);
     }
 
     //登录玩家数据
@@ -71,7 +74,10 @@ export default class Seven7System extends IMvc {
         if(msg.errorCode && msg.errorCode != 0){
             if(msg.errorCode == ETradeCode.UserStatusError){//用户状态异常
                 oops.gui.showAccounErrortUI();
-            }else if(msg.errorCode == ETradeCode.Insufficient){//余额不足
+            }else if(msg.errorCode == ETradeCode.CoinsFrozen){//币种冻结
+                oops.gui.showCoinsFrozentUI();
+            }
+            else if(msg.errorCode == ETradeCode.Insufficient){//余额不足
                 oops.gui.showRechargeUI();
             }else{
                 oops.gui.toast("common_bet_error", true)
@@ -129,6 +135,25 @@ export default class Seven7System extends IMvc {
             return;
         }
         oops.message.dispatchEvent(GameEvent.MSG_SHOW_GAME_HISTORY, msg);
+    }
+
+    //请求最近开奖历史记录
+    cs_game_lately_history_req(): void {
+        oops.network.pushMsg(NetEvent.NET_CS_GAME_LATELY_HISTORY_REQ, {});
+    }
+    private cs_game_lately_history_resp(msg: CsGameLatelyHistoryResp) {
+        if (msg == null) {
+            console.error("CsGameLatelyHistoryResp is nil");
+            return;
+        }
+        oops.message.dispatchEvent(GameEvent.MSG_SHOW_GAME_LATELY_HISTORY, msg);
+    }
+    private sc_game_lately_history_push(msg: ScGameLatelyHistoryPush) {
+        if (msg == null) {
+            console.error("ScGameLatelyHistoryPush is nil");
+            return;
+        }
+        oops.message.dispatchEvent(GameEvent.MSG_SHOW_GAME_LATELY_HISTORY_PUSH, msg);
     }
 
     //请求我的下注记录

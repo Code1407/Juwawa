@@ -52,8 +52,15 @@ export default class BettingBox extends cc.Component {
             let item = this.items[i];
             let myBetNum = cc.find("myBetNum", item);
             let allBetNum = cc.find("allBetNum", item);
-            myBetNum.getComponent(cc.Label).string =  DecimalUnit.humanReadable(numlist[i]);
-            allBetNum.getComponent(cc.Label).string = DecimalUnit.humanReadable(totalWheelAmount[i]);
+            let myAmount = Number(numlist[i]) || 0;
+            let allAmount = Number(totalWheelAmount[i]) || 0;
+            myBetNum.getComponent(cc.Label).string = DecimalUnit.humanReadable(myAmount);
+            allBetNum.getComponent(cc.Label).string = DecimalUnit.humanReadable(allAmount);
+
+            // 金额节点的显隐只由服务端确认后的下注数据决定。
+            // 不能使用扣款后的剩余余额判断，否则余额推送先于下注回包时会把成功下注隐藏。
+            myBetNum.active = myAmount > 0;
+            allBetNum.active = allAmount > 0;
         }
 
         //累计金额展示

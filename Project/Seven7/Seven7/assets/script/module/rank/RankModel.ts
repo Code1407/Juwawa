@@ -1,3 +1,4 @@
+import { oops } from "db://oops-framework/core/Oops";
 import GameProxyMgr from "../mvc/GameProxyMgr";
 import GameSystemMgr from "../mvc/GameSystemMgr";
 import IMvc from "../mvc/IMvc";
@@ -91,6 +92,11 @@ export default class RankModel extends IMvc {
         let timestamp = Math.ceil(GameProxyMgr.rankProxy.get_rank_timestamp()/1000);
         const passSec = Math.ceil(timestamp % daySec);
         return daySec - passSec;
+    }
+
+    get_show_rank_item_count():number{
+        let cfg = oops.network.getCommonConfig();
+        return cfg && cfg.custom && cfg.custom["Showrankplayer"] || 0;
     }
 
     clear_day_rank_award_data(){

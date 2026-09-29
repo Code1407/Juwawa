@@ -175,8 +175,8 @@ export default class PlayerAccount extends ClientPlayer {
         this.toDayRevenue = enterGameResp.todayRevenue;
         this.gameHistory = enterGameResp.gameHistory;
         //this.lastWheelAmount = enterGameResp.lastWheelAmount
-        this.wheelAmount = this.curRoundWheelAmount = enterGameResp.curRoundWheelAmount;
-        this.curRoundAllWheelAmount = enterGameResp.curRoundAllWheelAmount;
+        // 下注快照由 Game 校验回合后统一恢复，避免较晚返回的同步响应
+        // 在状态机检查前就覆盖当前局已经确认的下注。
         this.account.setMyDiamon(this.accountDiamond);
         //this.account.setMyProfile(enterGameResp.account.avatar);
      
@@ -231,10 +231,9 @@ export default class PlayerAccount extends ClientPlayer {
         if (sumRevenue > 0) {
             let diamond = this.accountDiamond + sumRevenue;
             Game.Instance.roundFinal.LongRank(sumRevenue);
-            setTimeout(() => {
+            Game.Instance.PrepareMindRewardCount(sumRevenue, () => {
                 this.setDiamon(diamond);
-                Game.Instance.ShowMindRewardCount(sumRevenue);
-            }, 3000)
+            });
             setTimeout(() => {
                 Game.Instance.ShowResult(sumRevenue)
             }, 4000)

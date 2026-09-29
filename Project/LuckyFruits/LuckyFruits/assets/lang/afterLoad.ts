@@ -4,7 +4,7 @@ import { ELang } from "./langEnum";
 export function afterLoad() {
     let lang = ((<any>window).user && (<any>window).user.lang) || ELang.en;
     if (lang && lang.length > 2) lang = lang.substring(0, 2);
-    if (![ELang.ar, ELang.en, ELang.id, ELang.tr, ELang.ur, ELang.hi, ELang.vn, ELang.th].includes(lang as ELang)) lang = ELang.en;
+    if (![ELang.ar, ELang.bn, ELang.en, ELang.es, ELang.id, ELang.pt, ELang.tr, ELang.ur, ELang.hi, ELang.vi, ELang.vn, ELang.th].includes(lang as ELang)) lang = ELang.en;
 
     langNode[lang] = {
         game: { 
@@ -39,8 +39,8 @@ export function afterLoad() {
             result: "Canvas/Views/MyHistoryView/Field/Result",
             revenue: "Canvas/Views/MyHistoryView/Field/Revenue",
         },
-        betLimit: {
-            content: "Canvas/Views/BetLimitView/panel/Content",
+        rewarding: {
+            content: "Canvas/Views/RewardingView/panel/Content",
         },
         
 

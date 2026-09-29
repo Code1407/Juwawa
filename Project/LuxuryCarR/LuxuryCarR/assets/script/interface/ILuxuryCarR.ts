@@ -126,7 +126,6 @@ export interface IPlayerUpdate {
 
     // 场景信息
     historyResults: number[];
-    rankList: IRankListItem[];
 
     // 个人信息
     diamond: number;
@@ -147,7 +146,6 @@ export interface IEnterGameResp {
     // 场景信息
     roundStep: IRoundStep;
     historyResults: number[];
-    rankList: IRankListItem[];
 
     // 个人信息
     uid:string,
@@ -194,7 +192,6 @@ export interface IPlayer {
 }
 
 export interface ISceneListen {
-    onRankListChange(rankList: IRankListItem[]);
     onPlayerUpdate(playerResult: ICountDownPlayerUpdate);
     onRoundStep(roundStep: IRoundStep);
     onBetListRound(data:IBetListResp);//服务器下发派奖的动画参数

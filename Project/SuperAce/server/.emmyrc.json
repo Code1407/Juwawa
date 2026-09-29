@@ -1,0 +1,27 @@
+{
+    "codeLens": {
+        "enable": false
+    },
+    "completion": {
+        "enable": false
+    },
+    "documentColor": {
+        "enable": false
+    },
+    "hint": {
+        "enable": false
+    },
+    "hover": {
+        "enable": false
+    },
+    "references": {
+        "enable": false
+    },
+    "semanticTokens": {
+        "enable": false
+    },
+    "diagnostics": {
+        "enable": false
+    }
+
+}

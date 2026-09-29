@@ -31,7 +31,7 @@ function FruitSlotsScene:onLoad(data)
     data.jackpotAmountPool = data.jackpotAmountPool or {}
     SvrSystemBase.onLoad(self, data)
     self.todayDate = self:getData().todayDate
-    self:initDefaultJackpotPools() -- 初始化默认奖池
+    self:migrateDefaultJackpotPools() -- 迁移/初始化默认奖池
     self:initHeartbeat()           -- 启动心跳定时器
 end
 
@@ -181,10 +181,33 @@ function FruitSlotsScene:initDefaultJackpotPools()
     for _, betAmount in ipairs(defaultBets) do
         local key = tostring(betAmount)
         if pool[key] == nil and pool[betAmount] == nil then
-            pool[key] = betAmount * 17000 -- 初始奖池 = 下注 x 17000
+            pool[key] = FruitSlotsDefaultJackpotPoolAmount(betAmount)
         end
     end
     self:getData().jackpotAmountPool = pool
+end
+
+-- 旧版本曾用“单线下注 * 17000”初始化奖池。首次加载新版时重置为TS原始默认表。
+function FruitSlotsScene:resetDefaultJackpotPools()
+    local pool = self:getData().jackpotAmountPool or {}
+    for _, betAmount in ipairs(FruitSlotsGetBetAmounts()) do
+        betAmount = FRRoundInt(betAmount or 0)
+        if betAmount > 0 then
+            pool[tostring(betAmount)] = FruitSlotsDefaultJackpotPoolAmount(betAmount)
+            pool[betAmount] = nil
+        end
+    end
+    self:getData().jackpotAmountPool = pool
+end
+
+function FruitSlotsScene:migrateDefaultJackpotPools()
+    local data = self:getData()
+    if data.jackpotAmountPoolDefaultVersion ~= FRJackpotPoolDefaultVersion then
+        self:resetDefaultJackpotPools()
+        data.jackpotAmountPoolDefaultVersion = FRJackpotPoolDefaultVersion
+        return
+    end
+    self:initDefaultJackpotPools()
 end
 
 function FruitSlotsScene:refundJackpotPoolAmount(poolIndex, amount)
@@ -201,7 +224,7 @@ function FruitSlotsScene:syncBetAmountPools()
         if betAmount > 0 then
             local key = tostring(betAmount)
             if pool[key] == nil and pool[betAmount] == nil then
-                pool[key] = betAmount * 17000
+                pool[key] = FruitSlotsDefaultJackpotPoolAmount(betAmount)
             end
         end
     end
@@ -210,8 +233,30 @@ end
 
 -- 获取所有Jackpot奖池快照
 function FruitSlotsScene:getAllJackpotPool()
-    self:initDefaultJackpotPools()
+    self:migrateDefaultJackpotPools()
     return self:getData().jackpotAmountPool or {}
+end
+
+-- 上报当前所有下注档位的 JP 奖池总额。奖池可能因动态注入产生小数，
+-- 统计接口只接收积分整数，因此在汇总后统一向下取整。
+function FruitSlotsScene:statisRewardPool(roundId)
+    if roundId == nil or not gApp or not gApp.statisRewardPool then
+        return
+    end
+    local total = 0
+    local pool = self:getAllJackpotPool()
+    local counted = {}
+    for _, betAmount in ipairs(FruitSlotsGetBetAmounts()) do
+        local poolIndex = FRRoundInt(betAmount or 0)
+        local key = tostring(poolIndex)
+        if poolIndex > 0 and not counted[key] then
+            counted[key] = true
+            local amount = pool[key] or pool[poolIndex]
+           
+            total = total + math.max(0, tonumber(amount) or 0)
+        end
+    end
+    gApp:statisRewardPool(roundId, math.floor(total))
 end
 
 -- 获取指定下注档位的Jackpot奖池金额
@@ -219,7 +264,7 @@ function FruitSlotsScene:getJackpotPoolAmount(poolIndex)
     local pool = self:getAllJackpotPool()
     local key = tostring(poolIndex or 0)
     if pool[key] == nil then
-        pool[key] = (tonumber(poolIndex) or 0) * 17000
+        pool[key] = FruitSlotsDefaultJackpotPoolAmount(poolIndex)
     end
     return tonumber(pool[key]) or 0
 end
@@ -233,7 +278,7 @@ function FruitSlotsScene:increaseJackpotPoolAmount(poolIndex, amount)
     end
 
     local incr = tonumber(amount) or 0
-    local betAmount = tonumber(poolIndex) or 0
+    local betAmount = FruitSlotsLineBetAmount(poolIndex)
     local current = tonumber(pool[key]) or 0
     -- 动态平衡机制：
     if current > betAmount * 22000 then

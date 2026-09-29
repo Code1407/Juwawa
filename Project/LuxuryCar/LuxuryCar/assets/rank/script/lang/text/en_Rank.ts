@@ -10,7 +10,7 @@ text.path1 = `Player`;
 text.path2 = `Score`;
 text.path3 = `Award`;
 text.path7 = `Rules`;
-text.path8 = `1. Each player who places a bet will receive leaderboard points based on their bet amount, and will be awarded rewards according to their corresponding points;
+text.path8 = `1. Each player who places a cost will receive leaderboard points based on their cost amount, and will be awarded rewards according to their corresponding points;
 
 2. The top 10 players of the day can claim their daily leaderboard rewards after 24:00;
 
@@ -20,4 +20,4 @@ text.path8 = `1. Each player who places a bet will receive leaderboard points ba
 text.path9 = `loading...`;
 text.path10 = `Rank`;
 text.path11 = `Confirm`;
-text.path12 = `Congratulations on finishing {0} in the League and getting the bonus {1}`;
+text.path12 = `Congratulations on finishing <color=#FFFF00>{0}</c> in the League and getting the bonus <color=#FFFF00>{1}</c>`;

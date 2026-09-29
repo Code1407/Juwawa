@@ -30,6 +30,11 @@ export default class Seven7Model extends IMvc {
         GameSystemMgr.seven7System.cs_game_history_req();
     }
 
+    //最近开奖历史记录
+    cs_game_lately_history_req(): void {
+        GameSystemMgr.seven7System.cs_game_lately_history_req();
+    }
+
 
     //我的下注记录
     cs_self_bet_history_req(): void {

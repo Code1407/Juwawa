@@ -44,7 +44,6 @@
     { name = "enterGameResp", type = 7, objs = {
         roundStep = {type = 7, obj = "LuxuryCarRRoundStep"},
         historyResults = {type = 5, range = {min = 0, max = 256}, value = {type = 2, range = {min = -2147483648, max = 2147483647},},},
-        rankList = {type = 5, range = {min = 0, max = 256}, value = {type = 7, obj = "LuxuryCarRRankItem"},},
         uid = {type = 4, range = {min = 0, max = 256},},
         account = {type = 7, obj = "Account"},
         todayRevenue = {type = 2, range = {min = 0, max = 9223372036854775807},},
@@ -85,7 +84,6 @@
     { name = "synchronizeResp", type = 7, objs = {
         roundStep = {type = 7, obj = "LuxuryCarRRoundStep"},
         historyResults = {type = 5, range = {min = 0, max = 256}, value = {type = 2, range = {min = -2147483648, max = 2147483647},},},
-        rankList = {type = 5, range = {min = 0, max = 256}, value = {type = 7, obj = "LuxuryCarRRankItem"},},
         uid = {type = 4, range = {min = 0, max = 256},},
         account = {type = 7, obj = "Account"},
         todayRevenue = {type = 2, range = {min = 0, max = 9223372036854775807},},
@@ -107,9 +105,6 @@
     },},
     { name = "dbmHeartbeatResp", type = 7, objs = {
         code = {type = 2, range = {min = -2147483648, max = 2147483647},},
-    },},
-    { name = "onRankListChange", type = 7, objs = {
-        rankList = {type = 5, range = {min = 0, max = 256}, value = {type = 7, obj = "LuxuryCarRRankItem"},},
     },},
     { name = "onRoundStep", type = 7, objs = {
         todayRound = {type = 2, range = {min = 0, max = 9223372036854775807},},

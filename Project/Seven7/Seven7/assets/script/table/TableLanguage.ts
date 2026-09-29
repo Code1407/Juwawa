@@ -62,5 +62,9 @@ export class TableLanguage {
     get TL(): string {
         return this.data.TL;
     }
+    /** 俄语 */
+    get RU(): string {
+        return this.data.RU;
+    }
 }
     

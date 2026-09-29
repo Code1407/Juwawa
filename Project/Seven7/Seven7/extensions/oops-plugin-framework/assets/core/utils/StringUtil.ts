@@ -19,7 +19,7 @@ export class StringUtil {
      * 123456789 = 123,456,789
      */
     static numberTotPermil(value: number): string {
-        return value.toLocaleString();
+        return value.toLocaleString('en-US');
     }
 
     /**

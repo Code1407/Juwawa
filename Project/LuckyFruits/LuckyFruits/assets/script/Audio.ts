@@ -85,10 +85,28 @@ export default class Audio extends cc.Component {
         return cc.find("Audio").getComponent(Audio);
 
     }
-    stopAllSounds() {
-        this.audioOn = false;
+    setAudioEnabled(enabled: boolean) {
+        this.audioOn = enabled;
+        if (!enabled) {
+            this.stopPlayingAudio();
+            return;
+        }
+        this.PlayBgm();
+    }
+    private stopPlayingAudio() {
+        // playEffect 和 AudioSource.play 两种播放方式都在使用，需要分别停止。
         cc.audioEngine.stopAll();
         cc.audioEngine.stopMusic();
+        // Rank 等动态预制体的 AudioSource 不在主 Audio 节点下，因此从场景根节点统一停止。
+        const scene = cc.director.getScene();
+        const audioRoot = scene || this.node;
+        audioRoot.getComponentsInChildren(cc.AudioSource).forEach((source) => source.stop());
+        this.runid = -1;
+        this.id02 = -1;
+        this.id03 = -1;
+    }
+    stopAllSounds() {
+        this.setAudioEnabled(false);
     }
     pauseForBackground() {
         if (this.backgroundPaused) {

@@ -1,10 +1,9 @@
 import MessageRouter from "../../shared/MessageRouter";
 import Game from "../Game";
 import { gGameData } from "../GameData";
-import { ISceneListen, IRankListItem, IRoundStep, IPlayerUpdate, IBetListResp, IAllBetResp, ICountDownPlayerUpdate } from "../interface/IBountyFootball";
+import { ISceneListen, IRoundStep, IBetListResp, IAllBetResp, ICountDownPlayerUpdate } from "../interface/IBountyFootball";
 import { EGameStatus } from "../../shared3/interface/IGame";
 import MyHistoryView from "../view/MyHistoryView";
-import RankListView from "../view/RankListView";
 import Wheels from "../Wheels";
 
 export default class ClientScene implements ISceneListen {
@@ -14,9 +13,6 @@ export default class ClientScene implements ISceneListen {
 
     initScene() {
         let __this = this;
-        this.msgRouter.on('onRankListChange', function (data: any) {
-            __this.onRankListChange(data?.rankList || data || []);
-        });
         this.msgRouter.on('onPlayerUpdate', function (data) {
             __this.onPlayerUpdate(data);
         });
@@ -61,13 +57,6 @@ export default class ClientScene implements ISceneListen {
                 closeServerView.active = true;
             }
         });
-    }
-
-    onRankListChange(rankList: IRankListItem[]) {
-        Game.Instance.poppusViewUI.rankListView.getComponent(RankListView).setRankListValues(rankList);
-        if (rankList?.length >= 1) {
-            Game.Instance.poppusViewUI.setRankListNo1Value(rankList[0]);
-        }
     }
 
     onBetListRound(data: IBetListResp) {

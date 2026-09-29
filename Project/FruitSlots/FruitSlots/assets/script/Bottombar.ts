@@ -108,7 +108,7 @@ export default class Bottombar extends cc.Component {
     }
 
     setBetAmount(betAmount: number) {
-        let totalAmount = betAmount * 30;
+        let totalAmount = betAmount;  //去掉30倍显示 * 30
         AmountSelectorUI.Instance.setBetAmountLabel(totalAmount);
         if (this.isFreeStatus()) {
             this.switch2Normal();

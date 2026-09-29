@@ -185,10 +185,9 @@ function LuxuryCarScene:rolloverDay(today)
     local state = self:getData()
     if state.today == today then return false end
 
-    SvrSystem.RankCommon.finalize(state.today, "day")
-    -- 与 Seven7 一致：周榜周期为周日至周六，在周日开启第一局前结算上一周。
-    if os.date("%w") == "0" then
-        SvrSystem.RankCommon.finalize(state.today, "week")
+    local rankCommon = GameSystem and GameSystem.RankCommon
+    if rankCommon and rankCommon.onOClock then
+        rankCommon:onOClock(0)
     end
 
     state.today, state.todayRound, state.roundId, state.roundContext = today, 0, nil, nil
@@ -552,17 +551,4 @@ function LuxuryCarScene:broadcast(route, msg)
             Router.Client[route](msg, player)
         end
     end
-end
-
-
--- 获取排行榜列表（从 RankCommon 服务按日期查询）
--- 将原始数据转换为客户端需要的格式：uid、头像、昵称、收益、排名
-function LuxuryCarScene:rankList(dateStr, count)
-    local raw, result = SvrSystem.RankCommon.getRankListByDateStrSync(dateStr or os.date("%Y-%m-%d"), count or 100) or {}, {}
-
-   -- item.avatar 头像url
-    for _, item in ipairs(raw) do
-        table.insert(result, { uid = item.uid, profile = item.avatar or "", name = item.name or "", revenue = item.score or 0, rank = item.rank or 0 })
-    end
-    return result
 end

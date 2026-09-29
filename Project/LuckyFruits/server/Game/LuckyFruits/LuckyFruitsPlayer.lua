@@ -62,18 +62,19 @@ end
 -- 获取玩家钻石余额：向下取整防止小数
 function LuckyFruitsPlayer:getDiamond() return math.floor(self:getPlayer():getCoins() or 0) end
 
--- 构造客户端响应数据：聚合场景状态、排行榜、账号、历史等供enterGame/synchronize返回
+-- 构造客户端响应数据：聚合场景状态、账号、历史等供enterGame/synchronize返回
 function LuckyFruitsPlayer:getClientResp()
     local data = self:getData()
     return {
         uid = self:getUid(),
         roundStep = self.scene:getRoundStep(),
-        rankList = self.scene:rankList(),
         account = LFAccount(self:getPlayer()),
         todayRevenue = data.todayRevenue or 0,
         lastWheelAmount = LFEmptyChipCounts(),
         curRoundWheelAmount = data.chipCounts or LFEmptyChipCounts(),
         curRoundAllWheelAmount = self.scene:getRoundAllBetList(),
+        -- 全场累计值与实时 onbatNoticeAll 使用同一数据源，与本人是否下注无关。
+        curRoundTotalWheelAmount = LFClone(self.scene.roundChipCounts or LFEmptyChipCounts()),
         gameHistory = self.scene:getData().gameHistory or {},
         myHistory = data.history or {},
         lastBetAmountButton = data.playerSettings.lastBetAmountButton or 0,
@@ -223,6 +224,13 @@ function LuckyFruitsPlayer:bet(todayRound, betList, legacyBetGrades, legacyChipC
         pushBetResp(self, LFTradeCode.missTime)
         return nil
     end
+    -- 以服务端倒计时为准，最后 3 秒停止接收新下注，避免临近封盘的请求进入异步扣款流程。
+    local remainSecond = tonumber(step.remainSecond) or 0
+    if remainSecond <= 3 then
+        log_info("LuckyFruits bet rejected: cutoff, uid:{0} round:{1} remainSecond:{2}", uid, step.todayRound, remainSecond)
+        pushBetResp(self, LFTradeCode.missTime)
+        return nil
+    end
     -- 新协议优先；未携带betList时才进入旧协议兼容分支。
     local valid, reason, bets, betGrades, chipCounts
     if type(betList) == "table" and #betList > 0 then
@@ -268,16 +276,31 @@ function LuckyFruitsPlayer:bet(todayRound, betList, legacyBetGrades, legacyChipC
         return nil
     end
 
+    -- 所有下注入口（含续押/旧协议）统一限制玩家单局5个位置的累计总额。
+    -- 在扣币前计入尚未回调的金额；恰好达到上限允许，超过则整笔拒绝。
+    local betMax = LFGetRoundBetMax()
+    local roundTotal = LFArraySum(self:getData().bets)
+    local pendingTotal = self.scene:getPendingBetAmount(roundId, uid)
+    if total > betMax - roundTotal - pendingTotal then
+        log_info("LuckyFruits bet rejected: max, uid:{0} round:{1} bet:{2} placed:{3} pending:{4} max:{5}",
+            uid, step.todayRound, total, roundTotal, pendingTotal, betMax)
+        pushBetResp(self, LFTradeCode.betPassMax)
+        return nil
+    end
+
     -- 构造平台数据：bet_id记录选中的下注位置（0-based）
     local betIds = {}
     for i, selected in ipairs(betGrades) do if selected > 0 then betIds[#betIds + 1] = tostring(i - 1) end end
     local platformData = { bet_id = table.concat(betIds, ",") }
     -- 标记本回合有待处理下注：用于关服时判断是否需要等待结算
-    self.scene:beginPendingBet()
+    local betScene = self.scene
+    betScene:beginPendingBet(roundId, uid, total)
     -- 异步扣币：回调中根据结果更新数据或处理跨回合场景
     self:getPlayer():subCoins(roundId, ECoinsOperateType.BetSub, total, function(code, orderId, backPlayer)
-        self.scene:endPendingBet()
-        local system = backPlayer and backPlayer:getSystem(LuckyFruitsConst.gameName) or self
+        betScene:endPendingBet(roundId, uid, total)
+        -- 回调可能仍携带退出前的玩家对象；已重进时把确认下注写入当前对象。
+        local system = betScene.players[uid]
+            or (backPlayer and backPlayer:getSystem(LuckyFruitsConst.gameName)) or self
         if not system then return end
         -- 扣币失败：推送错误码给客户端
         if code ~= 0 then
@@ -285,7 +308,7 @@ function LuckyFruitsPlayer:bet(todayRound, betList, legacyBetGrades, legacyChipC
             if resultCode ~= ETradeCode.UserStatusError and resultCode ~= ETradeCode.Insufficient  and resultCode ~= ETradeCode.CoinFrozen then resultCode = ETradeCode.SdkDisconnect end
             -- 旧客户端继续读取归一化后的code；新客户端优先读取原始rawTradeCode。
             -- 未知code仍给旧客户端降级为SdkDisconnect，但无需再加入上面的白名单。
-            pushBetResp(system, resultCode, backPlayer, code)
+            pushBetResp(system, resultCode, system:getPlayer(), code)
             return
         end
 
@@ -295,20 +318,37 @@ function LuckyFruitsPlayer:bet(todayRound, betList, legacyBetGrades, legacyChipC
             or system.scene:getRoundId() ~= roundId then
             local outcome = system.scene:getRoundOutcome(roundId)
             local result = outcome and outcome.result or nil
-            local reward = result and LFRevenue(bets, result.resultDetail) or 0
+            if not result then
+                log_error("LuckyFruits bet delay reward missing outcome: uid:{0} round:{1} roundId:{2} orderId:{3} currentRound:{4} status:{5}",
+                    uid, step.todayRound, roundId, orderId, current.todayRound or -1, current.status or -1)
+                pushBetResp(system, LFTradeCode.fail)
+                return
+            end
+
+            local reward = LFRevenue(bets, result.resultDetail)
             local player = backPlayer or system:getPlayer()
             -- 延迟奖励：将本次下注的奖励通过subCoinsDelayReward补发给玩家
             -- 打印这回合的下注结果
-            log_info("LuckyFruits bet delay reward: uid:{0} round:{1} bet_id:{2} orderId:{3} reward:{4}",
-                uid, step.todayRound, platformData.bet_id, orderId, reward)
-            if player and player.subCoinsDelayReward then
+            if reward > 0 then
+                if not player or not player.subCoinsDelayReward then
+                    log_error("LuckyFruits bet delay reward failed: player nil, uid:{0} round:{1} roundId:{2} orderId:{3} reward:{4}",
+                        uid, step.todayRound, roundId, orderId, reward)
+                    pushBetResp(system, LFTradeCode.fail)
+                    return
+                end
+
                 player:subCoinsDelayReward(
                     roundId, platformData.bet_id, orderId, outcome and outcome.oddsType or 0,
                     ECoinsOperateType.WinAdd, total, reward,
                     { win_id = tostring(result and result.winPos or -1) }
                 )
+                log_info("LuckyFruits bet delay reward: uid:{0} round:{1} bet_id:{2} orderId:{3} reward:{4}",
+                    uid, step.todayRound, platformData.bet_id, orderId, reward)
+            else
+                log_info("LuckyFruits bet delay no reward: uid:{0} round:{1} bet_id:{2} orderId:{3} reward:{4}",
+                    uid, step.todayRound, platformData.bet_id, orderId, reward)
             end
-            pushBetResp(system, LFTradeCode.missTime, backPlayer)
+            pushBetResp(system, LFTradeCode.missTime)
             return
         end
 
@@ -320,7 +360,7 @@ function LuckyFruitsPlayer:bet(todayRound, betList, legacyBetGrades, legacyChipC
         -- 记录本回合参与玩家：用于结算时遍历
         if not system.scene:recordRoundPlayer(system, player) then return end
         -- 累加到回合总下注并广播
-        system.scene:addRoundBets(bets, chipCounts)
+        system.scene:addRoundBets(bets, chipCounts, system:getUid())
         -- 更新排行榜积分
         local rankSystem = player and player:getSystem("RankPSystem") or nil
         if rankSystem then rankSystem:updateRankList(total) end
@@ -328,7 +368,7 @@ function LuckyFruitsPlayer:bet(todayRound, betList, legacyBetGrades, legacyChipC
         system.scene:broadcast("onbatListRound", {
             uid = system:getUid(), flyPlayerPos = 5, batIndex = betGrades, num = chipCounts,
         })
-        pushBetResp(system, LFTradeCode.success, backPlayer)
+        pushBetResp(system, LFTradeCode.success)
     end, platformData)
     return nil
 end

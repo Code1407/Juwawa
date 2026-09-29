@@ -185,10 +185,9 @@ function BountyFootballScene:rolloverDay(today)
     local state = self:getData()
     if state.today == today then return false end
 
-    SvrSystem.RankCommon.finalize(state.today, "day")
-    -- 与 Seven7 一致：周榜周期为周日至周六，在周日开启第一局前结算上一周。
-    if os.date("%w") == "0" then
-        SvrSystem.RankCommon.finalize(state.today, "week")
+    local rankCommon = GameSystem and GameSystem.RankCommon
+    if rankCommon and rankCommon.onOClock then
+        rankCommon:onOClock(0)
     end
 
     state.today, state.todayRound, state.roundId, state.roundContext = today, 0, nil, nil
@@ -335,7 +334,8 @@ function BountyFootballScene:settleCurrentRound(roundId)
                 step.todayRound, roundId, tostring(roundPlayerUid), tostring(systemUid), tostring(rawUid), tostring(rawPid))
         end
         local rankItem, reward = player:settleCurrentRound(roundId, step.todayRound, step.result, control.oddsType, roundPlayerUid, roundPlayerPid)
-        if rankItem then
+        -- 结算榜只展示实际获奖玩家，0 或负收益不参与排名。
+        if rankItem and (tonumber(rankItem.revenue) or 0) > 0 then
             table.insert(roundRank, rankItem)
         end
         if reward ~= nil then
@@ -470,14 +470,6 @@ function BountyFootballScene:selectResult(roundId)
     local analyzed = false
 
     --模拟全局调控数据
-    --全局调控类型:1  放水类型:3 放水上限:16753598 奖励值上限:84767993 中奖倍率上限:501000  大奖概率增加:0 调控玩家:0
-    analy.analyType = 1
-    analy.rerankType = 3
-    analy.waterRuler = 16753598
-    analy.rewardMax = 84767993
-    analy.rewardRateMax = 501000
-    analy.bigRewardAddRate = 0
-    analy.analyPlayer = 0
     if gAnaly and gAnaly.multiAnaly then
         local ok, result = pcall(gAnaly.multiAnaly, gAnaly, playerTab, roundId)
         if ok and type(result) == "table" then
@@ -558,9 +550,16 @@ end
 -- 获取排行榜列表（从 RankCommon 服务按日期查询）
 -- 将原始数据转换为客户端需要的格式：uid、头像、昵称、收益、排名
 function BountyFootballScene:rankList(dateStr, count)
-    local raw, result = SvrSystem.RankCommon.getRankListByDateStrSync(dateStr or os.date("%Y-%m-%d"), count or 100) or {}, {}
+    local raw, result = {}, {}
+    local rankCommon = GameSystem and GameSystem.RankCommon
+    if rankCommon and rankCommon.getRankListByDateStr then
+        rankCommon.getRankListByDateStr(function(users)
+            raw = users or {}
+        end, dateStr or "today")
+    end
     for _, item in ipairs(raw) do
         table.insert(result, { uid = item.uid, profile = item.avatar or "", name = item.name or "", revenue = item.score or 0, rank = item.rank or 0 })
+        if count and #result >= count then break end
     end
     return result
 end

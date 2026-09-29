@@ -16,7 +16,6 @@ import BetAmountSelector from "./BetAmountSelector";
 import { arraySum, IRoundStep, IEnterGameResp, IBetListResp, IPlayerBetList, IAllBetResp } from "./interface/ILuxuryCar";
 import PoppusViewUI from "./ui/PopupsViewUI";
 import MyHistoryView from "./view/MyHistoryView";
-import RankListView from "./view/RankListView";
 import PlayerAccount from "./PlayerAccount";
 import { EGameStatus, ETradeCode } from "../shared3/interface/IGame";
 import { Effect } from "./effect/FlyDiamond";
@@ -154,7 +153,6 @@ export default class Game extends cc.Component {
 
     private initPlayerData(enterGameResp: IEnterGameResp, isFirstCall: boolean) {
         enterGameResp.historyResults = normalizeList<number>(enterGameResp.historyResults);
-        enterGameResp.rankList = normalizeList(enterGameResp.rankList);
         enterGameResp.wheelAmount = normalizeList<number>(enterGameResp.wheelAmount);
         enterGameResp.wheelChipAmount = normalizeNestedList<number>(enterGameResp.wheelChipAmount);
         enterGameResp.totalWheelAmount = normalizeList<number>(enterGameResp.totalWheelAmount);
@@ -168,10 +166,6 @@ export default class Game extends cc.Component {
         //this.player.notedWheel = JSON.parse(JSON.stringify(enterGameResp.wheelAmount));
         this.results.assignValue(enterGameResp.historyResults);
         this.poppusViewUI.myHistoryView.getComponent(MyHistoryView).setMyHistoryValues(enterGameResp.myHistory);
-        this.poppusViewUI.rankListView.getComponent(RankListView).setRankListValues(enterGameResp.rankList);
-        if (enterGameResp.rankList?.length >= 1) {
-            this.poppusViewUI.setRankListNo1Value(enterGameResp.rankList[0]);
-        }
         gGameData.betAmountIndex = enterGameResp.lastBetAmountButton;
         BetAmountSelector.Instance.swichBetAmountButton();
 

@@ -1,7 +1,7 @@
 import { Path, textsMap } from "../Path_Rank";
 import { ELang } from "../langEnum_Rank";
 
-let lang = ELang.bd;
+let lang = ELang.bn;
 
 let text = textsMap[lang] = new Path();
 

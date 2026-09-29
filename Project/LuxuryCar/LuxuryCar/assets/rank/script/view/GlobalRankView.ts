@@ -578,18 +578,15 @@ export default class GlobalRankView extends cc.Component {
             item.resetAvatar();
         }
 
-       
-        if (avatarUrl) {
-            avatarUrl = decodeURI(avatarUrl);
-            avatarUrl = this.appendTimestamp(avatarUrl, Date.now(), { force: true });
-        }
-     
+        avatarUrl = decodeURI(avatarUrl);
+        if (updateHead)
+            avatarUrl += `${avatarUrl.includes('?') ? '&' : '?'}timestamp=${Date.now()}`;
 
         this.enqueueAvatarLoad(() => {
-            cc.loader.load({ url: avatarUrl, type: 'image' }, (error, texture) => {
+            cc.assetManager.loadRemote<cc.Texture2D>(avatarUrl, { ext: '.png' }, (err, texture) => {
                 this.finishAvatarLoad();
                 if (gen !== this.loadGeneration || !item.node.isValid || (<any>item).__rankUid !== rankInfo.uid) return;
-                if (error || texture == null) {
+                if (err || texture == null) {
                     if (cached == null)
                         item.resetAvatar();
                     return;
@@ -599,40 +596,5 @@ export default class GlobalRankView extends cc.Component {
                 item.avatar.spriteFrame = frame;
             });
         });
-    }
-
-
-      /**
-     * 为 URL 安全地追加 timestamp 参数
-     * 规则：
-     *   - 已存在 ? → 用 & 拼接
-     *   - 不存在 ? → 用 ? 拼接
-     *   - 已有同名 timestamp 参数 → 默认不覆盖（可通过 force 参数控制）
-     */
-    appendTimestamp( url: string, timestamp: number | string = Date.now(), options: { force?: boolean } = {} ): string {
-        const { force = false } = options;
-        // 1. 分离 hash（#xxx），避免破坏锚点
-        const hashIndex = url.indexOf('#');
-        const hash = hashIndex >= 0 ? url.slice(hashIndex) : '';
-        const base = hashIndex >= 0 ? url.slice(0, hashIndex) : url;
-        // 2. 判断是否已存在 ?
-        const hasQuery = base.includes('?');
-        // 3. 如果已有 timestamp 参数，按 force 决定是否覆盖
-        if (hasQuery) {
-            const [path, query] = base.split('?');
-            const params = new URLSearchParams(query);
-            if (params.has('timestamp')) {
-            if (!force) {
-                // 不覆盖，原样返回
-                return url;
-            }
-                params.set('timestamp', String(timestamp));
-            } else {
-                params.append('timestamp', String(timestamp));
-            }
-            return `${path}?${params.toString()}${hash}`;
-        }
-        // 4. 没有 ?，直接拼接
-        return `${base}?timestamp=${encodeURIComponent(String(timestamp))}${hash}`;
     }
 }

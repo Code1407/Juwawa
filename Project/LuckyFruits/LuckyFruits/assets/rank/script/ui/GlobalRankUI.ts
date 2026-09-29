@@ -62,7 +62,6 @@ const { ccclass, property } = cc._decorator;
 @ccclass
 export default class GlobalRankUI extends cc.Component {
     static Instance: GlobalRankUI;
-    private initialized = false;
     rankAward: RankRouter;
     /** `RankView` 上的 `GlobalRankView`，在 `start` 里网络就绪后挂载，供 `RankRouter` 转发榜下行。 */
     rankView: GlobalRankView | null = null;
@@ -85,7 +84,7 @@ export default class GlobalRankUI extends cc.Component {
     @property(cc.Node)
     coinFxPrefab: cc.Node = null;
 
-    timerInterval : any = 0;
+    timerInterval = 0;
     ChangeToAwardButton() {
         if (!gNewRank) {
             this.awardButton.active = false;
@@ -120,7 +119,6 @@ export default class GlobalRankUI extends cc.Component {
     }
 
     async initRankUI(msgRouter: MessageRouter) {
-        if (this.initialized || !msgRouter) return;
         initGNewRank()
         RankStart.Instance.LoadRank();
         GlobalRankUI.Instance = this;
@@ -132,7 +130,6 @@ export default class GlobalRankUI extends cc.Component {
             console.log("gNewRank false");
             return;
         }
-        this.initialized = true;
         cc.game.on(cc.game.EVENT_SHOW, () => {
             this.initUserRank();
         });

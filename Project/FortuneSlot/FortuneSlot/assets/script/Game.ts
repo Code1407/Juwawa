@@ -171,12 +171,12 @@ export default class Game extends cc.Component {
             //将所有声音的音量调到0
             volumeStatus =  Audio.Instance.Volume;
             Audio.Instance.stopAllSounds();
-            Audio.Instance.volume = 0;
+            Audio.Instance.Setvolume(0);
         };
 
         (<any>window).showAllSounds = () => {
             //恢复所有声音的音量
-            Audio.Instance.volume = volumeStatus;
+            Audio.Instance.Setvolume(volumeStatus)
         };
 
         (<any>window).stopGame = () => {
@@ -195,7 +195,7 @@ export default class Game extends cc.Component {
         cc.game.on(cc.game.EVENT_SHOW, async () => {
             // console.log(cc.game.EVENT_SHOW);
             AudioCtrl.StopAllSounds();
-            Audio.Instance.volume = volumeStatus;
+            Audio.Instance.Setvolume(volumeStatus);
             if (gGameData.status != EGameStatus.stop) {
                 let enterGameResp = await this.player.synchronize();
                 this.initPlayerData(enterGameResp);
@@ -224,7 +224,7 @@ export default class Game extends cc.Component {
         }
         (<any>window).updateAutoQuit()
     }
-
+    initSounds=true
     private async initPlayerData(enterGameResp: IEnterGameResp, enterGame:boolean = false) {
         if (enterGameResp?.account) {
             this.node.active = true;
@@ -239,14 +239,22 @@ export default class Game extends cc.Component {
                 }else{
                     AmountSelectorUI.Instance.BetAmountIndex = enterGameResp.playerSettings.lastBetAmountButton || 0;
                 }
-                gGameData.soundVol = enterGameResp.playerSettings?.soundVol || 0;
-                if(getQuery("noAudio")!=undefined&&getQuery("noAudio")!=""){
-                    gGameData.soundVol=getQuery("noAudio")=="1"?0:1;
+                if(this.initSounds){
+                    this.initSounds=false
+                    if(!(<any>window).showonGameSound){
+                        if(enterGameResp.playerSettings?.soundVol==1){
+                            enterGameResp.playerSettings.soundVol=0;
+                        }
+                        gGameData.soundVol = (enterGameResp.playerSettings?.soundVol || 0)/100;
+                        if(getQuery("noAudio")!=undefined&&getQuery("noAudio")!=""){
+                            gGameData.soundVol=getQuery("noAudio")=="1"?0:1;
+                        }
+                        Audio.Instance.audioOn = gGameData.soundVol > 0;
+                        Audio.Instance.Setvolume(gGameData.soundVol)
+                    }
+                    this.slotsFortuneSlot.QuickMode = enterGameResp.playerSettings?.isSpeed || false;
+                    this.slotsFortuneSlot.quickBet = this.slotsFortuneSlot.quickMode;
                 }
-                Audio.Instance.audioOn = gGameData.soundVol > 0;
-                Audio.Instance.volume = gGameData.soundVol;
-                this.slotsFortuneSlot.QuickMode = enterGameResp.playerSettings?.isSpeed || false;
-                this.slotsFortuneSlot.quickBet = this.slotsFortuneSlot.quickMode;
             }
             Audio.Instance.stopBgm();
             Audio.Instance.playBgm();

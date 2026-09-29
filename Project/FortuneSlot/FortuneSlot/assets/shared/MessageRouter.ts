@@ -1,5 +1,7 @@
 import { afterLoad } from "../lang/afterLoad";
 import { GameClientConfig, GameCommonConfig } from "../PureClient/PureClient.min";
+import Audio from "../script/Audio";
+import { gGameData } from "../script/GameData";
 import { getQuery, serverConfig } from "../shared/Common"
 import { setDisconnectRollView, setDisconnectView, setDisconnectView2 } from "../shared2/GlobalViewsLoader";
 const PureClientModule = require("../PureClient/PureClient.min.js");
@@ -790,6 +792,19 @@ class JsNetMessageRouter {
                 (<any>window).showonGameBgHide=!args[0];
                 (<any>window).showBgHide?.();
             });
+            sdk.addEvent("onGameSound",(...args:any[])=>{
+                (<any>window).showonGameSound=args[0];
+                gGameData.soundVol=(<any>window).showonGameSound.musicVolume/100
+                Audio.Instance.Setvolume((<any>window).showonGameSound.musicVolume/100);
+                    //{
+                    //    enable: true, //全局开关
+                    //    soundEnable: true, //音效开关
+                    //    soundVolume: 100, //音效音量
+                    //    musicEnable: true, //背景音乐开关
+                    //    musicVolume: 100 //背景音乐音量
+                    //}
+            });
+
             (<any>window).user.lang=sdk.getLang();
             afterLoad();
             (<any>window).ongetUserLang?.();

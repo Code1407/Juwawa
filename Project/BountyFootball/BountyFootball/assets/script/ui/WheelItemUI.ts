@@ -9,7 +9,7 @@ import { coolDownTime, gGameData, roundBetCountMax } from "../GameData";
 import Game from "../Game";
 import Audio from "../Audio";
 import { Effect } from "../effect/FlyDiamond";
-import { EGameStatus, ETradeCode } from "../../shared3/interface/IGame";
+import { EGameStatus } from "../../shared3/interface/IGame";
 import ChipMoveNodeUI from "./ChipMoveNodeUI";
 import { setRechargeView } from "../../shared2/GlobalViewsLoader";
 
@@ -93,19 +93,7 @@ export default class WheelItemUI extends cc.Component {
             Audio.Instance.playsendBet();
             Effect.FlyDiamond2(ChipMoveNodeUI.Instance.mineNode[gGameData.betAmountIndex], ChipMoveNodeUI.Instance.items[this.buttonIndex], gGameData.betAmountIndex, this.buttonIndex, true, 2000);
             //player.setNotedBatCount(betGrade);
-            let waitresp = await player.bet(gGameData.roundStep.todayRound, betGradeIndex, betGradeNum);
-
-            //console.log(JSON.stringify(_player.wheelAmount));
-            if (waitresp?.code == ETradeCode.success) {
-
-                if (Game.Instance.player.accountDiamond >= Game.Instance.balanceNum) {
-                    for (let i = 0; i < Game.Instance.bettingBox.myBetNum.length; i++) {
-                        Game.Instance.bettingBox.myBetNum[this.buttonIndex].active = true;
-                        Game.Instance.bettingBox.allBetNum[this.buttonIndex].active = true;
-
-                    }
-                }
-            }
+            await player.bet(gGameData.roundStep.todayRound, betGradeIndex, betGradeNum);
             gGameData.roundBetCount++;
         }
         else {

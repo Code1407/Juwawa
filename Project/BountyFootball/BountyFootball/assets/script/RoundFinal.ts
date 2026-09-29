@@ -216,9 +216,29 @@ export default class RoundFinal extends cc.Component {
     }
  
     setRankingValue(roundRank: IRankListItem[]) {
+        // Lua 空 table 经协议反序列化后可能是 {}，同时兼容数组和数字键对象。
+        const rawRoundRank: any = roundRank;
+        const rankItems: IRankListItem[] = Array.isArray(rawRoundRank)
+            ? rawRoundRank
+            : (rawRoundRank && typeof rawRoundRank === "object"
+                ? Object.keys(rawRoundRank)
+                    .filter(key => !isNaN(Number(key)))
+                    .sort((a, b) => Number(a) - Number(b))
+                    .map(key => rawRoundRank[key])
+                : []);
+
+        // 服务端只会下发正收益玩家；这里再次过滤，兼容旧服数据与重复刷新。
+        const visibleRoundRank = rankItems
+            .filter(item => item && Number(item.revenue) > 0)
+            .slice(0, this.Ranking.length);
+
+        this.Ranking.forEach(rankNode => {
+            rankNode.active = false;
+        });
+
         let addOthersNum = 0;
-        for (let i = 0; i < roundRank.length; ++i) {
-            let rankValue = roundRank[i];
+        for (let i = 0; i < visibleRoundRank.length; ++i) {
+            let rankValue = visibleRoundRank[i];
             let rankNode = this.Ranking[i];
             rankNode.active = true;
             cc.find("frame/Name", rankNode).getComponent(cc.Label).string = decodeURI(rankValue.name);

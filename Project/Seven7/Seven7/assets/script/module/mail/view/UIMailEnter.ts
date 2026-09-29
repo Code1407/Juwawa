@@ -15,24 +15,31 @@ export class UIMailEnter extends GameComponent {
     private root:Node;
 
     onLoad(): void {
-        this.node.on(Node.EventType.TOUCH_START, this.on_click_btn);
+        this.node.on(Node.EventType.TOUCH_START, this.on_click_btn.bind(this));
         this.root = find("Root", this.node);
         this.root.active = false;
     }
 
     start() {
         this.on(EventMessage.GAME_MAIL_DATA_UPDATE, this.on_mail_data_update, this);
-
-        let cfg = oops.network.getgetClientConfig();
-        let openMail = cfg && cfg.custom && cfg.custom.enableMail || false;
-        //this.node.active = openMail;
+        let openMail = this.check_mail_open();
         if(openMail){
             GameModelMgr.mailModel.cs_mail_list_req();
         }
     }
 
+    check_mail_open():boolean{
+        let cfg = oops.network.getgetClientConfig();
+        let openMail = cfg && cfg.custom && cfg.custom.enableMail || false;
+        return openMail;
+    }
+
 
     private on_mail_data_update() {
+        let openMail = this.check_mail_open();
+        if(!openMail){
+            return;
+        }
         this.on_redpoint_update();
     }
 
@@ -53,7 +60,16 @@ export class UIMailEnter extends GameComponent {
     }
 
     private on_click_btn() {
-       oops.gui.openAsync(UIID.UI_Mail_Main);
+        let openMail = this.check_mail_open();
+        if(!openMail){
+            return;
+        }
+
+        let mails = GameModelMgr.mailModel.get_mails();
+        if(mails.size <= 0){
+            return;
+        }
+        oops.gui.openAsync(UIID.UI_Mail_Main);
     }
 }
 

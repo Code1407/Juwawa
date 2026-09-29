@@ -1,0 +1,207 @@
+
+//类型：bool, string, int16, uint16, int32, uint32, int64, uint64, array<>, map<>, 已定义的类型名
+//范围：使用中括号[]，在变量名后给出[min, max]，使用闭区间，即包含min和max
+//默认范围：整型取各自的最大范围，字符串和数组为[0, 256]
+//限制：为了和js和行为一致，map类型的key只能使用string类型，当然在写入数据时，map和key可以为数字，会被默认转成字符串处理
+//规范：所有数字相关的定义，尽可能使用无符号整型，除非已经明确可能为负数才定义有符号类型
+//示例：
+//Base {
+//    int16 num1
+//    uint16 num2
+//    float num3[1, 100]
+//    bool b1
+//    string str1
+//    array<int16> arr1
+//    array<string> arr2
+//    map<string, string> map1
+//}
+
+//Test {
+//    Base base1
+//    array<Base> arr1
+//    map<string, Base> map1
+//}
+
+// 排行榜:玩家信息
+RankUserInfo {
+	string uid
+	string avatar
+	string name
+	uint32 rank
+	uint64 bonus
+	uint64 score
+	bool get
+}
+
+// 客户端领取日榜奖励
+CsReceiveDayAwardReq {
+}
+CsReceiveDayAwardResp {
+	int32 code
+	uint64 accountDiamond
+	uint64 bonus
+}
+
+// 客户端领取周榜奖励
+CsReceiveWeekAwardReq {
+}
+CsReceiveWeekAwardResp {
+	int32 code
+	uint64 accountDiamond
+	uint64 bonus
+}
+// 客户端拉取实时排名
+CsGetTodayRealTimeRankReq {
+}
+CsGetTodayRealTimeRankResp {
+	uint64 timestamp
+	uint32 timezone
+	string uid
+	uint32 rank
+}
+
+//客户端拉取榜单
+CsGetRankListByDateStrReq{
+	string dateStr
+}
+CsGetRankListByDateStrResp{
+	string dateStr
+	array<RankUserInfo> rankUsers
+}
+
+// ---------------- SuperAce ----------------
+SuperAceSettings {
+	float soundVol
+	uint16 lastBetAmountButton
+	bool isSpeed
+}
+
+SuperAceAccount {
+	uint64 diamond
+	string avatar
+	string nickname
+	string uid
+}
+
+SuperAceResultItem {
+	array<int16> slotResult[20, 20]
+	array<uint16> eliminateIndexs[0, 20]
+	float multiple
+	array<float> multiples[0, 4096]
+	array<uint16> changeGoldenIndexs[0, 20]
+	array<uint16> copyWildIndexs[0, 20]
+	array<float> multipleKinds[9, 9]
+}
+
+SuperAceResults {
+	uint64 betAmount
+	uint64 calculateAmount
+	array<SuperAceResultItem> resultItems[0, 128]
+	float multiple
+	array<float> multiples[0, 4096]
+	uint16 freeCount
+	array<float> multipleKinds[9, 9]
+}
+
+SuperAceEnterData {
+	SuperAceAccount account
+	bool hasLastResult
+	SuperAceResults lastResult
+	SuperAceSettings playerSettings
+	uint64 runningRoundId
+	int32 machineStatus
+}
+
+CsSuperAceEnterReq {
+}
+CsSuperAceEnterResp {
+	SuperAceAccount account
+	bool hasLastResult
+	SuperAceResults lastResult
+	SuperAceSettings playerSettings
+	uint64 runningRoundId
+	int32 machineStatus
+}
+
+CsSuperAceBetNormalReq {
+	uint64 betAmount
+	uint64 calculateAmount
+}
+CsSuperAceBetNormalResp {
+	int32 code
+	bool hasResult
+	SuperAceResults result
+	uint64 roundId
+}
+
+CsSuperAceBetFreeReq {
+}
+CsSuperAceBetFreeResp {
+	int32 code
+	bool hasResult
+	SuperAceResults result
+	uint64 roundId
+}
+
+CsSuperAceStopRoundReq {
+	uint64 roundId
+}
+CsSuperAceStopRoundResp {
+	int32 code
+	uint64 accountDiamond
+}
+
+CsSuperAceSynchronizeReq {
+}
+CsSuperAceSynchronizeResp {
+	int32 code
+	SuperAceEnterData data
+}
+
+CsSuperAceUpdateSettingsReq {
+	SuperAceSettings playerSettings
+}
+CsSuperAceUpdateSettingsResp {
+	int32 code
+	SuperAceSettings playerSettings
+}
+
+ScSuperAceRoundStepPush {
+	uint64 runningRoundId
+	int32 status
+	uint64 accountDiamond
+}
+ScSuperAceAccountUpdatePush {
+	uint64 value
+	uint64 offset
+}
+
+// 服务端推送：昨日日榜可领奖（FortuneSlot 对齐）
+CsDayRankAwardReq{
+}
+ScDayRankAwardPush {
+	string uid
+	uint32 rank
+	uint64 bonus
+	uint64 score
+	array<RankUserInfo> rankUsers
+}
+
+// 服务端推送：上周周榜可领奖（FortuneSlot 对齐）
+CsWeekRankAwardReq{
+}
+ScWeekRankAwardPush {
+	string uid
+	uint32 rank
+	uint64 bonus
+	uint64 score
+	array<RankUserInfo> rankUsers
+}
+
+// 服务端推送：今日实时榜（FortuneSlot 对齐）
+ScTodayRealTimeRankPush{
+	uint64 timestamp
+	uint32 timezone
+	string uid
+	uint32 rank
+}

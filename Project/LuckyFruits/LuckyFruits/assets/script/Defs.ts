@@ -67,12 +67,12 @@ interface enterGame {
 interface enterGameResp {
     uid: string
     roundStep: LuckyFruitsRoundStep
-    rankList: LuckyFruitsRankItem[]
     account: Account
     todayRevenue: number
     lastWheelAmount: number[][]
     curRoundWheelAmount: number[][]
     curRoundAllWheelAmount: LuckyFruitsPlayerBetList[]
+    curRoundTotalWheelAmount: number[][]
     gameHistory: LuckyFruitsHistoryItem[]
     myHistory: LuckyFruitsMyHistoryItem[]
     lastBetAmountButton: number
@@ -113,12 +113,12 @@ interface synchronize {
 interface synchronizeResp {
     uid: string
     roundStep: LuckyFruitsRoundStep
-    rankList: LuckyFruitsRankItem[]
     account: Account
     todayRevenue: number
     lastWheelAmount: number[][]
     curRoundWheelAmount: number[][]
     curRoundAllWheelAmount: LuckyFruitsPlayerBetList[]
+    curRoundTotalWheelAmount: number[][]
     gameHistory: LuckyFruitsHistoryItem[]
     myHistory: LuckyFruitsMyHistoryItem[]
     lastBetAmountButton: number
@@ -163,6 +163,7 @@ interface onResultHandler {
 }
 
 interface onbatNoticeAll {
+    uid: string
     wheelAmount: number[][]
 }
 
@@ -171,9 +172,6 @@ interface onRewardHandler {
     resultDetail: number[]
 }
 
-interface onRankListChange {
-    rankList: LuckyFruitsRankItem[]
-}
 
 interface onbatListRound {
     uid: string

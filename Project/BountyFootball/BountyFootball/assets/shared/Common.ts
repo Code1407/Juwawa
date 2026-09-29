@@ -8,7 +8,7 @@ const defaultServerConfig = {
     platId: 101,
     platKey: "abc",
     serverIndex: 1,
-    uId: "gcc_0094252",
+    uId: "94253",
     token: "qwertyuiop12",
     routerPath: "game"
 };
@@ -761,6 +761,7 @@ let allWidget = canvas()?.getComponentsInChildren(cc.Widget) || [];
     function ResizeCallback() {
         if (canvas() == null)
             return;
+
         viewSize2 = cc.view.getVisibleSizeInPixel();
         var reso = canvas().designResolution;
         var rateSize = viewSize2.height / viewSize2.width;

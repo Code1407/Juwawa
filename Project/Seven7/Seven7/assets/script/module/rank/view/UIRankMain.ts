@@ -71,9 +71,10 @@ export class UIRankMain extends GameComponent {
     refresh_list_by_date_str(dateStr:string){
         if(dateStr){
             let users = GameModelMgr.rankModel.get_users_by_date(dateStr);
+            let showRankNum = GameModelMgr.rankModel.get_show_rank_item_count();
             if(users && users.length > 0){
-                this.listData = users;
-                this.list.numItems = users.length;
+                this.listData = showRankNum > 0 ? users.slice(0, showRankNum) : users;
+                this.list.numItems = this.listData.length;
                 return;
             }  
         }
